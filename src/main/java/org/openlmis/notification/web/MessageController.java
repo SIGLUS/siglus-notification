@@ -1,6 +1,6 @@
-package org.openlmis.template.web;
+package org.openlmis.notification.web;
 
-import org.openlmis.template.i18n.ExposedMessageSource;
+import org.openlmis.notification.i18n.ExposedMessageSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,6 +18,10 @@ public class MessageController {
   @Autowired
   private ExposedMessageSource messageSource;
 
+  /**
+   * Example usage of ExposedMessageSource.
+   * @return hello world message
+   */
   @RequestMapping("/hello")
   public String hello() {
     String[] msgArgs = {"world"};

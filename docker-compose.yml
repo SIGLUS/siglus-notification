@@ -1,10 +1,11 @@
 version: "2"
 services:
-  template-service:
-    image: openlmis/template-service
+  notification:
+    image: openlmis/notification
     links:
       - db
       - log
+      - auth
     ports:
       - "8080"
     env_file: .env
@@ -16,4 +17,9 @@ services:
   log:
     image: openlmis/rsyslog
     volumes:
-      - '../logs/template-service:/var/log'
+      - '../logs/notification-service:/var/log'
+  auth:
+    image: openlmis/auth
+    ports:
+      - "8081:8080"
+    env_file: .env

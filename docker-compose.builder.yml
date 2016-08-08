@@ -2,6 +2,10 @@ version: "2"
 services:
   builder:
     image: openlmis/dev
+    links:
+      - db
+      - log
+      - auth
     volumes:
       - '.:/app'
     command:
@@ -22,18 +26,7 @@ services:
     env_file: .env
   image:
     build: .
-    image: openlmis/template-service
-  template-service:
-    image: openlmis/template-service
-    links:
-      - db
-      - log
-    ports:
-      - "8080:8080"
-    environment:
-      JAVA_OPTS: '-Dlogging.config=/logback.xml'
-    volumes:
-      - '../logback.xml:/logback.xml'
+    image: openlmis/notification
   db:
     image: openlmis/postgres
     ports:
@@ -42,4 +35,7 @@ services:
   log:
     image: openlmis/rsyslog
     volumes:
-      - '../logs/template-service:/var/log'
+      - '../logs/notification-service:/var/log'
+  auth:
+    image: openlmis/auth
+    env_file: .env

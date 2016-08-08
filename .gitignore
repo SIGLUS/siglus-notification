@@ -7,3 +7,5 @@ out/
 .idea/
 .env
 .tx/
+gradle*
+node_modules/

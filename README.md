@@ -13,8 +13,8 @@ OpenLMIS 3.x Independent Service.
  ```shell
  git clone https://github.com/OpenLMIS/openlmis-template-service.git <openlmis-your-service-name>
  ```
-2. Respectively change all instances of `openlmis-template-service` and
-`template-service` within the project to `openlmis-your-service-name` and
+2. Respectively change all instances of `openlmis-notification-service` and
+`notification-service` within the project to `openlmis-your-service-name` and
 `your-service-name`.
 3. Change all instances of the default version number ("0.0.1") in the project to your
 version number.

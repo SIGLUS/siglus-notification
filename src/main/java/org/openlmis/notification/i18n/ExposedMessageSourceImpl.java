@@ -1,4 +1,4 @@
-package org.openlmis.template.i18n;
+package org.openlmis.notification.i18n;
 
 import org.springframework.context.support.ReloadableResourceBundleMessageSource;
 import org.springframework.stereotype.Component;
@@ -19,6 +19,12 @@ public class ExposedMessageSourceImpl extends ReloadableResourceBundleMessageSou
     return propertiesHolder.getProperties();
   }
 
+  /**
+   * Get all messages for given locale.
+   *
+   * @param locale Locale.
+   * @return Map with messages.
+   */
   public Map<String, String> getAllMessages(Locale locale) {
     Properties props = getAllProperties(locale);
     Enumeration<String> keys = (Enumeration<String>) props.propertyNames();

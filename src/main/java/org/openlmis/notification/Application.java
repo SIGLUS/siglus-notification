@@ -1,21 +1,28 @@
-package org.openlmis.template;
+package org.openlmis.notification;
 
-import org.openlmis.template.i18n.ExposedMessageSourceImpl;
+import org.openlmis.notification.i18n.ExposedMessageSourceImpl;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ImportResource;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 
 import java.util.Locale;
 
 @SpringBootApplication
+@ImportResource("applicationContext.xml")
 public class Application {
 
   public static void main(String[] args) {
     SpringApplication.run(Application.class, args);
   }
 
+  /**
+   * Creates new LocaleResolve.
+   *
+   * @return Created LocalResolver.
+   */
   @Bean
   public LocaleResolver localeResolver() {
     CookieLocaleResolver lr = new CookieLocaleResolver();
@@ -23,7 +30,12 @@ public class Application {
     lr.setDefaultLocale(Locale.ENGLISH);
     return lr;
   }
-  
+
+  /**
+   * Creates new MessageSource.
+   *
+   * @return Created MessageSource.
+   */
   @Bean
   public ExposedMessageSourceImpl messageSource() {
     ExposedMessageSourceImpl messageSource = new ExposedMessageSourceImpl();

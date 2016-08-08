@@ -1,4 +1,4 @@
-package org.openlmis.template.i18n;
+package org.openlmis.notification.i18n;
 
 import org.springframework.context.MessageSource;
 
