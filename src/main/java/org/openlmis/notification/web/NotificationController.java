@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mail.MailAuthenticationException;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -33,7 +34,7 @@ public class NotificationController {
           notificationRequest.getTo(), notificationRequest.getSubject(),
           notificationRequest.getContent(), notificationRequest.getHtmlContent());
       return new ResponseEntity<>(HttpStatus.OK);
-    } catch (MessagingException ex) {
+    } catch (MessagingException | MailAuthenticationException | IllegalArgumentException ex) {
       ErrorResponse errorResponse = new ErrorResponse(
           "An error occurred while sending notification to " + notificationRequest.getTo(),
           ex.getMessage());
