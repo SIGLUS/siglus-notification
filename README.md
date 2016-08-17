@@ -16,7 +16,7 @@ project settings and credentials. For a starter environment file, you can use [t
 one](https://github.com/OpenLMIS/openlmis-config/blob/master/.env). e.g.
 
  ```shell
- cd openlmis-requisition
+ cd openlmis-notification
  curl -LO https://raw.githubusercontent.com/OpenLMIS/openlmis-config/master/.env
  ```
 3. Develop w/ Docker by running `docker-compose run --service-ports notification`.
