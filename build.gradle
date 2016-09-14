@@ -145,8 +145,8 @@ checkstyle {
 //Usage: gradle sonarqube
 sonarqube {
     properties {
-        property "sonar.projectName", "OpenLMIS Template Service"
-        property "sonar.projectKey", "org.sonarqube:openlmis-notification-service"
+        property "sonar.projectName", "OpenLMIS Notification Service"
+        property "sonar.projectKey", "org.sonarqube:openlmis-notification"
         property "sonar.host.url", "http://sonar.openlmis.org"
         property "sonar.java.coveragePlugin", "jacoco"
         //Tells SonarQube where the unit tests execution reports are
