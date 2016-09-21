@@ -1,7 +1,7 @@
 #%RAML 0.8
 title: OpenLMIS Notification API
 version: "1.0.0"
-baseUri: "${baseUrl}/api"
+baseUri: "${baseUrl}"
 schemas:
     -
         notificationRequest: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","description":"A notification request.","title":"notificationRequest","properties":{"from":{"type":"string","required":true,"title":"from"},"to":{"type":"string","required":true,"title":"to"},"subject":{"type":"string","required":true,"title":"subject"},"content":{"type":"string","required":true,"title":"content"},"htmlContent":{"type":"string","required":false,"title":"htmlContent"}}}'
