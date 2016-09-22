@@ -1,25 +1,22 @@
 version: "2"
 services:
+
   notification:
     image: openlmis/notification
     links:
       - db
       - log
-      - auth
     ports:
       - "8080"
     env_file: .env
+
   db:
     image: openlmis/postgres
     ports:
       - "5432"
     env_file: .env
+
   log:
     image: openlmis/rsyslog
     volumes:
       - '../logs/notification-service:/var/log'
-  auth:
-    image: openlmis/auth
-    ports:
-      - "8081:8080"
-    env_file: .env
