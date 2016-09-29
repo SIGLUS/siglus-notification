@@ -7,10 +7,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.mail.MailAuthenticationException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.mail.MessagingException;
@@ -18,7 +18,7 @@ import javax.mail.MessagingException;
 @RestController
 public class NotificationController {
 
-  Logger logger = LoggerFactory.getLogger(ServiceNameController.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(ServiceNameController.class);
 
   @Autowired
   private NotificationService notificationService;
@@ -28,18 +28,18 @@ public class NotificationController {
    * @param notificationRequest details of the message
    */
   @RequestMapping("/notification")
-  public ResponseEntity<?> sendNotification(@RequestBody NotificationRequest notificationRequest) {
-    try {
+  @ResponseStatus(HttpStatus.OK)
+  public void sendNotification(@RequestBody NotificationRequest notificationRequest) throws MessagingException {
       notificationService.sendNotification(notificationRequest.getFrom(),
           notificationRequest.getTo(), notificationRequest.getSubject(),
           notificationRequest.getContent(), notificationRequest.getHtmlContent());
-      return new ResponseEntity<>(HttpStatus.OK);
-    } catch (MessagingException | MailAuthenticationException | IllegalArgumentException ex) {
-      ErrorResponse errorResponse = new ErrorResponse(
-          "An error occurred while sending notification to " + notificationRequest.getTo(),
-          ex.getMessage());
-      logger.error(errorResponse.getMessage(), ex);
-      return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
-    }
+  }
+
+  @ExceptionHandler(Exception.class)
+  @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+  public ErrorResponse handleException(Exception ex) {
+    final String msg = "Unable to send notification";
+    LOGGER.error(msg, ex);
+    return new ErrorResponse(msg, ex.getMessage());
   }
 }
