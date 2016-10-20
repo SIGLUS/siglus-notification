@@ -19,7 +19,7 @@ import javax.mail.MessagingException;
 @RestController
 public class NotificationController {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(ServiceNameController.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(NotificationController.class);
 
   @Autowired
   private NotificationService notificationService;

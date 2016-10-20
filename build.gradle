@@ -20,18 +20,17 @@ apply plugin: 'checkstyle'
 apply plugin: 'jacoco'
 apply plugin: 'pmd'
 
-jar {
-    baseName = 'openlmis-notification-service'
-    version  = '0.0.1'
-}
+group = serviceGroup
+version = serviceVersion
+archivesBaseName = rootProject.name
+project.ext.buildTime = java.time.Instant.now().toString() // for versioning
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
 
 repositories {
     mavenCentral()
     jcenter()
 }
-
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
 
 dependencies {
     compile "org.springframework.boot:spring-boot-starter-web"
@@ -147,8 +146,9 @@ checkstyle {
 sonarqube {
     properties {
         property "sonar.projectName", "OpenLMIS Notification Service"
-        property "sonar.projectKey", "org.sonarqube:openlmis-notification"
+        property "sonar.projectKey", "org.sonarqube:$rootProject.name"
         property "sonar.host.url", "http://sonar.openlmis.org"
+        property "sonar.projectVersion", version
         property "sonar.java.coveragePlugin", "jacoco"
         //Tells SonarQube where the unit tests execution reports are
         property "sonar.junit.reportsPath", "build/test-results/test"
@@ -159,10 +159,6 @@ sonarqube {
     properties["sonar.tests"] += sourceSets.integrationTest.java
     }
 }
-
-build.dependsOn jacocoTestReport
-// Makes sure checkstyle is run before build completes
-build.dependsOn check
 
 pmd {
     toolVersion = '5.4.0'
@@ -181,6 +177,13 @@ tasks.withType(Pmd){
 
 apply from: "documentation.gradle"
 
+processResources {
+    // update version information for build
+    filesMatching('**/version.properties') {
+        expand(project.properties)
+    }
+}
+
 test {
     testLogging {
         events 'started', 'passed'
@@ -195,7 +198,8 @@ check {
 }
 
 build {
-    jacocoTestReport
+    dependsOn check
+    dependsOn jacocoTestReport
     dependsOn ramlToSwagger
     dependsOn ramlToHtml
     dependsOn copyRamlHtmlToBuild
