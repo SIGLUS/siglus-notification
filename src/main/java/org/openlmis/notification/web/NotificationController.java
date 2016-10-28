@@ -30,12 +30,19 @@ public class NotificationController {
    */
   @RequestMapping("/notification")
   @ResponseStatus(HttpStatus.OK)
-  public void sendNotification(@RequestBody NotificationRequest notificationRequest) throws MessagingException {
-      notificationService.sendNotification(notificationRequest.getFrom(),
-          notificationRequest.getTo(), notificationRequest.getSubject(),
-          notificationRequest.getContent(), notificationRequest.getHtmlContent());
+  public void sendNotification(@RequestBody NotificationRequest notificationRequest)
+      throws MessagingException {
+    notificationService.sendNotification(notificationRequest.getFrom(),
+        notificationRequest.getTo(), notificationRequest.getSubject(),
+        notificationRequest.getContent(), notificationRequest.getHtmlContent());
   }
 
+  /**
+   * Logs any exceptions that occur while sending notifications and returns proper response.
+   *
+   * @param ex An instance of Exception
+   * @return ErrorResponse
+   */
   @ExceptionHandler(Exception.class)
   @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
   @ResponseBody
