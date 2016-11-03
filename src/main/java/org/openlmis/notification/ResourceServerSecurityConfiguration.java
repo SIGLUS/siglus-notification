@@ -59,13 +59,9 @@ public class ResourceServerSecurityConfiguration implements ResourceServerConfig
         .anonymous().and()
         .authorizeRequests()
         .antMatchers(
-            "/",
-            "/lib/*",
-            "/images/*",
-            "/css/*",
-            "/swagger-ui.js",
-            "/swagger-ui.min.js",
-            "/fonts/*"
+            "/webjars/**",
+            "/index.html",
+            "/generated/api-definition.json"
         ).permitAll()
         .antMatchers("/**").fullyAuthenticated();
   }
