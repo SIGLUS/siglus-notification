@@ -179,6 +179,8 @@ tasks.withType(Pmd){
 apply from: "documentation.gradle"
 
 processResources {
+    // we want the generated swagger spec file included in the output jar
+    finalizedBy ramlToSwagger
     // update version information for build
     filesMatching('**/version.properties') {
         expand(project.properties)
@@ -204,9 +206,4 @@ build {
     dependsOn ramlToSwagger
     dependsOn ramlToHtml
     dependsOn copyRamlHtmlToBuild
-}
-
-jar {
-    // we want the generated swagger spec file included in the output jar
-    dependsOn ramlToSwagger
 }
