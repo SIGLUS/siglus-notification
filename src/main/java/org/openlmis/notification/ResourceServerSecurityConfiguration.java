@@ -59,6 +59,7 @@ public class ResourceServerSecurityConfiguration implements ResourceServerConfig
         .anonymous().and()
         .authorizeRequests()
         .antMatchers(
+            "/",
             "/webjars/**",
             "/docs/**"
         ).permitAll()
