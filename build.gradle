@@ -200,10 +200,15 @@ check {
     dependsOn integrationTest
 }
 
+apply from: "registration.gradle"
+
 build {
     dependsOn check
     dependsOn jacocoTestReport
     dependsOn ramlToSwagger
     dependsOn ramlToHtml
     dependsOn copyRamlHtmlToBuild
+    dependsOn copyConsulRegistrationToBuild
 }
+
+bootRun.dependsOn consulRegistration

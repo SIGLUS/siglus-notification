@@ -1,0 +1,11 @@
+{
+  "name": "notification",
+  "raml": "src/main/resources/api-definition.yaml",
+  "path": [
+    "notification",
+    "notification/docs",
+    "notification/docs/<all>",
+    "notification/webjars",
+    "notification/webjars/<all>"
+  ]
+}

@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.mail.MessagingException;
 
 @RestController
+@RequestMapping("/api")
 public class NotificationController {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(NotificationController.class);

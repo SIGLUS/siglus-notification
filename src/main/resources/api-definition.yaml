@@ -1,32 +1,35 @@
 #%RAML 0.8
 title: OpenLMIS Notification API
 version: "@version@"
-baseUri: "@baseUrl@/api"
+baseUri: "@baseUrl@"
+
 schemas:
     -
         notificationRequest: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","description":"A notification request.","title":"notificationRequest","properties":{"from":{"type":"string","required":true,"title":"from"},"to":{"type":"string","required":true,"title":"to"},"subject":{"type":"string","required":true,"title":"subject"},"content":{"type":"string","required":true,"title":"content"},"htmlContent":{"type":"string","required":false,"title":"htmlContent"}}}'
     -
         errorResponse: '{"type":"object","$schema":"http://json-schema.org/draft-03/schema#","description":"An error response","title":"errorResponse","properties":{"message":{"type":"string","required":true,"title":"message"},"description":{"type":"string","required":true,"title":"description"}}}'
-/notification:
-    displayName: Notification
-    post:
-        description: Send a notification
-        queryParameters:
-            access_token:
-                displayName: access_token
-                description: OAuth2 access token
-                type: string
-                required: true
-                repeat: false
-                example: "71a7e6a6-63fd-4bc5-845d-dcd0fbba76b9"
-        body: 
-            application/json: 
-                schema: notificationRequest
-                example: '{"from":"sample from","to":"sample to","subject":"sample subject","content":"sample content","htmlContent":"sample htmlContent"}'
-        responses: 
-            "200": 
-            "400": 
-                body: 
-                    application/json: 
-                        schema: errorResponse
-                        example: '{"message":"sample message","description":"sample description"}'
+
+/api:
+  /notification:
+      displayName: Notification
+      post:
+          description: Send a notification
+          queryParameters:
+              access_token:
+                  displayName: access_token
+                  description: OAuth2 access token
+                  type: string
+                  required: true
+                  repeat: false
+                  example: "71a7e6a6-63fd-4bc5-845d-dcd0fbba76b9"
+          body:
+              application/json:
+                  schema: notificationRequest
+                  example: '{"from":"sample from","to":"sample to","subject":"sample subject","content":"sample content","htmlContent":"sample htmlContent"}'
+          responses:
+              "200":
+              "400":
+                  body:
+                      application/json:
+                          schema: errorResponse
+                          example: '{"message":"sample message","description":"sample description"}'
