@@ -210,5 +210,3 @@ build {
     dependsOn copyRamlHtmlToBuild
     dependsOn copyConsulRegistrationToBuild
 }
-
-bootRun.dependsOn consulRegistration
