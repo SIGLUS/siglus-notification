@@ -12,7 +12,10 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
+import java.net.URI;
+import java.util.HashMap;
 import java.util.Map;
 
 @RunWith(SpringJUnit4ClassRunner.class)
@@ -21,15 +24,28 @@ import java.util.Map;
 public abstract class BaseWebIntegrationTest {
   static final String BASE_URL = System.getenv("BASE_URL");
 
-  @Value("${auth.server.url.getToken}")
-  protected String tokenUri;
+  @Value("${auth.server.authorizationUrl}")
+  private String authorizationUrl;
+
+  @Value("${auth.server.clientId}")
+  private String clientId;
+
+  @Value("${auth.server.clientSecret}")
+  private String clientSecret;
 
   private String token = null;
+
+  String getToken() {
+    if (token == null) {
+      token = fetchToken();
+    }
+    return token;
+  }
 
   private String fetchToken() {
     RestTemplate restTemplate = new RestTemplate();
 
-    String plainCreds = "trusted-client:secret";
+    String plainCreds = clientId + ":" + clientSecret;
     byte[] plainCredsBytes = plainCreds.getBytes();
     byte[] base64CredsBytes = Base64.encodeBase64(plainCredsBytes);
     String base64Creds = new String(base64CredsBytes);
@@ -39,20 +55,20 @@ public abstract class BaseWebIntegrationTest {
 
     HttpEntity<String> request = new HttpEntity<>(headers);
 
+    Map<String, Object> params = new HashMap<>();
+    params.put("grant_type", "password");
+
     ResponseEntity<?> response = restTemplate.exchange(
-        tokenUri, HttpMethod.POST, request, Object.class);
+        buildUri(authorizationUrl, params), HttpMethod.POST, request, Object.class);
 
     return ((Map<String, String>) response.getBody()).get("access_token");
   }
 
-  String getToken() {
-    if (token == null) {
-      token = fetchToken();
-    }
-    return token;
-  }
+  private URI buildUri(String url, Map<String, ?> params) {
+    UriComponentsBuilder builder = UriComponentsBuilder.newInstance().uri(URI.create(url));
 
-  String addTokenToUrl(String url) {
-    return url + "?access_token=" + this.getToken();
+    params.entrySet().forEach(e -> builder.queryParam(e.getKey(), e.getValue()));
+
+    return builder.build(true).toUri();
   }
 }
