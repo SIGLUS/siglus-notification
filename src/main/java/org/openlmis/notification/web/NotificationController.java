@@ -1,7 +1,7 @@
 package org.openlmis.notification.web;
 
 import org.openlmis.notification.service.NotificationService;
-import org.openlmis.notification.util.ErrorResponse;
+import org.openlmis.util.ErrorResponse;
 import org.openlmis.notification.util.NotificationRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
