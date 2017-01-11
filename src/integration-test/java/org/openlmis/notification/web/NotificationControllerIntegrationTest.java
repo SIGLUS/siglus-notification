@@ -10,7 +10,7 @@ import guru.nidi.ramltester.restassured.RestAssuredClient;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.openlmis.notification.util.NotificationRequest;
+import org.openlmis.util.NotificationRequest;
 
 public class NotificationControllerIntegrationTest extends BaseWebIntegrationTest {
 
