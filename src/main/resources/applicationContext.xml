@@ -24,6 +24,8 @@
         <prop key="mail.smtp.quitwait">false</prop>
         <prop key="mail.smtp.socketFactory.class">javax.net.ssl.SSLSocketFactory</prop>
         <prop key="mail.smtp.socketFactory.fallback">false</prop>
+        <prop key="mail.smtps.ssl.checkserveridentity">true</prop>
+        <prop key="mail.smtps.ssl.trust">*</prop>
       </props>
     </property>
   </bean>
