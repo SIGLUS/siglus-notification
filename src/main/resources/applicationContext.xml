@@ -20,12 +20,17 @@
     <property name="javaMailProperties">
       <props>
         <prop key="mail.smtp.auth">${spring.mail.properties.mail.smtp.auth}</prop>
-        <prop key="mail.smtp.starttls.enable">${spring.mail.properties.mail.smtp.starttls.enable}</prop>
         <prop key="mail.smtp.quitwait">false</prop>
-        <prop key="mail.smtp.socketFactory.class">javax.net.ssl.SSLSocketFactory</prop>
+
+        <prop key="mail.smtp.socketFactory.class">javax.net.DefaultSocketFactory</prop>
         <prop key="mail.smtp.socketFactory.fallback">false</prop>
-        <prop key="mail.smtps.ssl.checkserveridentity">true</prop>
-        <prop key="mail.smtps.ssl.trust">*</prop>
+
+        <prop key="mail.smtp.ssl.enable">true</prop>
+        <prop key="mail.smtp.ssl.checkserveridentity">true</prop>
+        <prop key="mail.smtp.ssl.trust">*</prop>
+        <prop key="mail.smtp.ssl.socketFactory.class">com.sun.mail.util.MailSSLSocketFactory</prop>
+
+        <prop key="mail.smtp.starttls.enable">${spring.mail.properties.mail.smtp.starttls.enable}</prop>
       </props>
     </property>
   </bean>
