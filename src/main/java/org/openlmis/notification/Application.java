@@ -4,14 +4,16 @@ import org.openlmis.notification.i18n.ExposedMessageSourceImpl;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ImportResource;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 
 import java.util.Locale;
 
+@Configuration
 @SpringBootApplication
-@ImportResource("applicationContext.xml")
+@ComponentScan("org.openlmis.notification")
 public class Application {
 
   public static void main(String[] args) {
