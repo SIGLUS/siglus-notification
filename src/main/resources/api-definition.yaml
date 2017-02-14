@@ -2,6 +2,7 @@
 title: OpenLMIS Notification API
 version: "@version@"
 baseUri: "@baseUrl@"
+protocols: [ HTTP, HTTPS ]
 
 schemas:
     -
