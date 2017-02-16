@@ -39,7 +39,6 @@ public class NotificationControllerIntegrationTest extends BaseWebIntegrationTes
     notificationRequest.setTo("to@example.com");
     notificationRequest.setSubject("subject");
     notificationRequest.setContent("content");
-    notificationRequest.setHtmlContent("<b>content</b>");
 
     restAssured.given()
       .queryParam("access_token", getToken())

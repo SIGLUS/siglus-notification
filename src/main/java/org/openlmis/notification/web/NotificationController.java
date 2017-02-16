@@ -35,7 +35,7 @@ public class NotificationController {
       throws MessagingException {
     notificationService.sendNotification(notificationRequest.getFrom(),
         notificationRequest.getTo(), notificationRequest.getSubject(),
-        notificationRequest.getContent(), notificationRequest.getHtmlContent());
+        notificationRequest.getContent());
   }
 
   /**

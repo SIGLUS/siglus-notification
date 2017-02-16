@@ -30,8 +30,7 @@ public class NotificationServiceTest {
   public void shouldSendMessage() throws MessagingException {
     MimeMessage mimeMessage = new MimeMessage(session);
     when(javaMailSender.createMimeMessage()).thenReturn(mimeMessage);
-    service.sendNotification("from@example.com", "to@example.com", "subject",
-        "content", "<b>content</b>");
+    service.sendNotification("from@example.com", "to@example.com", "subject", "content");
     verify(javaMailSender).send(mimeMessage);
   }
 }
