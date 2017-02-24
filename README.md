@@ -76,4 +76,4 @@ This services also uses the following variables:
 * **MAIL_PORT** - The SMTP port to use for sending outgoing email. For example 25 or 465. This variable has to be defined in order to send emails. The default is 25.
 * **MAIL_USERNAME** - The SMTP username to use for sending outgoing email. Usually required by the SMTP server.  
 * **MAIL_PASSWORD** - The SMTP password to use for sending outgoing email. Usually required by the SMTP server.
-* **MAIL_ADDRESS** - The sender email address that will be used for sending all outgoing email messages. For example set it to noreply@mydomain.org in order for users to see that as the sender of the email they receive.   
+* **MAIL_ADDRESS** - The sender email address that will be used for sending all outgoing email messages (the from-address field). For example set it to noreply@mydomain.org in order for users to see that as the sender of the email they receive. Note that some email providers (like Gmail) might overwrite this value with details from your account.   
