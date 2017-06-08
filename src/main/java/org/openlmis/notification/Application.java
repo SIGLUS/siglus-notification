@@ -26,6 +26,8 @@ import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 
 import java.util.Locale;
 
+import static org.apache.commons.lang3.LocaleUtils.toLocale;
+
 @Configuration
 @SpringBootApplication
 @ComponentScan("org.openlmis.notification")
@@ -44,7 +46,15 @@ public class Application {
   public LocaleResolver localeResolver() {
     CookieLocaleResolver lr = new CookieLocaleResolver();
     lr.setCookieName("lang");
-    lr.setDefaultLocale(Locale.ENGLISH);
+
+    Locale systemLocale;
+    try {
+      systemLocale = toLocale(System.getenv("LOCALE"));
+    } catch (IllegalArgumentException ex) {
+      systemLocale = Locale.ENGLISH;
+    }
+    lr.setDefaultLocale(systemLocale);
+
     return lr;
   }
 
