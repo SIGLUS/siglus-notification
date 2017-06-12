@@ -16,6 +16,7 @@
 package org.openlmis.notification;
 
 import org.openlmis.notification.i18n.ExposedMessageSourceImpl;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
@@ -26,8 +27,6 @@ import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 
 import java.util.Locale;
 
-import static org.apache.commons.lang3.LocaleUtils.toLocale;
-
 @Configuration
 @SpringBootApplication
 @ComponentScan("org.openlmis.notification")
@@ -36,6 +35,9 @@ public class Application {
   public static void main(String[] args) {
     SpringApplication.run(Application.class, args);
   }
+
+  @Value("${defaultLocale}")
+  private Locale locale;
 
   /**
    * Creates new LocaleResolve.
@@ -46,15 +48,7 @@ public class Application {
   public LocaleResolver localeResolver() {
     CookieLocaleResolver lr = new CookieLocaleResolver();
     lr.setCookieName("lang");
-
-    Locale systemLocale;
-    try {
-      systemLocale = toLocale(System.getenv("LOCALE"));
-    } catch (IllegalArgumentException ex) {
-      systemLocale = Locale.ENGLISH;
-    }
-    lr.setDefaultLocale(systemLocale);
-
+    lr.setDefaultLocale(locale);
     return lr;
   }
 
