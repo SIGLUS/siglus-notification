@@ -26,6 +26,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.openlmis.util.NotificationRequest;
+import org.springframework.http.HttpHeaders;
 
 public class NotificationControllerIntegrationTest extends BaseWebIntegrationTest {
 
@@ -56,7 +57,7 @@ public class NotificationControllerIntegrationTest extends BaseWebIntegrationTes
     notificationRequest.setContent("content");
 
     restAssured.given()
-      .queryParam("access_token", getToken())
+      .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
       .body(notificationRequest)
       .when()
         .post(BASE_URL + "/notification")

@@ -50,11 +50,11 @@ public abstract class BaseWebIntegrationTest {
 
   private String token = null;
 
-  String getToken() {
+  String getTokenHeader() {
     if (token == null) {
       token = fetchToken();
     }
-    return token;
+    return "Bearer " + token;
   }
 
   private String fetchToken() {

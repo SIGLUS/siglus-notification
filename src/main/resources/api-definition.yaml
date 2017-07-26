@@ -20,9 +20,16 @@ schemas:
                   displayName: access_token
                   description: OAuth2 access token
                   type: string
-                  required: true
+                  required: false
                   repeat: false
                   example: "71a7e6a6-63fd-4bc5-845d-dcd0fbba76b9"
+          headers:
+              Authorization:
+                  displayName: Authorization
+                  description: OAuth2 authorization token header. Takes the form of 'Bearer <token>'.
+                  type: string
+                  required: false
+                  repeat: false
           body:
               application/json:
                   schema: notificationRequest
