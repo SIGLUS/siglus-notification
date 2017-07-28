@@ -1,3 +1,10 @@
+
+3.0.2 / WIP
+==================
+
+Bug fixes, security and performance improvements (backwards-compatible):
+* [OLMIS-2871](https://openlmis.atlassian.net/browse/OLMIS-2871): The service now uses an Authorization header instead of an access_token request parameter when communicating with other services.
+
 3.0.2 / 2017-06-23
 ==================
 
