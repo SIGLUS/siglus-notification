@@ -32,12 +32,12 @@ import java.util.Locale;
 @ComponentScan("org.openlmis.notification")
 public class Application {
 
+  @Value("${defaultLocale}")
+  private Locale locale;
+
   public static void main(String[] args) {
     SpringApplication.run(Application.class, args);
   }
-
-  @Value("${defaultLocale}")
-  private Locale locale;
 
   /**
    * Creates new LocaleResolve.
