@@ -4,7 +4,6 @@ services:
   notification:
     image: openlmis/notification
     links:
-      - db
       - log
     env_file: .env
 
