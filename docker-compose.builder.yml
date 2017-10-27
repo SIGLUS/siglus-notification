@@ -4,7 +4,6 @@ services:
   builder:
     image: openlmis/dev:3
     links:
-      - db
       - log
     volumes:
       - '.:/app'
@@ -16,6 +15,8 @@ services:
 
   sonar:
     image: openlmis/dev:3
+    links:
+      - log
     volumes:
       - '.:/app'
     entrypoint:
@@ -30,12 +31,6 @@ services:
   image:
     build: .
     image: openlmis/notification
-
-  db:
-    image: openlmis/postgres:9.6
-    ports:
-      - "5432"
-    env_file: .env
 
   log:
     image: openlmis/rsyslog:1

@@ -8,10 +8,6 @@ services:
       - log
     env_file: .env
 
-  db:
-    image: openlmis/postgres:9.6
-    env_file: .env
-
   log:
     image: openlmis/rsyslog:1
     volumes:
