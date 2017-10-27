@@ -1,3 +1,9 @@
+3.0.4 / WIP
+==================
+
+Bug fixes, security and performance improvements (backwards-compatible):
+* [OLMIS-3394](https://openlmis.atlassian.net/browse/OLMIS-3394): Added notification request validator
+
 3.0.3 / 2017-09-01
 ==================
 

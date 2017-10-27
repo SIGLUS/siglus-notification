@@ -13,41 +13,20 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.notification.service;
+package org.openlmis.notification.i18n;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
 
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeMessage;
-
 @Service
-public class NotificationService {
+public class MessageService {
 
   @Autowired
-  private JavaMailSender mailSender;
+  private ExposedMessageSource messageSource;
 
-  /**
-   * Send an email notification.
-   *
-   * @param from    email address of the sender
-   * @param to      email address of the receiver
-   * @param subject subject of the email
-   * @param content content of the email
-   * @throws MessagingException a generic messaging exception
-   */
-  public void sendNotification(String from, String to, String subject, String content)
-      throws MessagingException {
-    MimeMessage message = mailSender.createMimeMessage();
-
-    MimeMessageHelper helper = new MimeMessageHelper(message, false);
-    helper.setFrom(from);
-    helper.setTo(to);
-    helper.setSubject(subject);
-    helper.setText(content);
-
-    mailSender.send(message);
+  public LocalizedMessage localize(Message message) {
+    return message.localMessage(messageSource, LocaleContextHolder.getLocale());
   }
+
 }

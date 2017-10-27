@@ -15,55 +15,100 @@
 
 package org.openlmis.notification.web;
 
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.openlmis.notification.i18n.MessageKeys.ERROR_CONTENT_REQUIRED;
+import static org.openlmis.notification.i18n.MessageKeys.ERROR_FROM_REQUIRED;
+import static org.openlmis.notification.i18n.MessageKeys.ERROR_SUBJECT_REQUIRED;
+import static org.openlmis.notification.i18n.MessageKeys.ERROR_TO_REQUIRED;
+import static org.springframework.http.HttpHeaders.AUTHORIZATION;
+import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
-import com.jayway.restassured.RestAssured;
-import guru.nidi.ramltester.RamlDefinition;
-import guru.nidi.ramltester.RamlLoaders;
-import guru.nidi.ramltester.junit.RamlMatchers;
-import guru.nidi.ramltester.restassured.RestAssuredClient;
-import org.junit.Before;
-import org.junit.Ignore;
+import com.jayway.restassured.response.Response;
+
 import org.junit.Test;
+import org.openlmis.notification.service.NotificationService;
 import org.openlmis.util.NotificationRequest;
-import org.springframework.http.HttpHeaders;
+import org.springframework.boot.test.mock.mockito.MockBean;
+
+import guru.nidi.ramltester.junit.RamlMatchers;
 
 public class NotificationControllerIntegrationTest extends BaseWebIntegrationTest {
+  private static final String NOTIFICATION_PATH = "/api/notification";
+  private static final String FROM = "from@example.com";
+  private static final String TO = "to@example.com";
+  private static final String SUBJECT = "subject";
+  private static final String CONTENT = "content";
 
-  private static final String RAML_ASSERT_MESSAGE = "HTTP request/response should match RAML "
-      + "definition.";
+  @MockBean
+  private NotificationService notificationService;
 
-  private RamlDefinition ramlDefinition;
-  private RestAssuredClient restAssured;
-
-  /**
-   * Prepare the test environment.
-   */
-  @Before
-  public void setUp() {
-    RestAssured.baseURI = BASE_URL;
-    ramlDefinition = RamlLoaders.fromClasspath().load("api-definition-raml.yaml");
-    restAssured = ramlDefinition.createRestAssured();
+  @Test
+  public void shouldSendMessage() throws Exception {
+    success(FROM, TO, SUBJECT, CONTENT);
   }
 
-  // TODO: find a fake smtp server
-  @Ignore
   @Test
-  public void testSendMessage() {
-    NotificationRequest notificationRequest = new NotificationRequest();
-    notificationRequest.setFrom("from@example.com");
-    notificationRequest.setTo("to@example.com");
-    notificationRequest.setSubject("subject");
-    notificationRequest.setContent("content");
+  public void shouldNotSendMessageIfFromIsEmpty() throws Exception {
+    fail(null, TO, SUBJECT, CONTENT, ERROR_FROM_REQUIRED);
+  }
 
-    restAssured.given()
-      .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
-      .body(notificationRequest)
-      .when()
-        .post(BASE_URL + "/notification")
-      .then()
+  @Test
+  public void shouldNotSendMessageIfToIsEmpty() throws Exception {
+    fail(FROM, null, SUBJECT, CONTENT, ERROR_TO_REQUIRED);
+  }
+
+  @Test
+  public void shouldNotSendMessageIfSubjectIsEmpty() throws Exception {
+    fail(FROM, TO, null, CONTENT, ERROR_SUBJECT_REQUIRED);
+  }
+
+  @Test
+  public void shouldNotSendMessageIfContentIsEmpty() throws Exception {
+    fail(FROM, TO, SUBJECT, null, ERROR_CONTENT_REQUIRED);
+  }
+
+  private void success(String from, String to, String subject, String content) throws Exception {
+    send(from, to, subject, content)
+        .then()
         .statusCode(200);
 
-    assertThat(RAML_ASSERT_MESSAGE , restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+
+    verify(notificationService).sendNotification(from, to, subject, content);
   }
+
+  private void fail(String from, String to, String subject, String content, String message)
+      throws Exception {
+    String response = send(from, to, subject, content)
+        .then()
+        .statusCode(400)
+        .extract()
+        .path(MESSAGE_KEY);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+    assertThat(response, containsString(message));
+
+    verify(notificationService, never()).sendNotification(from, to, subject, content);
+  }
+
+  private Response send(String from, String to, String subject, String content) {
+    NotificationRequest notificationRequest = new NotificationRequest();
+    notificationRequest.setFrom(from);
+    notificationRequest.setTo(to);
+    notificationRequest.setSubject(subject);
+    notificationRequest.setContent(content);
+
+    return restAssured
+        .given()
+        .header(AUTHORIZATION, getTokenHeader())
+        .header(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+        .body(notificationRequest)
+        .when()
+        .post(NOTIFICATION_PATH);
+  }
+
 }

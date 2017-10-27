@@ -15,75 +15,105 @@
 
 package org.openlmis.notification.web;
 
-import org.apache.commons.codec.binary.Base64;
+import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.post;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
+import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
+import static org.openlmis.notification.web.WireMockResponses.MOCK_CHECK_RESULT;
+import static org.openlmis.notification.web.WireMockResponses.MOCK_TOKEN_REQUEST_RESPONSE;
+import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
+import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.github.tomakehurst.wiremock.junit.WireMockRule;
+import com.jayway.restassured.RestAssured;
+import com.jayway.restassured.config.ObjectMapperConfig;
+import com.jayway.restassured.config.RestAssuredConfig;
+
+import org.junit.Rule;
 import org.junit.runner.RunWith;
-import org.openlmis.notification.Application;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.test.SpringApplicationConfiguration;
-import org.springframework.boot.test.WebIntegrationTest;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.web.client.RestTemplate;
-import org.springframework.web.util.UriComponentsBuilder;
+import org.springframework.boot.context.embedded.LocalServerPort;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.junit4.SpringRunner;
 
-import java.net.URI;
-import java.util.HashMap;
-import java.util.Map;
+import guru.nidi.ramltester.RamlDefinition;
+import guru.nidi.ramltester.RamlLoaders;
+import guru.nidi.ramltester.restassured.RestAssuredClient;
 
-@RunWith(SpringJUnit4ClassRunner.class)
-@SpringApplicationConfiguration(Application.class)
-@WebIntegrationTest("server.port:8080")
+import javax.annotation.PostConstruct;
+
+@RunWith(SpringRunner.class)
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@ActiveProfiles("test")
 public abstract class BaseWebIntegrationTest {
-  static final String BASE_URL = System.getenv("BASE_URL");
+  private static final String USER_ACCESS_TOKEN = "418c89c5-7f21-4cd1-a63a-38c47892b0fe";
+  private static final String USER_ACCESS_TOKEN_HEADER = "Bearer " + USER_ACCESS_TOKEN;
 
-  @Value("${auth.server.authorizationUrl}")
-  private String authorizationUrl;
+  static final String RAML_ASSERT_MESSAGE =
+      "HTTP request/response should match RAML definition.";
 
-  @Value("${auth.server.clientId}")
-  private String clientId;
+  static final String MESSAGE_KEY = "messageKey";
 
-  @Value("${auth.server.clientSecret}")
-  private String clientSecret;
+  RestAssuredClient restAssured;
 
-  private String token = null;
+  private static final RamlDefinition ramlDefinition =
+      RamlLoaders.fromClasspath().load("api-definition-raml.yaml").ignoringXheaders();
 
+  @Value("${service.url}")
+  protected String baseUri;
+
+  @Rule
+  public WireMockRule wireMockRule = new WireMockRule(80);
+
+  @LocalServerPort
+  private int randomPort;
+
+  @Autowired
+  private ObjectMapper objectMapper;
+
+  /**
+   * Constructor for test.
+   */
+  BaseWebIntegrationTest() {
+    // This mocks the auth check to always return valid admin credentials.
+    wireMockRule.stubFor(post(urlEqualTo("/api/oauth/check_token"))
+        .willReturn(aResponse()
+            .withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+            .withBody(MOCK_CHECK_RESULT)));
+
+    // This mocks the auth token request response
+    wireMockRule.stubFor(post(urlPathEqualTo("/api/oauth/token?grant_type=client_credentials"))
+        .willReturn(aResponse()
+            .withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+            .withBody(MOCK_TOKEN_REQUEST_RESPONSE)));
+  }
+
+  /**
+   * Initialize the REST Assured client. Done here and not in the constructor, so that randomPort is
+   * available.
+   */
+  @PostConstruct
+  public void init() {
+
+    RestAssured.baseURI = baseUri;
+    RestAssured.port = randomPort;
+    RestAssured.config = RestAssuredConfig.config().objectMapperConfig(
+        new ObjectMapperConfig().jackson2ObjectMapperFactory((clazz, charset) -> objectMapper)
+    );
+    restAssured = ramlDefinition.createRestAssured();
+  }
+
+  /**
+   * Get a user access token. An arbitrary UUID string is returned and the tests assume it is a
+   * valid one for an admin user.
+   *
+   * @return an access token
+   */
   String getTokenHeader() {
-    if (token == null) {
-      token = fetchToken();
-    }
-    return "Bearer " + token;
+    return USER_ACCESS_TOKEN_HEADER;
   }
 
-  private String fetchToken() {
-    RestTemplate restTemplate = new RestTemplate();
-
-    String plainCreds = clientId + ":" + clientSecret;
-    byte[] plainCredsBytes = plainCreds.getBytes();
-    byte[] base64CredsBytes = Base64.encodeBase64(plainCredsBytes);
-    String base64Creds = new String(base64CredsBytes);
-
-    HttpHeaders headers = new HttpHeaders();
-    headers.add("Authorization", "Basic " + base64Creds);
-
-    HttpEntity<String> request = new HttpEntity<>(headers);
-
-    Map<String, Object> params = new HashMap<>();
-    params.put("grant_type", "password");
-
-    ResponseEntity<?> response = restTemplate.exchange(
-        buildUri(authorizationUrl, params), HttpMethod.POST, request, Object.class);
-
-    return ((Map<String, String>) response.getBody()).get("access_token");
-  }
-
-  private URI buildUri(String url, Map<String, ?> params) {
-    UriComponentsBuilder builder = UriComponentsBuilder.newInstance().uri(URI.create(url));
-
-    params.entrySet().forEach(e -> builder.queryParam(e.getKey(), e.getValue()));
-
-    return builder.build(true).toUri();
-  }
 }

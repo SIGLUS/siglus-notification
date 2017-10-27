@@ -16,16 +16,13 @@
 package org.openlmis.notification.web;
 
 import org.openlmis.notification.service.NotificationService;
-import org.openlmis.util.ErrorResponse;
 import org.openlmis.util.NotificationRequest;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -35,36 +32,30 @@ import javax.mail.MessagingException;
 @RequestMapping("/api")
 public class NotificationController {
 
-  private static final Logger LOGGER = LoggerFactory.getLogger(NotificationController.class);
-
   @Autowired
   private NotificationService notificationService;
 
+  @Autowired
+  private NotificationRequestValidator validator;
+
   /**
    * Send an email notification.
+   *
    * @param notificationRequest details of the message
    */
-  @RequestMapping("/notification")
+  @PostMapping("/notification")
   @ResponseStatus(HttpStatus.OK)
-  public void sendNotification(@RequestBody NotificationRequest notificationRequest)
-      throws MessagingException {
+  public void sendNotification(@RequestBody NotificationRequest notificationRequest,
+                               BindingResult bindingResult) throws MessagingException {
+    validator.validate(notificationRequest, bindingResult);
+
+    if (bindingResult.getErrorCount() > 0) {
+      throw new ValidationMessageException(bindingResult.getFieldError().getDefaultMessage());
+    }
+
     notificationService.sendNotification(notificationRequest.getFrom(),
         notificationRequest.getTo(), notificationRequest.getSubject(),
         notificationRequest.getContent());
   }
 
-  /**
-   * Logs any exceptions that occur while sending notifications and returns proper response.
-   *
-   * @param ex An instance of Exception
-   * @return ErrorResponse
-   */
-  @ExceptionHandler(Exception.class)
-  @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-  @ResponseBody
-  public ErrorResponse handleException(Exception ex) {
-    final String msg = "Unable to send notification";
-    LOGGER.error(msg, ex);
-    return new ErrorResponse(msg, ex.getMessage());
-  }
 }
