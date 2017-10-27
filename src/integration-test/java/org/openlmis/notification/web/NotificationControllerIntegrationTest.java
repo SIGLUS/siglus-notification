@@ -16,9 +16,11 @@
 package org.openlmis.notification.web;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.never;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_CONTENT_REQUIRED;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_FROM_REQUIRED;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_SUBJECT_REQUIRED;
@@ -30,9 +32,9 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import com.jayway.restassured.response.Response;
 
 import org.junit.Test;
-import org.openlmis.notification.service.NotificationService;
 import org.openlmis.util.NotificationRequest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.mail.javamail.JavaMailSender;
 
 import guru.nidi.ramltester.junit.RamlMatchers;
 
@@ -44,7 +46,7 @@ public class NotificationControllerIntegrationTest extends BaseWebIntegrationTes
   private static final String CONTENT = "content";
 
   @MockBean
-  private NotificationService notificationService;
+  private JavaMailSender javaMailSender;
 
   @Test
   public void shouldSendMessage() throws Exception {
@@ -72,13 +74,26 @@ public class NotificationControllerIntegrationTest extends BaseWebIntegrationTes
   }
 
   private void success(String from, String to, String subject, String content) throws Exception {
+    DummyMessage message = new DummyMessage();
+
+    given(javaMailSender.createMimeMessage()).willReturn(message);
+
     send(from, to, subject, content)
         .then()
         .statusCode(200);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
 
-    verify(notificationService).sendNotification(from, to, subject, content);
+    verify(javaMailSender).send(message);
+
+    assertThat(message.getFrom().length, equalTo(1));
+    assertThat(message.getFrom()[0].toString(), equalTo(from));
+
+    assertThat(message.getTo().length, equalTo(1));
+    assertThat(message.getTo()[0].toString(), equalTo(to));
+
+    assertThat(message.getSubject(), equalTo(subject));
+    assertThat(message.getContent(), equalTo(content));
   }
 
   private void fail(String from, String to, String subject, String content, String message)
@@ -92,7 +107,7 @@ public class NotificationControllerIntegrationTest extends BaseWebIntegrationTes
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
     assertThat(response, containsString(message));
 
-    verify(notificationService, never()).sendNotification(from, to, subject, content);
+    verifyZeroInteractions(javaMailSender);
   }
 
   private Response send(String from, String to, String subject, String content) {
