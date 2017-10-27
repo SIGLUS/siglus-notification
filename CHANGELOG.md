@@ -3,6 +3,7 @@
 
 Bug fixes, security and performance improvements (backwards-compatible):
 * [OLMIS-3394](https://openlmis.atlassian.net/browse/OLMIS-3394): Added notification request validator
+  * from, to, subject and content fields are required and if one of them will be empty the endpoint will return response with 400 status code and error message.
 
 3.0.3 / 2017-09-01
 ==================
