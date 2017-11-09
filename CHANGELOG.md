@@ -1,4 +1,4 @@
-3.0.4 / WIP
+3.0.4 / 2017-11-09
 ==================
 
 Bug fixes, security and performance improvements (backwards-compatible):
