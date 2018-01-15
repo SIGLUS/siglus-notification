@@ -1,9 +1,3 @@
-3.0.5 / WIP
-==================
-
-Bug fixes (backwards-compatible):
-* [OLMIS-3778](https://openlmis.atlassian.net/browse/OLMIS-3778): Fixed service checks the rights of a wrong user
-
 3.0.4 / 2017-11-09
 ==================
 
