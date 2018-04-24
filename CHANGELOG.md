@@ -1,3 +1,8 @@
+3.0.5 / 2018-04-24
+==================
+
+* [OLMIS-3708](https://openlmis.atlassian.net/browse/OLMIS-3708): Introduced API Console
+
 3.0.4 / 2017-11-09
 ==================
 
