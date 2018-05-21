@@ -15,6 +15,9 @@ pipeline {
     environment {
         PATH = "/usr/local/bin/:$PATH"
     }
+    parameters {
+        string(name: 'contractTestsBranch', defaultValue: 'master', description: 'The branch of contract tests to checkout')
+    }
     stages {
         stage('Preparation') {
             steps {
@@ -55,6 +58,7 @@ pipeline {
                     sh 'docker-compose -f docker-compose.builder.yml build image'
                     sh 'docker-compose -f docker-compose.builder.yml down --volumes'
                     sh "docker tag openlmis/notification:latest openlmis/notification:${STAGING_VERSION}"
+                    sh "docker push openlmis/notification:${STAGING_VERSION}"
                 }
             }
             post {
@@ -118,7 +122,11 @@ pipeline {
                 }
                 stage('Contract tests') {
                     steps {
-                        build job: 'OpenLMIS-notification-contract-test', propagate: true, wait: true
+                        build job: "OpenLMIS-contract-tests-pipeline/${params.contractTestsBranch}", propagate: true, wait: true,
+                        parameters: [
+                            string(name: 'serviceName', value: 'notification'),
+                            text(name: 'customEnv', value: "OL_NOTIFICATION_VERSION=${STAGING_VERSION}")
+                        ]
                     }
                     post {
                         failure {
