@@ -47,6 +47,7 @@ dependencies {
     compile "org.springframework.boot:spring-boot-starter-data-jpa"
     compile "org.postgresql:postgresql:42.0.0"
     compile 'org.flywaydb:flyway-core:4.0.3'
+    compile 'commons-validator:commons-validator:1.6'
 
     testCompile "com.github.tomakehurst:wiremock:1.58"
     testCompile "com.jayway.restassured:rest-assured:2.7.0"
@@ -57,6 +58,7 @@ dependencies {
     testCompile 'io.rest-assured:json-schema-validator:3.0.0'
     testCompile 'io.rest-assured:rest-assured:3.0.0'
     testCompile 'io.rest-assured:spring-mock-mvc:3.0.0'
+    testCompile "nl.jqno.equalsverifier:equalsverifier:2.4"
 }
 
 idea {

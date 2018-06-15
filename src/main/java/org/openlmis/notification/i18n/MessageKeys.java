@@ -15,7 +15,19 @@
 
 package org.openlmis.notification.i18n;
 
+import java.util.Arrays;
+
 public abstract class MessageKeys {
+  private static final String DELIMITER = ".";
+  
+  private static final String PERMISSION = "permission";
+  private static final String PERMISSIONS = PERMISSION + "s";
+  private static final String MISSING = "missing";
+
+  private static final String AUTHENTICATION = "authentication";
+  private static final String USER = "user";
+  private static final String NOT_FOUND = "notFound";
+  
   private static final String SERVICE_PREFIX = "notification";
   private static final String ERROR_PREFIX = SERVICE_PREFIX + ".error";
   private static final String NOTIFICATION_REQUEST = ERROR_PREFIX + ".notificationRequest";
@@ -29,9 +41,17 @@ public abstract class MessageKeys {
   public static final String ERROR_SUBJECT_REQUIRED = NOTIFICATION_REQUEST + ".subject.required";
   public static final String ERROR_CONTENT_REQUIRED = NOTIFICATION_REQUEST + ".content.required";
 
+  public static final String PERMISSION_MISSING = join(ERROR_PREFIX, PERMISSION, MISSING);
+  public static final String PERMISSIONS_MISSING = join(ERROR_PREFIX, PERMISSIONS, MISSING);
+  public static final String USER_NOT_FOUND =
+      join(ERROR_PREFIX, AUTHENTICATION, USER, NOT_FOUND);
 
   private MessageKeys() {
     throw new UnsupportedOperationException();
+  }
+
+  private static String join(String... params) {
+    return String.join(DELIMITER, Arrays.asList(params));
   }
 
 }

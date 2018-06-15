@@ -24,7 +24,7 @@ import org.openlmis.notification.i18n.Message;
  * through any Spring handler.  Only sub-classes should have handlers.
  */
 public abstract class BaseMessageException extends RuntimeException {
-  private Message message;
+  private final Message message;
 
   /**
    * Create new exception with the given message key.  Helper method that
