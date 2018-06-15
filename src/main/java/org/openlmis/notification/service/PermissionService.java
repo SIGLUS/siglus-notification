@@ -17,7 +17,6 @@ package org.openlmis.notification.service;
 
 
 import static org.apache.commons.lang3.BooleanUtils.isTrue;
-import static org.apache.commons.lang3.StringUtils.startsWith;
 
 import java.util.UUID;
 import org.openlmis.notification.service.referencedata.RightDto;
@@ -34,14 +33,8 @@ import org.springframework.stereotype.Service;
 @Service
 @SuppressWarnings("PMD.TooManyMethods")
 public class PermissionService {
-  static final String ORDERS_TRANSFER = "ORDERS_TRANSFER";
-  public static final String PODS_MANAGE = "PODS_MANAGE";
-  public static final String PODS_VIEW = "PODS_VIEW";
-  public static final String ORDERS_VIEW = "ORDERS_VIEW";
-  public static final String ORDERS_EDIT = "ORDERS_EDIT";
-  public static final String SHIPMENTS_VIEW = "SHIPMENTS_VIEW";
-  public static final String SHIPMENTS_EDIT = "SHIPMENTS_EDIT";
-  static final String SYSTEM_SETTINGS_MANAGE = "SYSTEM_SETTINGS_MANAGE";
+
+  static final String USERS_MANAGE = "USERS_MANAGE";
 
   @Autowired
   private UserReferenceDataService userReferenceDataService;
@@ -52,73 +45,64 @@ public class PermissionService {
   @Value("${auth.server.clientId}")
   private String serviceTokenClientId;
 
-  @Value("${auth.server.clientId.apiKey.prefix}")
-  private String apiKeyPrefix;
-
-  private void checkPermission(String rightName, UUID facility, UUID program) {
-    checkPermission(rightName, facility, program, null, true, false);
+  public void canCreateUserContactDetails() {
+    checkPermission(USERS_MANAGE);
   }
 
-  private void checkPermission(String rightName, UUID warehouse) {
-    checkPermission(rightName, null, null, warehouse, true, false);
+  /**
+   * Checks whether current request has access to viewing contact details of user with the given
+   * userId.
+   *
+   * @param userId  the reference data user ID
+   */
+  public void canManageUserContactDetails(UUID userId) {
+    if (hasPermission(USERS_MANAGE) || isCurrentUser(userId)) {
+      return;
+    }
+
+    throw new MissingPermissionException(USERS_MANAGE);
   }
 
-  private void checkPermission(String rightName, UUID facility, UUID program, UUID warehouse,
-                               boolean allowUserTokens, boolean allowApiKey) {
-    if (hasPermission(rightName, facility, program, warehouse, allowUserTokens, allowApiKey)) {
+  private boolean isCurrentUser(UUID userId) {
+    UserDto user = authenticationHelper.getCurrentUser();
+
+    if (user == null) {
+      return false;
+    }
+
+    return userId.equals(user.getId());
+  }
+
+  private void checkPermission(String rightName) {
+    if (hasPermission(rightName)) {
       return;
     }
 
     throw new MissingPermissionException(rightName);
   }
 
-  private boolean hasPermission(String rightName, UUID facility, UUID program) {
-    return hasPermission(rightName, facility, program, null, true, false);
-  }
-
-  private boolean hasPermission(String rightName, UUID warehouse) {
-    return hasPermission(rightName, null, null, warehouse, true, false);
-  }
-
-  private boolean hasPermission(String rightName, UUID facility, UUID program, UUID warehouse,
-                                boolean allowUserTokens, boolean allowApiKey) {
+  private boolean hasPermission(String rightName) {
     OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder
         .getContext()
         .getAuthentication();
 
     return authentication.isClientOnly()
-        ? checkServiceToken(allowApiKey, authentication)
-        : checkUserToken(rightName, facility, program, warehouse, allowUserTokens);
+        ? checkServiceToken(authentication)
+        : checkUserToken(rightName);
   }
 
-  private boolean checkUserToken(String rightName, UUID facility, UUID program, UUID warehouse,
-                                 boolean allowUserTokens) {
-    if (!allowUserTokens) {
-      return false;
-    }
-
+  private boolean checkUserToken(String rightName) {
     UserDto user = authenticationHelper.getCurrentUser();
     RightDto right = authenticationHelper.getRight(rightName);
     ResultDto<Boolean> result =  userReferenceDataService.hasRight(
-        user.getId(), right.getId(), program, facility, warehouse
+        user.getId(), right.getId(), null, null, null
     );
 
     return null != result && isTrue(result.getResult());
   }
 
-  private boolean checkServiceToken(boolean allowApiKey,
-                                    OAuth2Authentication authentication) {
+  private boolean checkServiceToken(OAuth2Authentication authentication) {
     String clientId = authentication.getOAuth2Request().getClientId();
-
-    if (serviceTokenClientId.equals(clientId)) {
-      return true;
-    }
-
-    if (startsWith(clientId, apiKeyPrefix)) {
-      return allowApiKey;
-    }
-
-    return false;
+    return serviceTokenClientId.equals(clientId);
   }
-
 }

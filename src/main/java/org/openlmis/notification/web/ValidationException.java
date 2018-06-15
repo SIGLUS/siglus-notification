@@ -13,32 +13,18 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.notification.i18n;
+package org.openlmis.notification.web;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import org.openlmis.notification.service.NotificationException;
 
-import org.apache.commons.lang3.Validate;
+public class ValidationException extends NotificationException {
 
-/**
- * Value class of a localized message.  Useful for JSON serialization, logging, etc...
- */
-public final class LocalizedMessage {
-
-  @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-  private String messageKey;
-
-  @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-  private String message;
-
-  LocalizedMessage(String messageKey, String message) {
-    Validate.notBlank(message);
-    this.messageKey = messageKey;
-    this.message = message;
+  public ValidationException(String messageKey, String... params) {
+    super(messageKey, params);
   }
 
-  @Override
-  public String toString() {
-    return messageKey + ": " + message;
+  public ValidationException(Throwable cause, String messageKey, String... params) {
+    super(cause, messageKey, params);
   }
 
 }

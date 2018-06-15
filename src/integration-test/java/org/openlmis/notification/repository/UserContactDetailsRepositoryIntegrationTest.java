@@ -13,28 +13,36 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.notification.errorhandling;
+package org.openlmis.notification.repository;
 
-import org.openlmis.notification.i18n.LocalizedMessage;
-import org.openlmis.notification.i18n.Message;
-import org.openlmis.notification.i18n.MessageService;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.assertThat;
+
+import java.util.UUID;
+import org.openlmis.notification.domain.UserContactDetails;
+import org.openlmis.notification.util.UserContactDetailsDataBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.ControllerAdvice;
+import org.springframework.data.repository.CrudRepository;
 
-@ControllerAdvice
-public class BaseHandler {
+public class UserContactDetailsRepositoryIntegrationTest
+    extends BaseCrudRepositoryIntegrationTest<UserContactDetails> {
 
   @Autowired
-  private MessageService messageService;
+  private UserContactDetailsRepository repository;
 
-  /**
-   * Translate a Message into a LocalizedMessage.
-   *
-   * @param message a Message to translate
-   * @return a LocalizedMessage translated by the MessageService bean
-   */
-  final LocalizedMessage getLocalizedMessage(Message message) {
-    return messageService.localize(message);
+  @Override
+  CrudRepository<UserContactDetails, UUID> getRepository() {
+    return repository;
   }
 
+  @Override
+  protected void assertBefore(UserContactDetails instance) {
+    assertThat(instance.getId(), is(notNullValue()));
+  }
+
+  @Override
+  UserContactDetails generateInstance() {
+    return new UserContactDetailsDataBuilder().build();
+  }
 }

@@ -13,20 +13,17 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.notification.i18n;
+package org.openlmis.notification.web;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.i18n.LocaleContextHolder;
-import org.springframework.stereotype.Service;
+import org.openlmis.notification.service.NotificationException;
 
-@Service
-public class MessageService {
+/**
+ * Exception for indicating that an entity explicitly asked for wasn't found.  This should result
+ * in a NOT FOUND api response.
+ */
+public class NotFoundException extends NotificationException {
 
-  @Autowired
-  private ExposedMessageSource messageSource;
-
-  public Message.LocalizedMessage localize(Message message) {
-    return message.localMessage(messageSource, LocaleContextHolder.getLocale());
+  public NotFoundException(String messageKey, String... params) {
+    super(messageKey, params);
   }
-
 }

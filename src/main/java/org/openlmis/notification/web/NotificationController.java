@@ -50,7 +50,7 @@ public class NotificationController {
     validator.validate(notificationRequest, bindingResult);
 
     if (bindingResult.getErrorCount() > 0) {
-      throw new ValidationMessageException(bindingResult.getFieldError().getDefaultMessage());
+      throw new ValidationException(bindingResult.getFieldError().getDefaultMessage());
     }
 
     notificationService.sendNotification(notificationRequest.getFrom(),

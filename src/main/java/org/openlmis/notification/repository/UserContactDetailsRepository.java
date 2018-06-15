@@ -13,20 +13,12 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.notification.i18n;
+package org.openlmis.notification.repository;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.i18n.LocaleContextHolder;
-import org.springframework.stereotype.Service;
+import java.util.UUID;
+import org.openlmis.notification.domain.UserContactDetails;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-@Service
-public class MessageService {
-
-  @Autowired
-  private ExposedMessageSource messageSource;
-
-  public Message.LocalizedMessage localize(Message message) {
-    return message.localMessage(messageSource, LocaleContextHolder.getLocale());
-  }
-
+public interface UserContactDetailsRepository
+    extends JpaRepository<UserContactDetails, UUID> {
 }

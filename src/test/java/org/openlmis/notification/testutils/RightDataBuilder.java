@@ -13,22 +13,40 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.notification.web;
+package org.openlmis.notification.testutils;
 
-import org.openlmis.notification.i18n.Message;
+import java.util.Collections;
+import java.util.Set;
+import java.util.UUID;
+import org.openlmis.notification.service.referencedata.RightDto;
 
-/**
- * Exception for indicating that some input or constraint is invalid.  This should result in a
- * BAD REQUEST api response.
- */
-public class ValidationMessageException extends BaseMessageException {
+public class RightDataBuilder {
+
+  private static int instanceNumber = 0;
+
+  private UUID id;
+  private String name;
+  private String type;
+  private String description;
+  private Set<RightDto> attachments;
 
   /**
-   * Create new validation exception with the given message key.
-   * @param messageKey the messageKey of a {@link Message}.
+   * Builder for {@link RightDataBuilder}.
    */
-  ValidationMessageException(String messageKey) {
-    super( messageKey );
+  public RightDataBuilder() {
+    instanceNumber++;
+
+    id = UUID.randomUUID();
+    name = "Right " + instanceNumber;
+    type = "GENERAL_ADMIN";
+    description = "description";
+    attachments = Collections.emptySet();
   }
 
+  /**
+   * Builds instance of {@link RightDto}.
+   */
+  public RightDto build() {
+    return new RightDto(id, name, type, description, attachments);
+  }
 }

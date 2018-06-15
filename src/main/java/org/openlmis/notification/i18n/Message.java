@@ -15,12 +15,12 @@
 
 package org.openlmis.notification.i18n;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
+import java.util.Locale;
+import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.springframework.context.MessageSource;
-
-import java.util.Locale;
-
 
 /**
  * Immutable value object for a message that is localizable.
@@ -30,12 +30,13 @@ public class Message {
   private Object[] params;
 
   public Message(String messageKey) {
-    this(messageKey, new Object[0]);
+    this(messageKey, (Object[]) null);
   }
 
   /**
    * Creates a new Message with parameters that optionally may be used when the message is
    * localized.
+   *
    * @param messageKey the key of the message
    * @param messageParameters the ordered parameters for substitution in a localized message.
    */
@@ -52,14 +53,15 @@ public class Message {
 
   /**
    * Gets the localized version of this message as it's intended for a human.
+   *
    * @param messageSource the source of localized text.
    * @param locale the locale to determine which localized text to use.
    * @return this message localized in a format suitable for serialization.
-   * @throws org.springframework.context.NoSuchMessageException if the message doesn't exist in
-   *     the messageSource.
+   * @throws org.springframework.context.NoSuchMessageException if the message doesn't exist in the
+   *                                                            messageSource.
    */
-  LocalizedMessage localMessage(MessageSource messageSource, Locale locale) {
-    return new LocalizedMessage(key, messageSource.getMessage(key, params, locale));
+  public Message.LocalizedMessage localMessage(MessageSource messageSource, Locale locale) {
+    return new Message.LocalizedMessage(messageSource.getMessage(key, params, locale));
   }
 
   @Override
@@ -81,4 +83,35 @@ public class Message {
     return key.hashCode();
   }
 
+  /**
+   * Value class of a localized message.  Useful for JSON serialization, logging, etc...
+   */
+  @Getter
+  public final class LocalizedMessage {
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private String messageKey;
+
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private Object[] params;
+
+    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
+    private String message;
+
+    /**
+     * Creates new Message.LocalizedMessage based on given String.
+     * @param message message.
+     */
+    public LocalizedMessage(String message) {
+      this.messageKey = Message.this.key;
+      this.params = Message.this.params;
+
+      Validate.notBlank(message);
+      this.message = message;
+    }
+
+    @Override
+    public String toString() {
+      return messageKey + ": " + message;
+    }
+  }
 }

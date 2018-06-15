@@ -17,6 +17,7 @@ package org.openlmis.notification.web;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.Objects;
 import org.openlmis.notification.i18n.Message;
 import org.openlmis.notification.i18n.MessageKeys;
 import org.springframework.validation.Errors;
@@ -25,8 +26,19 @@ import org.springframework.validation.Validator;
 
 interface BaseValidator extends Validator {
 
+  default void rejectIfNotEqual(Errors errors, Object oldData, Object newData, String field,
+      String message) {
+    if (!Objects.equals(oldData, newData)) {
+      rejectValue(errors, field, message);
+    }
+  }
+
   default void rejectIfEmptyOrWhitespace(Errors errors, String field, String message) {
     ValidationUtils.rejectIfEmptyOrWhitespace(errors, field, message, message);
+  }
+
+  default void rejectValue(Errors errors, String field, String message) {
+    errors.rejectValue(field, message, message);
   }
 
   default void verifyArguments(Object target, Errors errors, String errorNull) {

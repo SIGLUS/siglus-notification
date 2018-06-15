@@ -19,15 +19,16 @@ import java.util.Arrays;
 
 public abstract class MessageKeys {
   private static final String DELIMITER = ".";
-  
+
   private static final String PERMISSION = "permission";
   private static final String PERMISSIONS = PERMISSION + "s";
   private static final String MISSING = "missing";
+  private static final String USER_CONTACT_DETAILS = "userContactDetails";
 
   private static final String AUTHENTICATION = "authentication";
   private static final String USER = "user";
   private static final String NOT_FOUND = "notFound";
-  
+
   private static final String SERVICE_PREFIX = "notification";
   private static final String ERROR_PREFIX = SERVICE_PREFIX + ".error";
   private static final String NOTIFICATION_REQUEST = ERROR_PREFIX + ".notificationRequest";
@@ -35,12 +36,19 @@ public abstract class MessageKeys {
   public static final String ERROR_CONTEXTUAL_STATE_NULL =
       ERROR_PREFIX + ".validation.contextualState.null";
 
+  public static final String ERROR_USER_CONTACT_DETAILS_NOT_FOUND =
+      ERROR_PREFIX + DELIMITER + USER_CONTACT_DETAILS + DELIMITER + NOT_FOUND;
+
   public static final String ERROR_NOTIFICATION_REQUEST_NULL = NOTIFICATION_REQUEST + ".null";
   public static final String ERROR_FROM_REQUIRED = NOTIFICATION_REQUEST + ".from.required";
   public static final String ERROR_TO_REQUIRED = NOTIFICATION_REQUEST + ".to.required";
   public static final String ERROR_SUBJECT_REQUIRED = NOTIFICATION_REQUEST + ".subject.required";
   public static final String ERROR_CONTENT_REQUIRED = NOTIFICATION_REQUEST + ".content.required";
 
+  public static final String ERROR_EMAIL_INVALID = ERROR_PREFIX + ".users.email.invalid";
+  public static final String ERROR_EMAIL_DUPLICATED = ERROR_PREFIX + ".users.email.duplicated";
+
+  public static final String ERROR_FIELD_IS_INVARIANT = ERROR_PREFIX + ".fieldIsInvariant";
   public static final String PERMISSION_MISSING = join(ERROR_PREFIX, PERMISSION, MISSING);
   public static final String PERMISSIONS_MISSING = join(ERROR_PREFIX, PERMISSIONS, MISSING);
   public static final String USER_NOT_FOUND =
