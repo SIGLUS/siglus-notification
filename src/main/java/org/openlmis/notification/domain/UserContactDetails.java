@@ -27,8 +27,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.annotations.Type;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Entity
 @ToString
@@ -38,8 +36,6 @@ import org.slf4j.LoggerFactory;
 @Table(name = "user_contact_details", schema = "notification")
 @SuppressWarnings({"PMD.UnusedPrivateField", "PMD.TooManyMethods"})
 public class UserContactDetails implements Identifiable {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(UserContactDetails.class);
 
   @Getter
   @Setter

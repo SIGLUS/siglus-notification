@@ -15,28 +15,26 @@
 
 package org.openlmis.notification.web;
 
-import java.util.UUID;
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
-import org.openlmis.notification.domain.UserContactDetails;
+import nl.jqno.equalsverifier.EqualsVerifier;
+import nl.jqno.equalsverifier.Warning;
+import org.junit.Test;
+import org.openlmis.notification.service.referencedata.UserDto;
+import org.openlmis.notification.testutils.ToStringTestUtils;
 
-@Getter
-@Setter
-@ToString
-@EqualsAndHashCode
-@NoArgsConstructor
-@AllArgsConstructor
-public final class UserContactDetailsDto
-    implements UserContactDetails.Exporter, UserContactDetails.Importer {
+public class BaseDtoTest {
 
-  private UUID referenceDataUserId;
-  private String email;
-  private String phoneNumber;
-  private Boolean emailVerified;
-  private Boolean allowNotify;
+  @Test
+  public void equalsContract() {
+    EqualsVerifier
+        .forClass(BaseDto.class)
+        .withRedefinedSubclass(UserDto.class)
+        .suppress(Warning.NONFINAL_FIELDS)
+        .verify();
+  }
+
+  @Test
+  public void shouldImplementToString() {
+    ToStringTestUtils.verify(BaseDto.class, new BaseDto());
+  }
 
 }

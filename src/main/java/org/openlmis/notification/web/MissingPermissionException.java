@@ -18,7 +18,9 @@ package org.openlmis.notification.web;
 import static org.openlmis.notification.i18n.MessageKeys.PERMISSIONS_MISSING;
 import static org.openlmis.notification.i18n.MessageKeys.PERMISSION_MISSING;
 
-public class MissingPermissionException extends AuthorizationException {
+import org.openlmis.notification.service.NotificationException;
+
+public class MissingPermissionException extends NotificationException {
 
   public MissingPermissionException(String permissionName) {
     super(PERMISSION_MISSING, permissionName);

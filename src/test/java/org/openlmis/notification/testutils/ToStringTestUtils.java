@@ -13,30 +13,19 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.notification.web;
+package org.openlmis.notification.testutils;
 
-import java.util.UUID;
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
-import org.openlmis.notification.domain.UserContactDetails;
+import be.joengenduvel.java.verifiers.ToStringVerifier;
 
-@Getter
-@Setter
-@ToString
-@EqualsAndHashCode
-@NoArgsConstructor
-@AllArgsConstructor
-public final class UserContactDetailsDto
-    implements UserContactDetails.Exporter, UserContactDetails.Importer {
+public class ToStringTestUtils {
 
-  private UUID referenceDataUserId;
-  private String email;
-  private String phoneNumber;
-  private Boolean emailVerified;
-  private Boolean allowNotify;
-
+  /**
+   * Checks if given class has proper toString method.
+   */
+  public static <T> void verify(Class<T> clazz, T object) {
+    ToStringVerifier
+        .forClass(clazz)
+        .ignore("$jacocoData") // external library is checking for this field, has to be ignored
+        .containsAllPrivateFields(object);
+  }
 }
