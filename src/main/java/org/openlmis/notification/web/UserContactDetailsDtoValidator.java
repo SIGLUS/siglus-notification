@@ -15,7 +15,6 @@
 
 package org.openlmis.notification.web;
 
-import java.util.UUID;
 import org.apache.commons.validator.routines.EmailValidator;
 import org.openlmis.notification.domain.UserContactDetails;
 import org.openlmis.notification.i18n.MessageKeys;
@@ -64,7 +63,7 @@ public class UserContactDetailsDtoValidator implements BaseValidator {
 
     UserContactDetails userContactDetails = repository.findOne(dto.getReferenceDataUserId());
 
-    verifyEmail(dto.getReferenceDataUserId(), dto.getEmail(), errors);
+    verifyEmail(dto.getEmail(), errors);
 
     if (null == userContactDetails) {
       return;
@@ -78,7 +77,7 @@ public class UserContactDetailsDtoValidator implements BaseValidator {
     );
   }
 
-  private void verifyEmail(UUID id, String email, Errors errors) {
+  private void verifyEmail(String email, Errors errors) {
     if (!EmailValidator.getInstance().isValid(email)) {
       rejectValue(errors, EMAIL, MessageKeys.ERROR_EMAIL_INVALID);
     }
