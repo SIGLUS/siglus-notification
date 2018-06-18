@@ -20,13 +20,20 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 import java.util.UUID;
+import org.junit.Rule;
+import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.openlmis.notification.domain.UserContactDetails;
 import org.openlmis.notification.util.UserContactDetailsDataBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.repository.CrudRepository;
 
 public class UserContactDetailsRepositoryIntegrationTest
     extends BaseCrudRepositoryIntegrationTest<UserContactDetails> {
+
+  @Rule
+  public ExpectedException expectedException = ExpectedException.none();
 
   @Autowired
   private UserContactDetailsRepository repository;
@@ -44,5 +51,20 @@ public class UserContactDetailsRepositoryIntegrationTest
   @Override
   UserContactDetails generateInstance() {
     return new UserContactDetailsDataBuilder().build();
+  }
+  
+  @Test(expected = DataIntegrityViolationException.class)
+  public void shouldNotAllowCreatingMultipleUserContactDetailsWithTheSameEmail() {
+    repository.saveAndFlush(
+        new UserContactDetailsDataBuilder()
+            .withEmail("duplicated@email.com")
+            .build()
+    );
+
+    repository.saveAndFlush(
+        new UserContactDetailsDataBuilder()
+            .withEmail("duplicated@email.com")
+            .build()
+    );
   }
 }
