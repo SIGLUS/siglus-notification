@@ -23,8 +23,6 @@ import org.openlmis.notification.i18n.MessageKeys;
 import org.openlmis.notification.web.MissingPermissionException;
 import org.openlmis.notification.web.NotFoundException;
 import org.openlmis.notification.web.ValidationException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -37,8 +35,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
  */
 @ControllerAdvice
 public class WebErrorHandling extends AbstractErrorHandling {
-
-  private static final Logger LOGGER = LoggerFactory.getLogger(WebErrorHandling.class);
 
   private static final Map<String, String> CONSTRAINT_MAP = new HashMap<>();
 
@@ -78,7 +74,7 @@ public class WebErrorHandling extends AbstractErrorHandling {
   public Message.LocalizedMessage handleDataIntegrityViolation(
       DataIntegrityViolationException dive) {
 
-    LOGGER.info(dive.getMessage());
+    logger.info(dive.getMessage());
 
     if (dive.getCause() instanceof ConstraintViolationException) {
       ConstraintViolationException cause = (ConstraintViolationException) dive.getCause();

@@ -155,8 +155,8 @@ checkstyle {
 //Usage: gradle sonarqube
 sonarqube {
     properties {
-        property "sonar.projectName", "OpenLMIS Reference Data Service"
-        property "sonar.projectKey", "org.sonarqube:openlmis-referencedata"
+        property "sonar.projectName", "OpenLMIS Notification Service"
+        property "sonar.projectKey", "org.sonarqube:$rootProject.name"
         property "sonar.host.url", "http://sonar.openlmis.org"
         property "sonar.projectVersion", version
         property "sonar.login", System.getenv("SONAR_LOGIN")
