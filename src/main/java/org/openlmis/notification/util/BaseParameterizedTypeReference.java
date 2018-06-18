@@ -17,6 +17,7 @@ package org.openlmis.notification.util;
 
 import java.lang.reflect.ParameterizedType;
 import java.lang.reflect.Type;
+import lombok.EqualsAndHashCode;
 import org.springframework.core.ParameterizedTypeReference;
 
 /**
@@ -25,6 +26,7 @@ import org.springframework.core.ParameterizedTypeReference;
  * It eases the usage of the rest template however, allowing easily retrieving objects with the
  * provided generic type at runtime.
  */
+@EqualsAndHashCode(callSuper = false)
 public abstract class BaseParameterizedTypeReference<T> extends ParameterizedTypeReference<T> {
   private final Class<?> valueType;
 
