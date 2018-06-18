@@ -15,8 +15,12 @@
 
 package org.openlmis.notification.web.errorhandler;
 
+import static org.openlmis.notification.i18n.MessageKeys.ERROR_CONSTRAINT;
+import static org.openlmis.notification.i18n.MessageKeys.ERROR_SEND_REQUEST;
+
 import java.util.HashMap;
 import java.util.Map;
+import javax.persistence.PersistenceException;
 import org.hibernate.exception.ConstraintViolationException;
 import org.openlmis.notification.i18n.Message;
 import org.openlmis.notification.i18n.MessageKeys;
@@ -29,6 +33,7 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.client.HttpStatusCodeException;
 
 /**
  * Controller advice responsible for handling errors from web layer.
@@ -42,29 +47,71 @@ public class WebErrorHandling extends AbstractErrorHandling {
     CONSTRAINT_MAP.put("unq_contact_details_email", MessageKeys.ERROR_EMAIL_DUPLICATED);
   }
 
+  /**
+   * Handles the {@link HttpStatusCodeException} which signals a problems with sending a request.
+   *
+   * @return the localized message
+   */
+  @ExceptionHandler(HttpStatusCodeException.class)
+  @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+  @ResponseBody
+  public Message.LocalizedMessage handleHttpStatusCodeException(HttpStatusCodeException ex) {
+    return logErrorAndRespond(
+        "Unable to send a request", ex, new Message(
+            ERROR_SEND_REQUEST,
+            ex.getStatusCode().toString(), ex.getResponseBodyAsString()
+        )
+    );
+  }
+
+  /**
+   * Handles the {@link MissingPermissionException} which signals unauthorized access.
+   *
+   * @return the localized message
+   */
   @ExceptionHandler(MissingPermissionException.class)
   @ResponseStatus(HttpStatus.FORBIDDEN)
   @ResponseBody
   public Message.LocalizedMessage handleMissingPermissionException(MissingPermissionException ex) {
-    return logErrorAndRespond("Missing permission for this action", ex);
+    return getLocalizedMessage(ex.asMessage());
+  }
+
+  /**
+   * Handles the {@link ValidationException} which signals a validation problems.
+   *
+   * @return the localized message
+   */
+  @ExceptionHandler(ValidationException.class)
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  @ResponseBody
+  public Message.LocalizedMessage handleValidationException(ValidationException ex) {
+    return getLocalizedMessage(ex.asMessage());
   }
 
   @ExceptionHandler(NotFoundException.class)
   @ResponseStatus(HttpStatus.NOT_FOUND)
   @ResponseBody
-  public Message.LocalizedMessage handleResourceNotFountException(NotFoundException ex) {
-    return logErrorAndRespond("Cannot find an resource", ex);
+  public Message.LocalizedMessage handleNotFoundException(NotFoundException ex) {
+    return getLocalizedMessage(ex.asMessage());
   }
 
-  @ExceptionHandler(ValidationException.class)
+  /**
+   * Handles persistence exception.
+   *
+   * @param ex the persistence exception
+   * @return the user-oriented error message.
+   */
+  @ExceptionHandler(PersistenceException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   @ResponseBody
-  public Message.LocalizedMessage handleSingleValidationException(ValidationException ex) {
-    return logErrorAndRespond("Validation exception", ex);
+  public Message.LocalizedMessage handlePersistenceException(PersistenceException ex) {
+    logger.error(ex.getMessage());
+    return getLocalizedMessage(new Message(ERROR_CONSTRAINT));
   }
 
   /**
    * Handles data integrity violation exception.
+   *
    * @param dive the data integrity exception
    * @return the user-oriented error message.
    */
@@ -79,8 +126,9 @@ public class WebErrorHandling extends AbstractErrorHandling {
     if (dive.getCause() instanceof ConstraintViolationException) {
       ConstraintViolationException cause = (ConstraintViolationException) dive.getCause();
       String messageKey = CONSTRAINT_MAP.get(cause.getConstraintName());
-      if (messageKey != null) {
-        return getLocalizedMessage(new Message(messageKey));
+
+      if (null != messageKey) {
+        return getLocalizedMessage(messageKey);
       }
     }
 

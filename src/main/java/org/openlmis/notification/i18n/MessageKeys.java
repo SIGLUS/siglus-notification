@@ -47,6 +47,8 @@ public abstract class MessageKeys {
 
   public static final String ERROR_EMAIL_INVALID = ERROR_PREFIX + ".users.email.invalid";
   public static final String ERROR_EMAIL_DUPLICATED = ERROR_PREFIX + ".users.email.duplicated";
+  public static final String ERROR_SEND_REQUEST = ERROR_PREFIX + ".sendRequest";
+  public static final String ERROR_CONSTRAINT = ERROR_PREFIX + ".constraint";
 
   public static final String ERROR_FIELD_IS_INVARIANT = ERROR_PREFIX + ".fieldIsInvariant";
   public static final String PERMISSION_MISSING = join(ERROR_PREFIX, PERMISSION, MISSING);

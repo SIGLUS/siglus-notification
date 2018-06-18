@@ -46,6 +46,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 
+@SuppressWarnings({"PMD.TooManyMethods"})
 public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrationTest {
 
   private static final String RESOURCE_URL = "/api/userContactDetails";
@@ -136,7 +137,6 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
 
   @Test
   public void shouldUpdateUserContactDetails() {
-    UserContactDetailsDto request = toDto(userContactDetails);
     UserContactDetails existing = new UserContactDetailsDataBuilder()
         .withReferenceDataUserId(userContactDetails.getReferenceDataUserId())
         .build();
@@ -144,6 +144,7 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
     when(repository.findOne(userContactDetails.getReferenceDataUserId())).thenReturn(existing);
     when(repository.save(userContactDetails)).thenReturn(userContactDetails);
 
+    UserContactDetailsDto request = toDto(userContactDetails);
     UserContactDetailsDto response = put(toDto(userContactDetails))
         .then()
         .statusCode(200)

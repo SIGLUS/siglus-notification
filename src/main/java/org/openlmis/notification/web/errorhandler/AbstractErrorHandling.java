@@ -15,9 +15,8 @@
 
 package org.openlmis.notification.web.errorhandler;
 
-import org.openlmis.notification.i18n.MessageService;
-import org.openlmis.notification.service.NotificationException;
 import org.openlmis.notification.i18n.Message;
+import org.openlmis.notification.i18n.MessageService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,21 +31,10 @@ abstract class AbstractErrorHandling {
   @Autowired
   private MessageService messageService;
 
-  Message.LocalizedMessage logErrorAndRespond(String message, String messageKey, String... params) {
-    return logErrorAndRespond(message, new NotificationException(messageKey, params));
-  }
-
-  /**
-   * Logs an error message and returns an error response.
-   *
-   * @param message the error message
-   * @param ex      the exception to log. Message from the exception is used as the error
-   *                description.
-   * @return a LocalizedMessage that should be sent to the client
-   */
-  Message.LocalizedMessage logErrorAndRespond(String message, NotificationException ex) {
-    logger.info(message, ex);
-    return getLocalizedMessage(ex.asMessage());
+  protected final Message.LocalizedMessage logErrorAndRespond(String msg, Exception ex,
+      Message message) {
+    logger.info(msg, ex);
+    return getLocalizedMessage(message);
   }
 
   /**
