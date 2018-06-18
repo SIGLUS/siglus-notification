@@ -117,7 +117,7 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
   }
 
   @Test
-  public void shouldSaveUserContactDetails() {
+  public void shouldCreateUserContactDetails() {
     UserContactDetailsDto request = toDto(userContactDetails);
 
     when(repository.save(userContactDetails)).thenReturn(userContactDetails);
@@ -132,6 +132,29 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
     assertEquals(request, response);
 
     verify(repository).save(eq(userContactDetails));
+  }
+
+  @Test
+  public void shouldUpdateUserContactDetails() {
+    UserContactDetailsDto request = toDto(userContactDetails);
+    UserContactDetails existing = new UserContactDetailsDataBuilder()
+        .withReferenceDataUserId(userContactDetails.getReferenceDataUserId())
+        .build();
+
+    when(repository.findOne(userContactDetails.getReferenceDataUserId())).thenReturn(existing);
+    when(repository.save(userContactDetails)).thenReturn(userContactDetails);
+
+    UserContactDetailsDto response = put(toDto(userContactDetails))
+        .then()
+        .statusCode(200)
+        .extract()
+        .as(UserContactDetailsDto.class);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+    assertEquals(request, response);
+
+    verify(repository).save(eq(userContactDetails));
+    verify(repository).findOne(userContactDetails.getReferenceDataUserId());
   }
 
   @Test
