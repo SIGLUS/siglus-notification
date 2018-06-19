@@ -15,18 +15,11 @@
 
 package org.openlmis.notification.service.referencedata;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.UUID;
 import org.openlmis.notification.service.ResultDto;
 import org.openlmis.notification.service.request.RequestParameters;
 import org.openlmis.notification.util.BooleanUtils;
-import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 
 @Service
 public class UserReferenceDataService extends BaseReferenceDataService<UserDto> {
@@ -47,20 +40,6 @@ public class UserReferenceDataService extends BaseReferenceDataService<UserDto> 
   }
 
   /**
-   * This method retrieves a user with given name.
-   *
-   * @param name the name of user.
-   * @return UserDto containing user's data, or null if such user was not found.
-   */
-  public UserDto findUser(String name) {
-    Map<String, Object> payload = new HashMap<>();
-    payload.put("username", name);
-
-    Page<UserDto> users = getPage("search", RequestParameters.init(), payload);
-    return users.getContent().isEmpty() ? null : users.getContent().get(0);
-  }
-
-  /**
    * Check if user has a right with certain criteria.
    *
    * @param user     id of user to check for right
@@ -76,18 +55,5 @@ public class UserReferenceDataService extends BaseReferenceDataService<UserDto> 
         .set("facilityId", facility).set("warehouseId", warehouse));
 
     return new ResultDto<>(BooleanUtils.toBoolean(result.getResult()));
-  }
-
-  /**
-   * Finds users by their ids.
-   *
-   * @param ids ids to look for.
-   * @return a page of users
-   */
-  public List<UserDto> findByIds(Collection<UUID> ids) {
-    if (CollectionUtils.isEmpty(ids)) {
-      return Collections.emptyList();
-    }
-    return getPage(RequestParameters.init().set("id", ids)).getContent();
   }
 }
