@@ -15,19 +15,48 @@
 
 package org.openlmis.notification.util;
 
-import nl.jqno.equalsverifier.EqualsVerifier;
-import nl.jqno.equalsverifier.Warning;
+import com.google.common.collect.Lists;
+import java.util.ArrayList;
+import java.util.List;
+import nl.jqno.equalsverifier.internal.checkers.AbstractDelegationChecker;
+import nl.jqno.equalsverifier.internal.checkers.CachedHashCodeChecker;
+import nl.jqno.equalsverifier.internal.checkers.ExamplesChecker;
+import nl.jqno.equalsverifier.internal.checkers.FieldsChecker;
+import nl.jqno.equalsverifier.internal.checkers.NullChecker;
+import nl.jqno.equalsverifier.internal.checkers.SignatureChecker;
+import nl.jqno.equalsverifier.internal.prefabvalues.JavaApiPrefabValues;
+import nl.jqno.equalsverifier.internal.prefabvalues.TypeTag;
+import nl.jqno.equalsverifier.internal.reflection.ClassAccessor;
+import nl.jqno.equalsverifier.internal.util.Configuration;
 import org.junit.Test;
 
 public class BaseParameterizedTypeReferenceTest {
 
   @Test
   public void equalsContract() {
-    EqualsVerifier
-        .forClass(BaseParameterizedTypeReferenceTest.class)
-        .suppress(Warning.INHERITED_DIRECTLY_FROM_OBJECT)
-        .usingGetClass()
-        .verify();
+    Configuration<BaseParameterizedTypeReference> config = Configuration
+        .of(BaseParameterizedTypeReference.class)
+        .withRedefinedSuperclass()
+        .withExcludedFields(Lists.newArrayList("type"));
+
+    JavaApiPrefabValues.addTo(config.getPrefabValues());
+
+    TypeTag tag = config.getTypeTag();
+    ClassAccessor<BaseParameterizedTypeReference> classAccessor = config.createClassAccessor();
+
+    List<BaseParameterizedTypeReference> unequalExamples = new ArrayList<>();
+    unequalExamples.add(classAccessor.getRedObject(tag));
+    unequalExamples.add(classAccessor.getBlackObject(tag));
+    config = config.withUnequalExamples(unequalExamples);
+
+    new SignatureChecker<>(config).check();
+    new AbstractDelegationChecker<>(config).check();
+    new NullChecker<>(config).check();
+    new CachedHashCodeChecker<>(config).check();
+    new ExamplesChecker<>(config).check();
+    // disabled for now
+    // new HierarchyChecker<>(config).check();
+    new FieldsChecker<>(config).check();
   }
   
 }
