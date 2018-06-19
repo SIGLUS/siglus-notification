@@ -26,8 +26,6 @@ import lombok.ToString;
 import org.openlmis.notification.domain.EmailDetails;
 import org.openlmis.notification.domain.UserContactDetails;
 
-@Getter
-@Setter
 @ToString
 @EqualsAndHashCode
 @NoArgsConstructor
@@ -35,9 +33,19 @@ import org.openlmis.notification.domain.UserContactDetails;
 public final class UserContactDetailsDto
     implements UserContactDetails.Exporter, UserContactDetails.Importer {
 
+  @Getter
+  @Setter
   private UUID referenceDataUserId;
+
+  @Getter
+  @Setter
   private String phoneNumber;
+
+  @Getter
+  @Setter
   private Boolean allowNotify;
+
+  @Getter
   private EmailDetailsDto emailDetails;
 
   @Override
