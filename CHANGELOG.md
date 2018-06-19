@@ -1,6 +1,9 @@
 4.0.0 / WIP
 ==================
 
+Breaking changes:
+* [OLMIS-4903](https://openlmis.atlassian.net/browse/OLMIS-4903): Added user contact details resource with related endpoints
+
 Improvements:
 * [OLMIS-4645](https://openlmis.atlassian.net/browse/OLMIS-4645): Added Jenkinsfile
 
