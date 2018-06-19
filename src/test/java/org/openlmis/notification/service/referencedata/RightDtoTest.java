@@ -42,5 +42,5 @@ public class RightDtoTest {
   public void shouldImplementToString() {
     ToStringTestUtils.verify(RightDto.class, new RightDto());
   }
-  
+
 }

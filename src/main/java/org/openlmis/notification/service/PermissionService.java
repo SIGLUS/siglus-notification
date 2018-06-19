@@ -56,7 +56,7 @@ public class PermissionService {
    * @param userId  the reference data user ID
    */
   public void canManageUserContactDetails(UUID userId) {
-    if (hasPermission(USERS_MANAGE) || isCurrentUser(userId)) {
+    if (isCurrentUser(userId) || hasPermission(USERS_MANAGE)) {
       return;
     }
 

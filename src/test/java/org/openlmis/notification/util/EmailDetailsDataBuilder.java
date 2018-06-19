@@ -13,37 +13,44 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.notification.web;
+package org.openlmis.notification.util;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import java.util.UUID;
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
 import org.openlmis.notification.domain.EmailDetails;
-import org.openlmis.notification.domain.UserContactDetails;
 
-@Getter
-@Setter
-@ToString
-@EqualsAndHashCode
-@NoArgsConstructor
-@AllArgsConstructor
-public final class UserContactDetailsDto
-    implements UserContactDetails.Exporter, UserContactDetails.Importer {
+public class EmailDetailsDataBuilder {
+  private static int instanceNumber = 0;
 
-  private UUID referenceDataUserId;
-  private String phoneNumber;
-  private Boolean allowNotify;
-  private EmailDetailsDto emailDetails;
+  private String email;
+  private Boolean emailVerified = true;
 
-  @Override
-  @JsonIgnore
-  public void setEmailDetails(EmailDetails emailDetails) {
-    this.emailDetails = new EmailDetailsDto();
-    emailDetails.export(this.emailDetails);
+  /**
+   * Builds instance of {@link EmailDetailsDataBuilder} with sample data.
+   */
+  public EmailDetailsDataBuilder() {
+    instanceNumber++;
+
+    email = instanceNumber + "example@mail.com";
+  }
+
+  public EmailDetailsDataBuilder withUnverifiedFlag() {
+    this.emailVerified = false;
+    return this;
+  }
+
+  public EmailDetailsDataBuilder withEmail(String email) {
+    this.email = email;
+    return this;
+  }
+
+  public EmailDetailsDataBuilder withVerified(boolean verified) {
+    this.emailVerified = verified;
+    return this;
+  }
+
+  /**
+   * Builds instance of {@link EmailDetails}.
+   */
+  public EmailDetails build() {
+    return new EmailDetails(email, emailVerified);
   }
 }

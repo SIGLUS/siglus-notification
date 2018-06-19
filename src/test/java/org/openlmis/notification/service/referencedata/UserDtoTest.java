@@ -36,5 +36,5 @@ public class UserDtoTest {
   public void shouldImplementToString() {
     ToStringTestUtils.verify(UserDto.class, new UserDto());
   }
-  
+
 }

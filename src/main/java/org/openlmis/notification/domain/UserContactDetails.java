@@ -17,6 +17,7 @@ package org.openlmis.notification.domain;
 
 import java.util.UUID;
 import javax.persistence.Column;
+import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
@@ -34,7 +35,6 @@ import org.hibernate.annotations.Type;
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "user_contact_details", schema = "notification")
-@SuppressWarnings({"PMD.UnusedPrivateField", "PMD.TooManyMethods"})
 public class UserContactDetails implements Identifiable {
 
   @Getter
@@ -44,35 +44,24 @@ public class UserContactDetails implements Identifiable {
   @Column(nullable = false, unique = true)
   private UUID referenceDataUserId;
 
-  @Column(unique = true)
-  @Getter
-  @Setter
-  private String email;
-
   @Getter
   @Setter
   private String phoneNumber;
-
-  @Column(nullable = false, columnDefinition = "boolean DEFAULT false")
-  @Getter
-  @Setter
-  private Boolean emailVerified;
 
   @Column(columnDefinition = "boolean DEFAULT true")
   @Getter
   @Setter
   private Boolean allowNotify;
 
+  @Getter
+  @Setter
+  @Embedded
+  private EmailDetails emailDetails;
+
   private UserContactDetails(Importer importer) {
     referenceDataUserId = importer.getReferenceDataUserId();
-    email = importer.getEmail();
     phoneNumber = importer.getPhoneNumber();
-
-    if (importer.getEmailVerified() == null) {
-      emailVerified = Boolean.TRUE;
-    } else {
-      emailVerified = importer.getEmailVerified();
-    }
+    emailDetails = EmailDetails.newEmailDetails(importer.getEmailDetails());
 
     if (importer.getAllowNotify() == null) {
       allowNotify = Boolean.TRUE;
@@ -82,10 +71,10 @@ public class UserContactDetails implements Identifiable {
   }
 
   /**
-   * Construct new user based on an importer (DTO).
+   * Construct new user contact details based on an importer (DTO).
    *
    * @param importer importer (DTO) to use
-   * @return new user
+   * @return new user contact details
    */
   public static UserContactDetails newUserContactDetails(Importer importer) {
     return new UserContactDetails(importer);
@@ -98,10 +87,11 @@ public class UserContactDetails implements Identifiable {
    */
   public void export(Exporter exporter) {
     exporter.setReferenceDataUserId(referenceDataUserId);
-    exporter.setEmail(email);
-    exporter.setEmailVerified(emailVerified);
     exporter.setAllowNotify(allowNotify);
     exporter.setPhoneNumber(phoneNumber);
+    if (this.getEmailDetails() != null) {
+      exporter.setEmailDetails(emailDetails);
+    }
   }
 
   @Override
@@ -113,25 +103,21 @@ public class UserContactDetails implements Identifiable {
 
     void setReferenceDataUserId(UUID id);
 
-    void setEmail(String email);
-
     void setPhoneNumber(String phoneNumber);
 
-    void setEmailVerified(Boolean verified);
-
     void setAllowNotify(Boolean allowNotify);
+
+    void setEmailDetails(EmailDetails emailDetails);
   }
 
   public interface Importer {
 
     UUID getReferenceDataUserId();
 
-    String getEmail();
-
     String getPhoneNumber();
 
-    Boolean getEmailVerified();
-
     Boolean getAllowNotify();
+
+    EmailDetails.Importer getEmailDetails();
   }
 }

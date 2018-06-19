@@ -34,8 +34,8 @@ public class UserContactDetailsDtoValidator implements BaseValidator {
   @Autowired
   private UserContactDetailsRepository repository;
 
-  static final String EMAIL = "email";
-  static final String VERIFIED = "emailVerified";
+  static final String EMAIL = "emailDetails.email";
+  static final String EMAIL_VERIFIED = "emailDetails.emailVerified";
 
   /**
    * Checks if the given class definition is supported.
@@ -63,7 +63,7 @@ public class UserContactDetailsDtoValidator implements BaseValidator {
 
     UserContactDetails userContactDetails = repository.findOne(dto.getReferenceDataUserId());
 
-    verifyEmail(dto.getEmail(), errors);
+    verifyEmail(dto.getEmailDetails().getEmail(), errors);
 
     if (null == userContactDetails) {
       return;
@@ -71,9 +71,9 @@ public class UserContactDetailsDtoValidator implements BaseValidator {
 
     rejectIfInvariantWasChanged(
         errors,
-        VERIFIED,
-        userContactDetails.getEmailVerified(),
-        dto.getEmailVerified()
+        EMAIL_VERIFIED,
+        userContactDetails.getEmailDetails().getEmailVerified(),
+        dto.getEmailDetails().getEmailVerified()
     );
   }
 

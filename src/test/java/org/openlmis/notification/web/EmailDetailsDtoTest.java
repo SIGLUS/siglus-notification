@@ -15,35 +15,25 @@
 
 package org.openlmis.notification.web;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import java.util.UUID;
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
-import org.openlmis.notification.domain.EmailDetails;
-import org.openlmis.notification.domain.UserContactDetails;
+import nl.jqno.equalsverifier.EqualsVerifier;
+import nl.jqno.equalsverifier.Warning;
+import org.junit.Test;
+import org.openlmis.notification.testutils.ToStringTestUtils;
 
-@Getter
-@Setter
-@ToString
-@EqualsAndHashCode
-@NoArgsConstructor
-@AllArgsConstructor
-public final class UserContactDetailsDto
-    implements UserContactDetails.Exporter, UserContactDetails.Importer {
+public class EmailDetailsDtoTest {
 
-  private UUID referenceDataUserId;
-  private String phoneNumber;
-  private Boolean allowNotify;
-  private EmailDetailsDto emailDetails;
-
-  @Override
-  @JsonIgnore
-  public void setEmailDetails(EmailDetails emailDetails) {
-    this.emailDetails = new EmailDetailsDto();
-    emailDetails.export(this.emailDetails);
+  @Test
+  public void equalsContract() {
+    EqualsVerifier
+        .forClass(EmailDetailsDto.class)
+        .suppress(Warning.STRICT_INHERITANCE)
+        .suppress(Warning.NONFINAL_FIELDS)
+        .verify();
   }
+
+  @Test
+  public void shouldImplementToString() {
+    ToStringTestUtils.verify(EmailDetailsDto.class, new EmailDetailsDto());
+  }
+
 }

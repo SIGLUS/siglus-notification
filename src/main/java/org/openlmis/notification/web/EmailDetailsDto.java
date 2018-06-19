@@ -15,8 +15,6 @@
 
 package org.openlmis.notification.web;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -24,7 +22,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import org.openlmis.notification.domain.EmailDetails;
-import org.openlmis.notification.domain.UserContactDetails;
 
 @Getter
 @Setter
@@ -32,18 +29,9 @@ import org.openlmis.notification.domain.UserContactDetails;
 @EqualsAndHashCode
 @NoArgsConstructor
 @AllArgsConstructor
-public final class UserContactDetailsDto
-    implements UserContactDetails.Exporter, UserContactDetails.Importer {
+public class EmailDetailsDto implements EmailDetails.Importer, EmailDetails.Exporter {
 
-  private UUID referenceDataUserId;
-  private String phoneNumber;
-  private Boolean allowNotify;
-  private EmailDetailsDto emailDetails;
+  private String email;
+  private Boolean emailVerified;
 
-  @Override
-  @JsonIgnore
-  public void setEmailDetails(EmailDetails emailDetails) {
-    this.emailDetails = new EmailDetailsDto();
-    emailDetails.export(this.emailDetails);
-  }
 }

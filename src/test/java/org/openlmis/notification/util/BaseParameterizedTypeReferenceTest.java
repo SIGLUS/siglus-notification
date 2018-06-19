@@ -58,5 +58,5 @@ public class BaseParameterizedTypeReferenceTest {
     // new HierarchyChecker<>(config).check();
     new FieldsChecker<>(config).check();
   }
-  
+
 }

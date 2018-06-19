@@ -41,6 +41,7 @@ import org.junit.Test;
 import org.openlmis.notification.domain.UserContactDetails;
 import org.openlmis.notification.repository.UserContactDetailsRepository;
 import org.openlmis.notification.service.PermissionService;
+import org.openlmis.notification.util.EmailDetailsDataBuilder;
 import org.openlmis.notification.util.UserContactDetailsDataBuilder;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -179,7 +180,11 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
   public void shouldReturnBadRequestWhenTryingToChangeIsEmailVerifiedFlag() {
     UserContactDetails existing = new UserContactDetailsDataBuilder()
         .withReferenceDataUserId(userContactDetails.getReferenceDataUserId())
-        .withUnverifiedFlag()
+        .withEmailDetails(
+            new EmailDetailsDataBuilder()
+              .withUnverifiedFlag()
+              .build()
+        )
         .build();
 
     when(repository.findOne(eq(userContactDetails.getReferenceDataUserId())))
@@ -221,7 +226,7 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
 
   @Test
   public void shouldReturnBardRequestWhenTryingToSaveUserContactDetailsWithInvalidEmail() {
-    userContactDetails.setEmail("someDefinitelyInvalidEmail");
+    userContactDetails.getEmailDetails().setEmail("someDefinitelyInvalidEmail");
 
     String response = put(toDto(userContactDetails))
         .then()

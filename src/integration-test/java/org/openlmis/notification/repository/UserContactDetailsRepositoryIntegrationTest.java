@@ -24,6 +24,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.openlmis.notification.domain.UserContactDetails;
+import org.openlmis.notification.util.EmailDetailsDataBuilder;
 import org.openlmis.notification.util.UserContactDetailsDataBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -52,18 +53,26 @@ public class UserContactDetailsRepositoryIntegrationTest
   UserContactDetails generateInstance() {
     return new UserContactDetailsDataBuilder().build();
   }
-  
+
   @Test(expected = DataIntegrityViolationException.class)
   public void shouldNotAllowCreatingMultipleUserContactDetailsWithTheSameEmail() {
     repository.saveAndFlush(
         new UserContactDetailsDataBuilder()
-            .withEmail("duplicated@email.com")
+            .withEmailDetails(
+                new EmailDetailsDataBuilder()
+                  .withEmail("duplicated@email.com")
+                  .build()
+            )
             .build()
     );
 
     repository.saveAndFlush(
         new UserContactDetailsDataBuilder()
-            .withEmail("duplicated@email.com")
+            .withEmailDetails(
+                new EmailDetailsDataBuilder()
+                    .withEmail("duplicated@email.com")
+                    .build()
+            )
             .build()
     );
   }

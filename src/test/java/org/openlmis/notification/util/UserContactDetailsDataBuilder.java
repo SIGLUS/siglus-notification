@@ -16,45 +16,24 @@
 package org.openlmis.notification.util;
 
 import java.util.UUID;
+import org.openlmis.notification.domain.EmailDetails;
 import org.openlmis.notification.domain.UserContactDetails;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class UserContactDetailsDataBuilder {
-  private static int instanceNumber = 0;
 
   private UUID referenceDataUserId = UUID.randomUUID();
-  private String email;
   private String phoneNumber = "000-000-000";
-  private Boolean verified = true;
   private Boolean allowNotify = true;
-
-
-  /**
-   * Builds instance of {@link UserContactDetailsDataBuilder} with sample data.
-   */
-  public UserContactDetailsDataBuilder() {
-    instanceNumber++;
-
-    email = instanceNumber + "example@mail.com";
-  }
+  private EmailDetails emailDetails = new EmailDetailsDataBuilder().build();
 
   public UserContactDetailsDataBuilder withReferenceDataUserId(UUID referenceDataUserId) {
     this.referenceDataUserId = referenceDataUserId;
     return this;
   }
 
-  public UserContactDetailsDataBuilder withUnverifiedFlag() {
-    this.verified = false;
-    return this;
-  }
-
-  public UserContactDetailsDataBuilder withEmail(String email) {
-    this.email = email;
-    return this;
-  }
-
-  public UserContactDetailsDataBuilder withVerified(boolean verified) {
-    this.verified = verified;
+  public UserContactDetailsDataBuilder withEmailDetails(EmailDetails emailDetails) {
+    this.emailDetails = emailDetails;
     return this;
   }
 
@@ -62,9 +41,7 @@ public class UserContactDetailsDataBuilder {
    * Builds instance of {@link UserContactDetails}.
    */
   public UserContactDetails build() {
-    return new UserContactDetails(
-        referenceDataUserId, email, phoneNumber,  verified, allowNotify
-    );
+    return new UserContactDetails(referenceDataUserId, phoneNumber,  allowNotify, emailDetails);
   }
 
 }
