@@ -47,6 +47,8 @@ public class RightDataBuilder {
    * Builds instance of {@link RightDto}.
    */
   public RightDto build() {
-    return new RightDto(id, name, type, description, attachments);
+    RightDto right = new RightDto(name, type, description, attachments);
+    right.setId(id);
+    return right;
   }
 }

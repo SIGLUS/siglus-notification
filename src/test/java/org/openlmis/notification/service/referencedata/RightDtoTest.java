@@ -15,24 +15,32 @@
 
 package org.openlmis.notification.service.referencedata;
 
-import java.util.Set;
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
-import org.openlmis.notification.web.BaseDto;
+import nl.jqno.equalsverifier.EqualsVerifier;
+import nl.jqno.equalsverifier.Warning;
+import org.junit.Test;
+import org.openlmis.notification.testutils.RightDataBuilder;
+import org.openlmis.notification.testutils.ToStringTestUtils;
 
-@Getter
-@Setter
-@ToString
-@NoArgsConstructor
-@AllArgsConstructor
-@EqualsAndHashCode(callSuper = true)
-public class RightDto extends BaseDto {
-  private String name;
-  private String type;
-  private String description;
-  private Set<RightDto> attachments;
+public class RightDtoTest {
+
+  @Test
+  public void equalsContract() {
+    EqualsVerifier
+        .forClass(RightDto.class)
+        .suppress(Warning.NONFINAL_FIELDS)
+        .suppress(Warning.STRICT_INHERITANCE)
+        .withRedefinedSuperclass()
+        .withPrefabValues(
+            RightDto.class,
+            new RightDataBuilder().build(),
+            new RightDataBuilder().build()
+        )
+        .verify();
+  }
+
+  @Test
+  public void shouldImplementToString() {
+    ToStringTestUtils.verify(RightDto.class, new RightDto());
+  }
+  
 }
