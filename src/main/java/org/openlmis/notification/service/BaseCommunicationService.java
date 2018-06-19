@@ -27,14 +27,9 @@ import java.util.Map;
 import org.openlmis.notification.service.request.RequestHeaders;
 import org.openlmis.notification.service.request.RequestHelper;
 import org.openlmis.notification.service.request.RequestParameters;
-import org.openlmis.notification.util.DynamicPageTypeReference;
 import org.openlmis.notification.util.Merger;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.ParameterizedTypeReference;
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
@@ -45,7 +40,6 @@ import org.springframework.web.client.RestTemplate;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public abstract class BaseCommunicationService<T> {
-  private static final Logger LOGGER = LoggerFactory.getLogger(BaseCommunicationService.class);
 
   protected RestOperations restTemplate = new RestTemplate();
 
@@ -97,43 +91,6 @@ public abstract class BaseCommunicationService<T> {
     }
   }
 
-  /**
-   * Return all reference data T objects for Page that need to be retrieved with GET request.
-   *
-   * @param parameters  Map of query parameters.
-   * @return Page of reference data T objects.
-   */
-  protected Page<T> getPage(RequestParameters parameters) {
-    return getPage("", parameters, null, HttpMethod.GET, getResultClass());
-  }
-
-  /**
-   * Return all reference data T objects for Page that need to be retrieved with POST request.
-   *
-   * @param resourceUrl Endpoint url.
-   * @param parameters  Map of query parameters.
-   * @param payload     body to include with the outgoing request.
-   * @return Page of reference data T objects.
-   */
-  protected Page<T> getPage(String resourceUrl, RequestParameters parameters, Object payload) {
-    return getPage(resourceUrl, parameters, payload, HttpMethod.POST, getResultClass());
-  }
-
-  protected <P> Page<P> getPage(String resourceUrl, RequestParameters parameters, Object payload,
-                                HttpMethod method, Class<P> type) {
-    String url = getServiceUrl() + getUrl() + resourceUrl;
-
-    try {
-      ResponseEntity<PageDto<P>> response = runWithTokenRetry(
-          () -> doPageRequest(url, parameters, payload, method, type)
-      );
-      return response.getBody();
-
-    } catch (HttpStatusCodeException ex) {
-      throw buildDataRetrievalException(ex);
-    }
-  }
-
   private <E> ResponseEntity<E[]> doListRequest(String url, RequestParameters parameters,
       Object payload, HttpMethod method,
       Class<E[]> type) {
@@ -148,33 +105,6 @@ public abstract class BaseCommunicationService<T> {
     E[] body = Merger
         .ofArrays(arrays)
         .withDefaultValue(() -> (E[]) Array.newInstance(type.getComponentType(), 0))
-        .merge();
-
-    return new ResponseEntity<>(body, HttpStatus.OK);
-  }
-
-  private <E> ResponseEntity<PageDto<E>> doPageRequest(String url,
-      RequestParameters parameters,
-      Object payload,
-      HttpMethod method,
-      Class<E> type) {
-
-    LOGGER.debug("notification page request url: {}, parameters: {}, method: {}",
-        url, parameters, method);
-
-    HttpEntity<Object> entity = RequestHelper
-        .createEntity(payload, RequestHeaders.init().setAuth(authService.obtainAccessToken()));
-    ParameterizedTypeReference<PageDto<E>> parameterizedType =
-        new DynamicPageTypeReference<>(type);
-    List<PageDto<E>> pages = new ArrayList<>();
-
-    for (URI uri : RequestHelper.splitRequest(url, parameters, maxUrlLength)) {
-      pages.add(restTemplate.exchange(uri, method, entity, parameterizedType).getBody());
-    }
-
-    PageDto<E> body = Merger
-        .ofPages(pages)
-        .withDefaultValue(PageDto::new)
         .merge();
 
     return new ResponseEntity<>(body, HttpStatus.OK);
