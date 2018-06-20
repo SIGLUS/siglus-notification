@@ -23,7 +23,7 @@ import nl.jqno.equalsverifier.EqualsVerifier;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.openlmis.notification.testutils.ToStringTestUtils;
-import org.openlmis.notification.web.UserContactDetailsDto;
+import org.openlmis.notification.web.usercontactdetails.UserContactDetailsDto;
 
 public class UserContactDetailsTest {
 

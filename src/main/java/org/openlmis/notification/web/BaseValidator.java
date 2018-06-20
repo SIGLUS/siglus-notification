@@ -24,8 +24,17 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
 import org.springframework.validation.Validator;
 
-interface BaseValidator extends Validator {
+public interface BaseValidator extends Validator {
 
+  /**
+   * Rejects if the value of the field has changed.
+   *
+   * @param errors  the errors object
+   * @param oldData  the old value
+   * @param newData  the new value
+   * @param field  the name of the field
+   * @param message  the message to reject with
+   */
   default void rejectIfNotEqual(Errors errors, Object oldData, Object newData, String field,
       String message) {
     if (!Objects.equals(oldData, newData)) {
@@ -41,6 +50,13 @@ interface BaseValidator extends Validator {
     errors.rejectValue(field, message, message);
   }
 
+  /**
+   * Verifies that the given object is not null.
+   *
+   * @param target  the object to be tested
+   * @param errors  the errors object
+   * @param errorNull  the message key to be set if the object is null
+   */
   default void verifyArguments(Object target, Errors errors, String errorNull) {
     Message targetMessage = new Message(errorNull);
     checkNotNull(target, targetMessage.toString());

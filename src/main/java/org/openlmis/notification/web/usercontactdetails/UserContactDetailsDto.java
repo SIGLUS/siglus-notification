@@ -13,7 +13,7 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.notification.web;
+package org.openlmis.notification.web.usercontactdetails;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.util.UUID;

@@ -13,27 +13,25 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.notification.web;
+package org.openlmis.notification.web.usercontactdetails;
 
-import nl.jqno.equalsverifier.EqualsVerifier;
-import nl.jqno.equalsverifier.Warning;
-import org.junit.Test;
-import org.openlmis.notification.testutils.ToStringTestUtils;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+import org.openlmis.notification.domain.EmailDetails;
 
-public class EmailDetailsDtoTest {
+@Getter
+@Setter
+@ToString
+@EqualsAndHashCode
+@NoArgsConstructor
+@AllArgsConstructor
+public class EmailDetailsDto implements EmailDetails.Importer, EmailDetails.Exporter {
 
-  @Test
-  public void equalsContract() {
-    EqualsVerifier
-        .forClass(EmailDetailsDto.class)
-        .suppress(Warning.STRICT_INHERITANCE)
-        .suppress(Warning.NONFINAL_FIELDS)
-        .verify();
-  }
-
-  @Test
-  public void shouldImplementToString() {
-    ToStringTestUtils.verify(EmailDetailsDto.class, new EmailDetailsDto());
-  }
+  private String email;
+  private Boolean emailVerified;
 
 }

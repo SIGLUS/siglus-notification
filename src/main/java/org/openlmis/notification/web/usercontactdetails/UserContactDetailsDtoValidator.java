@@ -13,12 +13,13 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.notification.web;
+package org.openlmis.notification.web.usercontactdetails;
 
 import org.apache.commons.validator.routines.EmailValidator;
 import org.openlmis.notification.domain.UserContactDetails;
 import org.openlmis.notification.i18n.MessageKeys;
 import org.openlmis.notification.repository.UserContactDetailsRepository;
+import org.openlmis.notification.web.BaseValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;

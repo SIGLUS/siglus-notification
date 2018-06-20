@@ -13,7 +13,7 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.notification.web;
+package org.openlmis.notification.web.usercontactdetails;
 
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_USER_CONTACT_DETAILS_NOT_FOUND;
 
@@ -21,6 +21,8 @@ import java.util.UUID;
 import org.openlmis.notification.domain.UserContactDetails;
 import org.openlmis.notification.repository.UserContactDetailsRepository;
 import org.openlmis.notification.service.PermissionService;
+import org.openlmis.notification.web.NotFoundException;
+import org.openlmis.notification.web.ValidationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindingResult;

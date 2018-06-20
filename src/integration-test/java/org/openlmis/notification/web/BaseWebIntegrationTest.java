@@ -52,12 +52,12 @@ public abstract class BaseWebIntegrationTest {
   private static final String USER_ACCESS_TOKEN = "418c89c5-7f21-4cd1-a63a-38c47892b0fe";
   private static final String USER_ACCESS_TOKEN_HEADER = "Bearer " + USER_ACCESS_TOKEN;
 
-  static final String RAML_ASSERT_MESSAGE =
+  protected static final String RAML_ASSERT_MESSAGE =
       "HTTP request/response should match RAML definition.";
 
-  static final String MESSAGE_KEY = "messageKey";
+  protected static final String MESSAGE_KEY = "messageKey";
 
-  RestAssuredClient restAssured;
+  protected RestAssuredClient restAssured;
 
   private static final RamlDefinition ramlDefinition =
       RamlLoaders.fromClasspath().load("api-definition-raml.yaml").ignoringXheaders();
@@ -77,7 +77,7 @@ public abstract class BaseWebIntegrationTest {
   /**
    * Constructor for test.
    */
-  BaseWebIntegrationTest() {
+  protected BaseWebIntegrationTest() {
     // This mocks the auth check to always return valid admin credentials.
     wireMockRule.stubFor(post(urlEqualTo("/api/oauth/check_token"))
         .willReturn(aResponse()
@@ -112,7 +112,7 @@ public abstract class BaseWebIntegrationTest {
    *
    * @return an access token
    */
-  String getTokenHeader() {
+  protected String getTokenHeader() {
     return USER_ACCESS_TOKEN_HEADER;
   }
 

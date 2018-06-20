@@ -13,7 +13,7 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.notification.web;
+package org.openlmis.notification.web.usercontactdetails;
 
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertEquals;
@@ -38,11 +38,15 @@ import java.util.UUID;
 import org.hibernate.exception.ConstraintViolationException;
 import org.junit.Before;
 import org.junit.Test;
+import org.mockito.Mockito;
 import org.openlmis.notification.domain.UserContactDetails;
 import org.openlmis.notification.repository.UserContactDetailsRepository;
 import org.openlmis.notification.service.PermissionService;
 import org.openlmis.notification.util.EmailDetailsDataBuilder;
 import org.openlmis.notification.util.UserContactDetailsDataBuilder;
+import org.openlmis.notification.web.BaseWebIntegrationTest;
+import org.openlmis.notification.web.MissingPermissionException;
+import org.openlmis.notification.web.usercontactdetails.UserContactDetailsDto;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
@@ -103,7 +107,7 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
 
   @Test
   public void shouldReturnForbiddenWhenTryingToFetchUserContactDetailsWithoutPermissions() {
-    doThrow(new MissingPermissionException())
+    Mockito.doThrow(new MissingPermissionException())
         .when(permissionService)
         .canManageUserContactDetails(userContactDetails.getReferenceDataUserId());
 
