@@ -46,7 +46,6 @@ import org.openlmis.notification.util.EmailDetailsDataBuilder;
 import org.openlmis.notification.util.UserContactDetailsDataBuilder;
 import org.openlmis.notification.web.BaseWebIntegrationTest;
 import org.openlmis.notification.web.MissingPermissionException;
-import org.openlmis.notification.web.usercontactdetails.UserContactDetailsDto;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
