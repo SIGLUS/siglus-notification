@@ -17,7 +17,6 @@ package org.openlmis.notification.i18n;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Locale;
-import lombok.Getter;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.Validate;
 import org.springframework.context.MessageSource;
@@ -30,7 +29,7 @@ public class Message {
   private Object[] params;
 
   public Message(String messageKey) {
-    this(messageKey, (Object[]) null);
+    this(messageKey, new Object[0]);
   }
 
   /**
@@ -60,8 +59,8 @@ public class Message {
    * @throws org.springframework.context.NoSuchMessageException if the message doesn't exist in the
    *                                                            messageSource.
    */
-  public Message.LocalizedMessage localMessage(MessageSource messageSource, Locale locale) {
-    return new Message.LocalizedMessage(messageSource.getMessage(key, params, locale));
+  public LocalizedMessage localMessage(MessageSource messageSource, Locale locale) {
+    return new LocalizedMessage(key, messageSource.getMessage(key, params, locale));
   }
 
   @Override
@@ -83,29 +82,17 @@ public class Message {
     return key.hashCode();
   }
 
-  /**
-   * Value class of a localized message.  Useful for JSON serialization, logging, etc...
-   */
-  @Getter
   public final class LocalizedMessage {
+
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private String messageKey;
 
     @JsonProperty(access = JsonProperty.Access.READ_ONLY)
-    private Object[] params;
-
-    @JsonProperty(access = JsonProperty.Access.READ_ONLY)
     private String message;
 
-    /**
-     * Creates new Message.LocalizedMessage based on given String.
-     * @param message message.
-     */
-    public LocalizedMessage(String message) {
-      this.messageKey = Message.this.key;
-      this.params = Message.this.params;
-
+    LocalizedMessage(String messageKey, String message) {
       Validate.notBlank(message);
+      this.messageKey = messageKey;
       this.message = message;
     }
 
