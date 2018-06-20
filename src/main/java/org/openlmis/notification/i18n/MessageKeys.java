@@ -45,8 +45,11 @@ public abstract class MessageKeys {
   public static final String ERROR_SUBJECT_REQUIRED = NOTIFICATION_REQUEST + ".subject.required";
   public static final String ERROR_CONTENT_REQUIRED = NOTIFICATION_REQUEST + ".content.required";
 
-  public static final String ERROR_EMAIL_INVALID = ERROR_PREFIX + ".users.email.invalid";
-  public static final String ERROR_EMAIL_DUPLICATED = ERROR_PREFIX + ".users.email.duplicated";
+  public static final String ERROR_EMAIL_INVALID =
+      ERROR_PREFIX + ".userContactDetails.email.invalid";
+  public static final String ERROR_EMAIL_DUPLICATED =
+      ERROR_PREFIX + ".userContactDetails.email.duplicated";
+
   public static final String ERROR_SEND_REQUEST = ERROR_PREFIX + ".sendRequest";
   public static final String ERROR_CONSTRAINT = ERROR_PREFIX + ".constraint";
 
