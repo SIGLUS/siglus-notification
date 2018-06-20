@@ -23,6 +23,6 @@ import lombok.Setter;
 @Getter
 @Setter
 @EqualsAndHashCode
-public class BaseDto {
+public abstract class BaseDto {
   protected UUID id;
 }
