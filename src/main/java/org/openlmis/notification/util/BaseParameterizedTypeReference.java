@@ -26,7 +26,7 @@ import org.springframework.core.ParameterizedTypeReference;
  * It eases the usage of the rest template however, allowing easily retrieving objects with the
  * provided generic type at runtime.
  */
-@EqualsAndHashCode(callSuper = false)
+@EqualsAndHashCode(callSuper = true)
 public abstract class BaseParameterizedTypeReference<T> extends ParameterizedTypeReference<T> {
   private final Class<?> valueType;
 

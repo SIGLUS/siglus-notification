@@ -15,8 +15,8 @@
 
 package org.openlmis.notification.util;
 
-import com.google.common.collect.Lists;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import nl.jqno.equalsverifier.internal.checkers.AbstractDelegationChecker;
 import nl.jqno.equalsverifier.internal.checkers.CachedHashCodeChecker;
@@ -37,7 +37,7 @@ public class BaseParameterizedTypeReferenceTest {
     Configuration<BaseParameterizedTypeReference> config = Configuration
         .of(BaseParameterizedTypeReference.class)
         .withRedefinedSuperclass()
-        .withExcludedFields(Lists.newArrayList("type"));
+        .withNonnullFields(Collections.singletonList("type"));
 
     JavaApiPrefabValues.addTo(config.getPrefabValues());
 
