@@ -166,7 +166,7 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
     given(repository.exists(any(UUID.class))).willReturn(false);
     given(repository.save(any(UserContactDetails.class))).willReturn(userContactDetails);
 
-    UserContactDetailsDto response = put(toDto(userContactDetails))
+    UserContactDetailsDto response = put(request)
         .then()
         .statusCode(200)
         .extract()
