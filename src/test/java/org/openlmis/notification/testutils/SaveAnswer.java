@@ -13,25 +13,34 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.notification.service.referencedata;
+package org.openlmis.notification.testutils;
 
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
-import org.openlmis.notification.web.BaseDto;
+import java.util.UUID;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
+import org.openlmis.notification.domain.BaseEntity;
 
-@Getter
-@Setter
-@ToString
-@NoArgsConstructor
-@AllArgsConstructor
-@EqualsAndHashCode(callSuper = true)
-public final class UserDto extends BaseDto {
-  private String username;
-  private String firstName;
-  private String lastName;
-  private boolean active;
+public class SaveAnswer<T extends BaseEntity> implements Answer<T> {
+
+  @Override
+  public T answer(InvocationOnMock invocation) {
+    T obj = (T) invocation.getArguments()[0];
+
+    if (null == obj) {
+      return null;
+    }
+
+    if (null == obj.getId()) {
+      obj.setId(UUID.randomUUID());
+    }
+
+    extraSteps(obj);
+
+    return obj;
+  }
+
+  void extraSteps(T obj) {
+    // should be overriden if extra steps are required.
+  }
+
 }

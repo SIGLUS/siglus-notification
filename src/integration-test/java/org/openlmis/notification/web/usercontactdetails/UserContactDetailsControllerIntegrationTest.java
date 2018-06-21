@@ -16,18 +16,31 @@
 package org.openlmis.notification.web.usercontactdetails;
 
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willDoNothing;
+import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.doNothing;
-import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.verifyZeroInteractions;
+import static org.openlmis.notification.i18n.MessageKeys.EMAIL_VERIFICATION_SUCCESS;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_EMAIL_DUPLICATED;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_EMAIL_INVALID;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_FIELD_IS_INVARIANT;
+import static org.openlmis.notification.i18n.MessageKeys.ERROR_ID_MISMATCH;
+import static org.openlmis.notification.i18n.MessageKeys.ERROR_TOKEN_EXPIRED;
+import static org.openlmis.notification.i18n.MessageKeys.ERROR_TOKEN_INVALID;
+import static org.openlmis.notification.i18n.MessageKeys.ERROR_USER_CONTACT_DETAILS_NOT_FOUND;
+import static org.openlmis.notification.i18n.MessageKeys.ERROR_USER_EMAIL_ALREADY_VERIFIED;
+import static org.openlmis.notification.i18n.MessageKeys.ERROR_USER_HAS_NO_EMAIL;
+import static org.openlmis.notification.i18n.MessageKeys.PERMISSION_MISSING;
 import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -38,24 +51,36 @@ import java.util.UUID;
 import org.hibernate.exception.ConstraintViolationException;
 import org.junit.Before;
 import org.junit.Test;
-import org.mockito.Mockito;
+import org.openlmis.notification.domain.EmailVerificationToken;
 import org.openlmis.notification.domain.UserContactDetails;
+import org.openlmis.notification.i18n.ExposedMessageSource;
+import org.openlmis.notification.repository.EmailVerificationTokenRepository;
 import org.openlmis.notification.repository.UserContactDetailsRepository;
+import org.openlmis.notification.service.EmailVerificationNotifier;
 import org.openlmis.notification.service.PermissionService;
+import org.openlmis.notification.testutils.EmailVerificationTokenDataBuilder;
 import org.openlmis.notification.util.EmailDetailsDataBuilder;
 import org.openlmis.notification.util.UserContactDetailsDataBuilder;
 import org.openlmis.notification.web.BaseWebIntegrationTest;
 import org.openlmis.notification.web.MissingPermissionException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 
 @SuppressWarnings({"PMD.TooManyMethods"})
 public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrationTest {
 
   private static final String RESOURCE_URL = "/api/userContactDetails";
   private static final String ID_RESOURCE_URL = RESOURCE_URL + "/{id}";
+  private static final String VERIFICATIONS_URL = ID_RESOURCE_URL + "/verifications";
+  private static final String TOKEN_URL = VERIFICATIONS_URL + "/{token}";
+
   private static final String ID = "id";
+  private static final String TOKEN = "token";
+
 
   @MockBean
   private UserContactDetailsRepository repository;
@@ -63,19 +88,32 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
   @MockBean
   private PermissionService permissionService;
 
+  @MockBean
+  private EmailVerificationTokenRepository emailVerificationTokenRepository;
+
+  @MockBean
+  private EmailVerificationNotifier emailVerificationNotifier;
+
+  @Autowired
+  private ExposedMessageSource messageSource;
+
   private UserContactDetails userContactDetails;
 
   @Before
   public void setUp() {
-    userContactDetails = new UserContactDetailsDataBuilder().build();
+    userContactDetails = new UserContactDetailsDataBuilder()
+        .withEmailDetails(new EmailDetailsDataBuilder().withUnverifiedFlag().build())
+        .build();
+
+    given(repository.findOne(userContactDetails.getId()))
+        .willReturn(userContactDetails);
   }
 
   @Test
   public void shouldGetUserContactDetails() {
-    when(repository.findOne(eq(userContactDetails.getReferenceDataUserId())))
-        .thenReturn(userContactDetails);
-    doNothing().when(permissionService)
-        .canManageUserContactDetails(eq(userContactDetails.getReferenceDataUserId()));
+    willDoNothing()
+        .given(permissionService)
+        .canManageUserContactDetails(userContactDetails.getReferenceDataUserId());
 
     get(userContactDetails.getReferenceDataUserId())
         .then()
@@ -83,15 +121,15 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
 
-    verify(repository).findOne(eq(userContactDetails.getReferenceDataUserId()));
+    verify(repository).findOne(userContactDetails.getReferenceDataUserId());
     verify(permissionService)
-        .canManageUserContactDetails(eq(userContactDetails.getReferenceDataUserId()));
+        .canManageUserContactDetails(userContactDetails.getReferenceDataUserId());
   }
 
   @Test
   public void shouldReturnNotFoundWhenTryingToFetchNonExistentUserContactDetails() {
-    when(repository.findOne(eq(userContactDetails.getReferenceDataUserId())))
-        .thenReturn(null);
+    given(repository.findOne(userContactDetails.getReferenceDataUserId()))
+        .willReturn(null);
 
     get(userContactDetails.getReferenceDataUserId())
         .then()
@@ -99,15 +137,15 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
 
-    verify(repository).findOne(eq(userContactDetails.getReferenceDataUserId()));
+    verify(repository).findOne(userContactDetails.getReferenceDataUserId());
     verify(permissionService)
-        .canManageUserContactDetails(eq(userContactDetails.getReferenceDataUserId()));
+        .canManageUserContactDetails(userContactDetails.getReferenceDataUserId());
   }
 
   @Test
   public void shouldReturnForbiddenWhenTryingToFetchUserContactDetailsWithoutPermissions() {
-    Mockito.doThrow(new MissingPermissionException())
-        .when(permissionService)
+    willThrow(new MissingPermissionException())
+        .given(permissionService)
         .canManageUserContactDetails(userContactDetails.getReferenceDataUserId());
 
     get(userContactDetails.getReferenceDataUserId())
@@ -118,14 +156,15 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
 
     verify(repository, never()).findOne(any(UUID.class));
     verify(permissionService)
-        .canManageUserContactDetails(eq(userContactDetails.getReferenceDataUserId()));    
+        .canManageUserContactDetails(userContactDetails.getReferenceDataUserId());    
   }
 
   @Test
   public void shouldCreateUserContactDetails() {
     UserContactDetailsDto request = toDto(userContactDetails);
 
-    when(repository.save(userContactDetails)).thenReturn(userContactDetails);
+    given(repository.exists(any(UUID.class))).willReturn(false);
+    given(repository.save(any(UserContactDetails.class))).willReturn(userContactDetails);
 
     UserContactDetailsDto response = put(toDto(userContactDetails))
         .then()
@@ -136,20 +175,22 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
     assertEquals(request, response);
 
-    verify(repository).save(eq(userContactDetails));
+    verify(repository).save(userContactDetails);
   }
 
   @Test
   public void shouldUpdateUserContactDetails() {
     UserContactDetails existing = new UserContactDetailsDataBuilder()
         .withReferenceDataUserId(userContactDetails.getReferenceDataUserId())
+        .withEmailDetails(userContactDetails.getEmailDetails())
         .build();
 
-    when(repository.findOne(userContactDetails.getReferenceDataUserId())).thenReturn(existing);
-    when(repository.save(userContactDetails)).thenReturn(userContactDetails);
+    given(repository.exists(any(UUID.class))).willReturn(true);
+    given(repository.findOne(userContactDetails.getReferenceDataUserId())).willReturn(existing);
+    given(repository.save(any(UserContactDetails.class))).willReturn(userContactDetails);
 
     UserContactDetailsDto request = toDto(userContactDetails);
-    UserContactDetailsDto response = put(toDto(userContactDetails))
+    UserContactDetailsDto response = put(request)
         .then()
         .statusCode(200)
         .extract()
@@ -158,14 +199,14 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
     assertEquals(request, response);
 
-    verify(repository).save(eq(userContactDetails));
-    verify(repository).findOne(userContactDetails.getReferenceDataUserId());
+    verify(repository).save(userContactDetails);
+    verify(repository, times(2)).findOne(userContactDetails.getReferenceDataUserId());
   }
 
   @Test
   public void shouldReturnForbiddenWhenTryingToSaveUserContactDetailsWithoutPermissions() {
-    doThrow(new MissingPermissionException())
-        .when(permissionService)
+    willThrow(new MissingPermissionException())
+        .given(permissionService)
         .canManageUserContactDetails(userContactDetails.getReferenceDataUserId());
 
     put(toDto(userContactDetails))
@@ -176,24 +217,19 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
 
     verify(repository, never()).save(any(UserContactDetails.class));
     verify(permissionService)
-        .canManageUserContactDetails(eq(userContactDetails.getReferenceDataUserId()));
+        .canManageUserContactDetails(userContactDetails.getReferenceDataUserId());
   }
 
   @Test
   public void shouldReturnBadRequestWhenTryingToChangeIsEmailVerifiedFlag() {
-    UserContactDetails existing = new UserContactDetailsDataBuilder()
-        .withReferenceDataUserId(userContactDetails.getReferenceDataUserId())
-        .withEmailDetails(
-            new EmailDetailsDataBuilder()
-              .withUnverifiedFlag()
-              .build()
-        )
-        .build();
+    given(repository.exists(any(UUID.class))).willReturn(true);
+    given(repository.findOne(userContactDetails.getReferenceDataUserId()))
+        .willReturn(userContactDetails);
 
-    when(repository.findOne(eq(userContactDetails.getReferenceDataUserId())))
-        .thenReturn(existing);
+    UserContactDetailsDto request = toDto(userContactDetails);
+    request.getEmailDetails().setEmailVerified(!userContactDetails.isEmailVerified());
 
-    String response = put(toDto(userContactDetails))
+    String response = put(request)
         .then()
         .statusCode(400)
         .extract()
@@ -204,14 +240,14 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
 
     verify(repository, never()).save(any(UserContactDetails.class));
     verify(permissionService)
-        .canManageUserContactDetails(eq(userContactDetails.getReferenceDataUserId()));
+        .canManageUserContactDetails(userContactDetails.getReferenceDataUserId());
   }
 
   @Test
   public void shouldReturnBadRequestWhenTryingToSetEmailThatIsAlreadyInUseByOtherUser() {
-    doThrow(new DataIntegrityViolationException("",
+    willThrow(new DataIntegrityViolationException("",
         new ConstraintViolationException("", null, "unq_contact_details_email"))
-    ).when(repository).save(userContactDetails);
+    ).given(repository).save(userContactDetails);
 
     String response = put(toDto(userContactDetails))
         .then()
@@ -224,7 +260,7 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
 
     verify(repository).save(userContactDetails);
     verify(permissionService)
-        .canManageUserContactDetails(eq(userContactDetails.getReferenceDataUserId()));
+        .canManageUserContactDetails(userContactDetails.getReferenceDataUserId());
   }
 
   @Test
@@ -242,7 +278,209 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
 
     verify(repository, never()).save(any(UserContactDetails.class));
     verify(permissionService)
-        .canManageUserContactDetails(eq(userContactDetails.getReferenceDataUserId()));
+        .canManageUserContactDetails(userContactDetails.getReferenceDataUserId());
+  }
+
+  @Test
+  public void shouldVerifyEmail() {
+    EmailVerificationToken token = new EmailVerificationTokenDataBuilder()
+        .withContactDetails(userContactDetails)
+        .build();
+
+    given(emailVerificationTokenRepository.findOne(token.getId()))
+        .willReturn(token);
+
+    String expectedResponse = messageSource.getMessage(
+        EMAIL_VERIFICATION_SUCCESS,
+        new Object[]{token.getEmailAddress()},
+        LocaleContextHolder.getLocale());
+
+    String response = startRequest()
+        .pathParam(ID, userContactDetails.getId())
+        .pathParam(TOKEN, token.getId())
+        .given()
+        .get(TOKEN_URL)
+        .then()
+        .statusCode(HttpStatus.OK.value())
+        .extract()
+        .asString();
+
+    assertThat(response, is(expectedResponse));
+
+    assertThat(userContactDetails.getEmailAddress(), is(token.getEmailAddress()));
+    assertThat(userContactDetails.isEmailVerified(), is(true));
+
+    verify(repository).save(userContactDetails);
+    verify(emailVerificationTokenRepository).delete(token.getId());
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldReturnBadRequestIfTokenDoesNotExist() {
+    given(emailVerificationTokenRepository.findOne(any(UUID.class)))
+        .willReturn(null);
+
+    startRequest()
+        .pathParam(ID, userContactDetails.getId())
+        .pathParam(TOKEN, UUID.randomUUID())
+        .given()
+        .get(TOKEN_URL)
+        .then()
+        .statusCode(HttpStatus.BAD_REQUEST.value())
+        .body(MESSAGE_KEY, equalTo(ERROR_TOKEN_INVALID));
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldReturnBadRequestIfTokenExpired() {
+    EmailVerificationToken token = new EmailVerificationTokenDataBuilder()
+        .withExpiredDate()
+        .withContactDetails(userContactDetails)
+        .build();
+
+    given(emailVerificationTokenRepository.findOne(token.getId()))
+        .willReturn(token);
+
+    startRequest()
+        .pathParam(ID, userContactDetails.getId())
+        .pathParam(TOKEN, token.getId())
+        .given()
+        .get(TOKEN_URL)
+        .then()
+        .statusCode(HttpStatus.BAD_REQUEST.value())
+        .body(MESSAGE_KEY, equalTo(ERROR_TOKEN_EXPIRED));
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldReturnBadRequestIfIdMismatch() {
+    EmailVerificationToken token = new EmailVerificationTokenDataBuilder()
+        .withExpiredDate()
+        .build();
+
+    given(emailVerificationTokenRepository.findOne(token.getId()))
+        .willReturn(token);
+
+    startRequest()
+        .pathParam(ID, UUID.randomUUID())
+        .pathParam(TOKEN, token.getId())
+        .given()
+        .get(TOKEN_URL)
+        .then()
+        .statusCode(HttpStatus.BAD_REQUEST.value())
+        .body(MESSAGE_KEY, equalTo(ERROR_ID_MISMATCH));
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldGetPendingVerificationEmail() {
+    EmailVerificationToken token = new EmailVerificationTokenDataBuilder()
+        .withExpiredDate()
+        .build();
+
+    given(emailVerificationTokenRepository
+        .findOneByUserContactDetails(any(UserContactDetails.class)))
+        .willReturn(token);
+
+    startRequest()
+        .pathParam(ID, userContactDetails.getId())
+        .given()
+        .get(VERIFICATIONS_URL)
+        .then()
+        .statusCode(HttpStatus.OK.value());
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldResendVerificationEmail() {
+    EmailVerificationToken token = new EmailVerificationTokenDataBuilder().build();
+
+    given(emailVerificationTokenRepository
+        .findOneByUserContactDetails(any(UserContactDetails.class)))
+        .willReturn(token);
+    willDoNothing()
+        .given(emailVerificationNotifier)
+        .sendNotification(any(UserContactDetails.class), anyString());
+
+    startRequest()
+        .pathParam(ID, userContactDetails.getId())
+        .given()
+        .post(VERIFICATIONS_URL)
+        .then()
+        .statusCode(HttpStatus.OK.value());
+
+    verify(emailVerificationNotifier)
+        .sendNotification(any(UserContactDetails.class), eq(token.getEmailAddress()));
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldNotResendVerificationEmailIfUserHasNoPermissions() {
+    MissingPermissionException ex = new MissingPermissionException("test");
+    willThrow(ex).given(permissionService).canManageUserContactDetails(userContactDetails.getId());
+
+    startRequest()
+        .pathParam(ID, userContactDetails.getId())
+        .given()
+        .post(VERIFICATIONS_URL)
+        .then()
+        .statusCode(HttpStatus.FORBIDDEN.value())
+        .body(MESSAGE_KEY, is(PERMISSION_MISSING));
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+    verifyZeroInteractions(emailVerificationNotifier);
+  }
+
+  @Test
+  public void shouldNotResendVerificationEmailIfUserNotFound() {
+    startRequest()
+        .pathParam(ID, UUID.randomUUID())
+        .given()
+        .post(VERIFICATIONS_URL)
+        .then()
+        .statusCode(HttpStatus.NOT_FOUND.value())
+        .body(MESSAGE_KEY, equalTo(ERROR_USER_CONTACT_DETAILS_NOT_FOUND));
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+    verifyZeroInteractions(emailVerificationNotifier);
+  }
+
+  @Test
+  public void shouldNotResendVerificationEmailIfUserHasNoEmail() {
+    userContactDetails.getEmailDetails().setEmail(null);
+
+    startRequest()
+        .pathParam(ID, userContactDetails.getId())
+        .given()
+        .post(VERIFICATIONS_URL)
+        .then()
+        .statusCode(HttpStatus.BAD_REQUEST.value())
+        .body(MESSAGE_KEY, equalTo(ERROR_USER_HAS_NO_EMAIL));
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+    verifyZeroInteractions(emailVerificationNotifier);
+  }
+
+  @Test
+  public void shouldNotResendVerificationEmailIfUserEmailHasBeenVerified() {
+    userContactDetails.setEmailDetails(new EmailDetailsDataBuilder().withVerified(true).build());
+
+    startRequest()
+        .pathParam(ID, userContactDetails.getId())
+        .given()
+        .post(VERIFICATIONS_URL)
+        .then()
+        .statusCode(HttpStatus.BAD_REQUEST.value())
+        .body(MESSAGE_KEY, equalTo(ERROR_USER_EMAIL_ALREADY_VERIFIED));
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+    verifyZeroInteractions(emailVerificationNotifier);
   }
 
   private Response put(UserContactDetailsDto dto) {
@@ -251,7 +489,7 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
         .header(AUTHORIZATION, getTokenHeader())
         .header(CONTENT_TYPE, APPLICATION_JSON_VALUE)
         .body(dto)
-        .when()
+        .given()
         .pathParam(ID, dto.getReferenceDataUserId())
         .put(ID_RESOURCE_URL);
   }
@@ -262,7 +500,7 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
         .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
         .contentType(APPLICATION_JSON_VALUE)
         .pathParam(ID, referenceDataUserId)
-        .when()
+        .given()
         .get(ID_RESOURCE_URL);
   }
 

@@ -24,6 +24,9 @@ public abstract class MessageKeys {
   private static final String PERMISSIONS = PERMISSION + "s";
   private static final String MISSING = "missing";
   private static final String USER_CONTACT_DETAILS = "userContactDetails";
+  private static final String VERIFICATIONS = "verifications";
+  private static final String TOKEN = "token";
+  private static final String EMAIL = "email";
 
   private static final String AUTHENTICATION = "authentication";
   private static final String USER = "user";
@@ -59,6 +62,30 @@ public abstract class MessageKeys {
   public static final String PERMISSIONS_MISSING = join(ERROR_PREFIX, PERMISSIONS, MISSING);
   public static final String USER_NOT_FOUND =
       join(ERROR_PREFIX, AUTHENTICATION, USER, NOT_FOUND);
+
+  public static final String ERROR_ID_MISMATCH = join(ERROR_PREFIX, VERIFICATIONS, "idMismatch");
+
+  public static final String ERROR_TOKEN_INVALID =
+      join(ERROR_PREFIX, VERIFICATIONS, TOKEN, "invalid");
+  public static final String ERROR_TOKEN_EXPIRED =
+      join(ERROR_PREFIX, VERIFICATIONS, TOKEN, "expired");
+
+  public static final String EMAIL_VERIFICATION_EMAIL_SUBJECT =
+      join(SERVICE_PREFIX, VERIFICATIONS, EMAIL, "subject");
+  public static final String EMAIL_VERIFICATION_EMAIL_BODY =
+      join(SERVICE_PREFIX, VERIFICATIONS, EMAIL, "body");
+
+  public static final String ERROR_USER_EMAIL_ALREADY_VERIFIED =
+      join(ERROR_PREFIX, VERIFICATIONS, EMAIL, "verified");
+
+  public static final String ERROR_USER_HAS_NO_EMAIL =
+      join(ERROR_PREFIX, VERIFICATIONS, EMAIL, "null");
+
+  public static final String ERROR_SEND_NOTIFICATION_FAILURE =
+      join(ERROR_PREFIX, "sendNotification", "failure");
+
+  public static final String EMAIL_VERIFICATION_SUCCESS =
+      join(SERVICE_PREFIX, VERIFICATIONS, EMAIL, "success");
 
   private MessageKeys() {
     throw new UnsupportedOperationException();

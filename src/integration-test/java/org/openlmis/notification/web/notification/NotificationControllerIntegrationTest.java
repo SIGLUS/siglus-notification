@@ -87,7 +87,7 @@ public class NotificationControllerIntegrationTest extends BaseWebIntegrationTes
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
     verify(notificationService)
-        .sendNotification(from, contactDetails.getEmail(), SUBJECT, CONTENT);
+        .sendNotification(from, contactDetails.getEmailAddress(), SUBJECT, CONTENT);
   }
 
   @Test
@@ -114,7 +114,7 @@ public class NotificationControllerIntegrationTest extends BaseWebIntegrationTes
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
     verify(notificationService)
-        .sendNotification(from, contactDetails.getEmail(), SUBJECT, CONTENT);
+        .sendNotification(from, contactDetails.getEmailAddress(), SUBJECT, CONTENT);
   }
 
   @Test
@@ -125,7 +125,7 @@ public class NotificationControllerIntegrationTest extends BaseWebIntegrationTes
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
     verify(notificationService)
-        .sendNotification(defaultFrom, contactDetails.getEmail(), SUBJECT, CONTENT);
+        .sendNotification(defaultFrom, contactDetails.getEmailAddress(), SUBJECT, CONTENT);
   }
 
   @Test
@@ -184,7 +184,7 @@ public class NotificationControllerIntegrationTest extends BaseWebIntegrationTes
   private Response sendNotificationRequest(String from) {
     NotificationRequest notificationRequest = new NotificationRequest();
     notificationRequest.setFrom(from);
-    notificationRequest.setTo(contactDetails.getEmail());
+    notificationRequest.setTo(contactDetails.getEmailAddress());
     notificationRequest.setSubject(SUBJECT);
     notificationRequest.setContent(CONTENT);
 

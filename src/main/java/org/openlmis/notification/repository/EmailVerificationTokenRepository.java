@@ -13,25 +13,19 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.notification.service.referencedata;
+package org.openlmis.notification.repository;
 
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
-import org.openlmis.notification.web.BaseDto;
+import java.util.UUID;
+import org.openlmis.notification.domain.EmailVerificationToken;
+import org.openlmis.notification.domain.UserContactDetails;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.repository.query.Param;
 
-@Getter
-@Setter
-@ToString
-@NoArgsConstructor
-@AllArgsConstructor
-@EqualsAndHashCode(callSuper = true)
-public final class UserDto extends BaseDto {
-  private String username;
-  private String firstName;
-  private String lastName;
-  private boolean active;
+public interface EmailVerificationTokenRepository
+    extends JpaRepository<EmailVerificationToken, UUID> {
+
+  EmailVerificationToken findOneByUserContactDetails(
+      @Param("userContactDetails") UserContactDetails userContactDetails
+  );
+
 }

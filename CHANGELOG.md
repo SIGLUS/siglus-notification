@@ -7,6 +7,10 @@ Breaking changes:
 New functionality added in a backwards-compatible manner:
 * [OLMIS-4904](https://openlmis.atlassian.net/browse/OLMIS-4904): Added new notification endpoint
   * The endpoint checks if user is active, has an email address and the address has been verified.
+* [OLMIS-4907](https://openlmis.atlassian.net/browse/OLMIS-4907): Added Email verification functionality
+  * the verification email will be sent for a new created users with email address
+  * the verification email can be resent if there is a need
+  * added new endpoint to get details about pending email verification
 
 Improvements:
 * [OLMIS-4645](https://openlmis.atlassian.net/browse/OLMIS-4645): Added Jenkinsfile

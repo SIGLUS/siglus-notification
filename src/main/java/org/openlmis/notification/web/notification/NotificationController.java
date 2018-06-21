@@ -97,7 +97,7 @@ public class NotificationController {
       String from = StringUtils.defaultIfBlank(notification.getFrom(), defaultFrom);
 
       notificationService.sendNotification(
-          from, contactDetails.getEmail(),
+          from, contactDetails.getEmailAddress(),
           notification.getSubject(), notification.getContent()
       );
     }

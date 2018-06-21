@@ -13,25 +13,26 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.notification.service.referencedata;
+package org.openlmis.notification.web.usercontactdetails;
 
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
-import org.openlmis.notification.web.BaseDto;
+import nl.jqno.equalsverifier.EqualsVerifier;
+import nl.jqno.equalsverifier.Warning;
+import org.junit.Test;
+import org.openlmis.notification.testutils.ToStringTestUtils;
 
-@Getter
-@Setter
-@ToString
-@NoArgsConstructor
-@AllArgsConstructor
-@EqualsAndHashCode(callSuper = true)
-public final class UserDto extends BaseDto {
-  private String username;
-  private String firstName;
-  private String lastName;
-  private boolean active;
+public class EmailVerificationTokenDtoTest {
+
+  @Test
+  public void equalsContract() {
+    EqualsVerifier
+        .forClass(EmailVerificationTokenDto.class)
+        .suppress(Warning.NONFINAL_FIELDS) // dto can't contain final fields
+        .verify();
+  }
+
+  @Test
+  public void shouldImplementToString() {
+    ToStringTestUtils.verify(EmailVerificationTokenDto.class, new EmailVerificationTokenDto());
+  }
+
 }

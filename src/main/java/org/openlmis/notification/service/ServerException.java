@@ -13,25 +13,15 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.notification.service.referencedata;
+package org.openlmis.notification.service;
 
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
-import org.openlmis.notification.web.BaseDto;
+/**
+ * Exception for indicating that an internal server exception occured. This should result
+ * in a Internal Error api response
+ */
+public class ServerException extends NotificationException {
 
-@Getter
-@Setter
-@ToString
-@NoArgsConstructor
-@AllArgsConstructor
-@EqualsAndHashCode(callSuper = true)
-public final class UserDto extends BaseDto {
-  private String username;
-  private String firstName;
-  private String lastName;
-  private boolean active;
+  public ServerException(Throwable cause, String messageKey, String... messageParameters) {
+    super(cause, messageKey, messageParameters);
+  }
 }

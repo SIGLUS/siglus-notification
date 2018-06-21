@@ -24,6 +24,7 @@ import javax.persistence.PersistenceException;
 import org.hibernate.exception.ConstraintViolationException;
 import org.openlmis.notification.i18n.Message;
 import org.openlmis.notification.i18n.MessageKeys;
+import org.openlmis.notification.service.ServerException;
 import org.openlmis.notification.web.MissingPermissionException;
 import org.openlmis.notification.web.NotFoundException;
 import org.openlmis.notification.web.ValidationException;
@@ -133,6 +134,14 @@ public class WebErrorHandling extends AbstractErrorHandling {
     }
 
     return getLocalizedMessage(dive.getMessage());
+  }
+
+  @ExceptionHandler(ServerException.class)
+  @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
+  @ResponseBody
+  public Message.LocalizedMessage handleServerException(ServerException ex) {
+    logger.error("An internal error occurred", ex);
+    return getLocalizedMessage(ex.asMessage());
   }
 
 }

@@ -8,6 +8,7 @@ schemas:
     - notification: !include schemas/notification.json
     - notificationRequest: !include schemas/notificationRequest.json
     - userContactDetails: !include schemas/userContactDetails.json
+    - emailVerificationToken: !include schemas/emailVerificationToken.json
     - errorResponse: !include schemas/errorResponse.json
 
 traits:
@@ -99,3 +100,52 @@ traits:
                       body:
                           application/json:
                               schema: errorResponse
+          /verifications:
+              get:
+                  is: [ secured ]
+                  description: Get pending verification for a user.
+                  responses:
+                      200:
+                          description: Get pending verifications for the given user
+                          body:
+                              application/json:
+                                  schema: emailVerificationToken
+                      403:
+                          description: The current logged user has no permission to perform action.
+                          body:
+                              application/json:
+                                  schema: errorResponse
+              post:
+                  is: [ secured ]
+                  description: Resend verification for the current user.
+                  responses:
+                      200:
+                          description: Verification has been sent
+                      400:
+                          description: There were issues with sending verification.
+                          body:
+                              application/json:
+                                  schema: errorResponse
+                      404:
+                          description: User contact details with the given id does not exist.
+                          body:
+                              application/json:
+                                  schema: errorResponse
+                      403:
+                          description: The current logged user has no permission to perform action.
+                          body:
+                              application/json:
+                                  schema: errorResponse
+              /{token}:
+                  get:
+                      description: Verifies the given email address
+                      responses:
+                         200:
+                             description: Email verified successfully
+                             body:
+                                 text/plain;charset=UTF-8:
+                         400:
+                             description: There were issues with email verification.
+                             body:
+                                 application/json:
+                                    schema: errorResponse

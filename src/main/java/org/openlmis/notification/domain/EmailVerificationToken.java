@@ -13,25 +13,40 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.notification.service.referencedata;
+package org.openlmis.notification.domain;
 
-import lombok.AllArgsConstructor;
+import java.time.ZonedDateTime;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
-import org.openlmis.notification.web.BaseDto;
 
-@Getter
-@Setter
-@ToString
-@NoArgsConstructor
-@AllArgsConstructor
+@Entity
+@Table(name = "email_verification_tokens")
 @EqualsAndHashCode(callSuper = true)
-public final class UserDto extends BaseDto {
-  private String username;
-  private String firstName;
-  private String lastName;
-  private boolean active;
+public class EmailVerificationToken extends BaseEntity {
+
+  @Getter
+  @Setter
+  @Column(nullable = false, columnDefinition = "timestamp with time zone")
+  private ZonedDateTime expiryDate;
+
+  @Getter
+  @Setter
+  @OneToOne
+  @JoinColumn(name = "userContactDetailsId", nullable = false, unique = true)
+  private UserContactDetails userContactDetails;
+
+  @Getter
+  @Setter
+  private String emailAddress;
+
+  public boolean isExpired() {
+    return expiryDate.isBefore(ZonedDateTime.now());
+  }
+
 }

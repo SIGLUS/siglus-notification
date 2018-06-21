@@ -15,22 +15,25 @@
 
 package org.openlmis.notification;
 
+import java.util.Locale;
+import org.openlmis.notification.domain.Identifiable;
 import org.openlmis.notification.i18n.ExposedMessageSourceImpl;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.domain.EntityScan;
+import org.springframework.boot.autoconfigure.flyway.FlywayMigrationStrategy;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
-import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 
-import java.util.Locale;
-
-@Configuration
-@SpringBootApplication
-@ComponentScan("org.openlmis.notification")
+@SpringBootApplication(scanBasePackages = "org.openlmis.notification")
+@EntityScan(basePackageClasses = {Identifiable.class})
 public class Application {
+  private Logger logger = LoggerFactory.getLogger(Application.class);
 
   @Value("${defaultLocale}")
   private Locale locale;
@@ -64,5 +67,22 @@ public class Application {
     messageSource.setDefaultEncoding("UTF-8");
     messageSource.setUseCodeAsDefaultMessage(true);
     return messageSource;
+  }
+
+
+  /**
+   * Configures the Flyway migration strategy to clean the DB before migration first. This is used
+   * as the default unless the Spring Profile "production" is active.
+   *
+   * @return the clean-migrate strategy
+   */
+  @Bean
+  @Profile("!production")
+  public FlywayMigrationStrategy cleanMigrationStrategy() {
+    return flyway -> {
+      logger.info("Using clean-migrate flyway strategy -- production profile not active");
+      flyway.clean();
+      flyway.migrate();
+    };
   }
 }

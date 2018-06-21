@@ -43,13 +43,13 @@ public class UserContactDetailsTest {
 
   @Test
   public void shouldReturnEmail() {
-    assertThat(contactDetails.getEmail(), is(contactDetails.getEmailDetails().getEmail()));
+    assertThat(contactDetails.getEmailAddress(), is(contactDetails.getEmailDetails().getEmail()));
   }
 
   @Test
   public void shouldReturnNullIfEmailDetailsAreNotSet() {
     contactDetails.setEmailDetails(null);
-    assertThat(contactDetails.getEmail(), is(nullValue()));
+    assertThat(contactDetails.getEmailAddress(), is(nullValue()));
   }
 
   @Test

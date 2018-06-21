@@ -13,25 +13,28 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.notification.service.referencedata;
+package org.openlmis.notification.domain;
 
-import lombok.AllArgsConstructor;
+import java.util.UUID;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.MappedSuperclass;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
-import org.openlmis.notification.web.BaseDto;
+import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.annotations.Type;
 
-@Getter
-@Setter
-@ToString
-@NoArgsConstructor
-@AllArgsConstructor
-@EqualsAndHashCode(callSuper = true)
-public final class UserDto extends BaseDto {
-  private String username;
-  private String firstName;
-  private String lastName;
-  private boolean active;
+@MappedSuperclass
+@EqualsAndHashCode
+public abstract class BaseEntity implements Identifiable {
+  static final String UUID_TYPE = "pg-uuid";
+
+  @Id
+  @GeneratedValue(generator = "uuid-gen")
+  @GenericGenerator(name = "uuid-gen", strategy = "uuid2")
+  @Type(type = UUID_TYPE)
+  @Getter
+  @Setter
+  private UUID id;
 }

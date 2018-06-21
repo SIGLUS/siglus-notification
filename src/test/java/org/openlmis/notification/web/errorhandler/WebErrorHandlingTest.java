@@ -35,7 +35,9 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.notification.i18n.Message;
+import org.openlmis.notification.i18n.Message.LocalizedMessage;
 import org.openlmis.notification.i18n.MessageService;
+import org.openlmis.notification.service.ServerException;
 import org.openlmis.notification.web.MissingPermissionException;
 import org.openlmis.notification.web.NotFoundException;
 import org.openlmis.notification.web.ValidationException;
@@ -179,6 +181,19 @@ public class WebErrorHandlingTest {
 
     // then
     assertMessage(message, nonNullMessageKey);
+  }
+
+  @Test
+  public void shouldHandleServerException() {
+    // given
+    ServerException exp = new ServerException(null, MESSAGE_KEY);
+
+    // when
+    mockMessage(MESSAGE_KEY);
+    LocalizedMessage message = errorHandler.handleServerException(exp);
+
+    // then
+    assertMessage(message, MESSAGE_KEY);
   }
 
   private void assertMessage(Message.LocalizedMessage localized, String key) {
