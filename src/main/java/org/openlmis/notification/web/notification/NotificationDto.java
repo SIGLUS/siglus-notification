@@ -13,27 +13,25 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.notification.service.referencedata;
+package org.openlmis.notification.web.notification;
 
-import nl.jqno.equalsverifier.EqualsVerifier;
-import nl.jqno.equalsverifier.Warning;
-import org.junit.Test;
-import org.openlmis.notification.testutils.ToStringTestUtils;
+import java.util.UUID;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
-public class UserDtoTest {
-
-  @Test
-  public void equalsContract() {
-    EqualsVerifier
-        .forClass(UserDto.class)
-        .suppress(Warning.NONFINAL_FIELDS)
-        .withRedefinedSuperclass()
-        .verify();
-  }
-
-  @Test
-  public void shouldImplementToString() {
-    ToStringTestUtils.verify(UserDto.class, new UserDto());
-  }
-
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode
+@ToString
+public final class NotificationDto {
+  private String from;
+  private UUID userId;
+  private String subject;
+  private String content;
 }

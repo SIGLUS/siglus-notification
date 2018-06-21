@@ -4,6 +4,10 @@
 Breaking changes:
 * [OLMIS-4903](https://openlmis.atlassian.net/browse/OLMIS-4903): Added user contact details resource with related endpoints
 
+New functionality added in a backwards-compatible manner:
+* [OLMIS-4904](https://openlmis.atlassian.net/browse/OLMIS-4904): Added new notification endpoint
+  * The endpoint checks if user is active, has an email address and the address has been verified.
+
 Improvements:
 * [OLMIS-4645](https://openlmis.atlassian.net/browse/OLMIS-4645): Added Jenkinsfile
 

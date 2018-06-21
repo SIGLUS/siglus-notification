@@ -103,6 +103,7 @@ public abstract class BaseWebIntegrationTest {
     RestAssured.config = RestAssuredConfig.config().objectMapperConfig(
         new ObjectMapperConfig().jackson2ObjectMapperFactory((clazz, charset) -> objectMapper)
     );
+    RestAssured.enableLoggingOfRequestAndResponseIfValidationFails();
     restAssured = ramlDefinition.createRestAssured();
   }
 

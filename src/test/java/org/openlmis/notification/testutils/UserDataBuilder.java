@@ -24,6 +24,7 @@ public class UserDataBuilder {
 
   private UUID id;
   private String username;
+  private boolean active;
 
   /**
    * Builder for {@link UserDto}.
@@ -33,13 +34,14 @@ public class UserDataBuilder {
 
     id = UUID.randomUUID();
     username = "user" + instanceNumber;
+    active = true;
   }
 
   /**
    * Builds instance of {@link UserDto}.
    */
   public UserDto build() {
-    UserDto user = new UserDto(username);
+    UserDto user = new UserDto(username, active);
     user.setId(id);
     return user;
   }

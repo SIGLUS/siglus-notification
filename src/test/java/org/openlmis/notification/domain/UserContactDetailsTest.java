@@ -17,15 +17,20 @@ package org.openlmis.notification.domain;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 
 import java.util.UUID;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.openlmis.notification.testutils.ToStringTestUtils;
+import org.openlmis.notification.util.UserContactDetailsDataBuilder;
 import org.openlmis.notification.web.usercontactdetails.UserContactDetailsDto;
 
+@SuppressWarnings("PMD.TooManyMethods")
 public class UserContactDetailsTest {
+  private UserContactDetails contactDetails = new UserContactDetailsDataBuilder().build();
 
   @Test
   public void shouldDefaultAllowNotifyToTrue() {
@@ -34,6 +39,64 @@ public class UserContactDetailsTest {
     );
 
     assertThat(details.getAllowNotify(), Matchers.is(equalTo(Boolean.TRUE)));
+  }
+
+  @Test
+  public void shouldReturnEmail() {
+    assertThat(contactDetails.getEmail(), is(contactDetails.getEmailDetails().getEmail()));
+  }
+
+  @Test
+  public void shouldReturnNullIfEmailDetailsAreNotSet() {
+    contactDetails.setEmailDetails(null);
+    assertThat(contactDetails.getEmail(), is(nullValue()));
+  }
+
+  @Test
+  public void shouldSayEmailIsNotVerifiedIfEmailDetailsAreNotSet() {
+    contactDetails.setEmailDetails(null);
+    assertThat(contactDetails.isEmailVerified(), is(false));
+  }
+
+  @Test
+  public void shouldSayEmailIsNotVerifiedIfEmailIsNotSet() {
+    contactDetails.getEmailDetails().setEmail(null);
+    assertThat(contactDetails.isEmailVerified(), is(false));
+  }
+
+  @Test
+  public void shouldSayEmailIsNotVerifiedIfEmailVerifiedIsFalse() {
+    contactDetails.getEmailDetails().setEmailVerified(false);
+    assertThat(contactDetails.isEmailVerified(), is(false));
+  }
+
+  @Test
+  public void shouldSayEmailIsNotVerifiedIfEmailVerifiedIsNotSet() {
+    contactDetails.getEmailDetails().setEmailVerified(null);
+    assertThat(contactDetails.isEmailVerified(), is(false));
+  }
+
+  @Test
+  public void shouldSayEmailIsVerifiedIfEmailIsSetAndEmailVerifiedIsTrue() {
+    assertThat(contactDetails.isEmailVerified(), is(true));
+  }
+
+  @Test
+  public void shouldSayNotificationIsEnabledIfFlagIsSet() {
+    contactDetails.setAllowNotify(true);
+    assertThat(contactDetails.isAllowNotify(), is(true));
+  }
+
+  @Test
+  public void shouldSayNotificationIsDisabledIfFlagIsUnset() {
+    contactDetails.setAllowNotify(false);
+    assertThat(contactDetails.isAllowNotify(), is(false));
+  }
+
+  @Test
+  public void shouldSayNotificationIsDisabledIfFlagIsNotSet() {
+    contactDetails.setAllowNotify(null);
+    assertThat(contactDetails.isAllowNotify(), is(false));
   }
 
   @Test

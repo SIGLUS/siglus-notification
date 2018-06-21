@@ -1,0 +1,32 @@
+{
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "description": "A notification request",
+  "title": "The following schema presents a body for notification request",
+  "properties": {
+    "from": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "title": "from"
+    },
+    "userId": {
+      "type": "string",
+      "title": "userId"
+    },
+    "subject": {
+      "type": "string",
+      "title": "subject"
+    },
+    "content": {
+      "type": "string",
+      "title": "content"
+    }
+  },
+  "required": [
+    "userId",
+    "subject",
+    "content"
+  ]
+}

@@ -15,6 +15,9 @@
 
 package org.openlmis.notification.domain;
 
+import static org.apache.commons.lang3.BooleanUtils.isTrue;
+import static org.apache.commons.lang3.StringUtils.isBlank;
+
 import java.util.UUID;
 import javax.persistence.Column;
 import javax.persistence.Embedded;
@@ -92,6 +95,30 @@ public class UserContactDetails implements Identifiable {
     if (this.getEmailDetails() != null) {
       exporter.setEmailDetails(emailDetails);
     }
+  }
+
+  public String getEmail() {
+    return null == emailDetails ? null : emailDetails.getEmail();
+  }
+
+  /**
+   * Checks if this contact details has verified email address.
+   * @return true if email is set to valid email address and flag is set to true; otherwise false.
+   */
+  public boolean isEmailVerified() {
+    if (null == emailDetails) {
+      return false;
+    }
+
+    if (isBlank(getEmail())) {
+      return false;
+    }
+
+    return isTrue(emailDetails.getEmailVerified());
+  }
+
+  public boolean isAllowNotify() {
+    return isTrue(allowNotify);
   }
 
   @Override

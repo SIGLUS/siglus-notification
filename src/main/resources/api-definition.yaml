@@ -5,6 +5,7 @@ baseUri: "@baseUrl@"
 protocols: [ HTTP, HTTPS ]
 
 schemas:
+    - notification: !include schemas/notification.json
     - notificationRequest: !include schemas/notificationRequest.json
     - userContactDetails: !include schemas/userContactDetails.json
     - errorResponse: !include schemas/errorResponse.json
@@ -31,10 +32,23 @@ traits:
       displayName: Notification
       post:
           is: [ secured ]
-          description: Send a notification
+          description: WARNING! deprecated; please use /v2/notification. Send a notification.
           body:
               application/json:
                   schema: notificationRequest
+          responses:
+              200:
+              400:
+                  body:
+                      application/json:
+                          schema: errorResponse
+  /v2/notification:
+      post:
+          is: [ secured ]
+          description: Send a notification to the given user with provided subject and body.
+          body:
+              application/json:
+                  schema: notification
           responses:
               200:
               400:

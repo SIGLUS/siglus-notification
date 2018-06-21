@@ -29,8 +29,7 @@ import org.openlmis.notification.web.BaseDto;
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
-public class UserDto extends BaseDto {
-
+public final class UserDto extends BaseDto {
   private String username;
-
+  private boolean active;
 }

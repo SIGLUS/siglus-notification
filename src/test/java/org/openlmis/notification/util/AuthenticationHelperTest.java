@@ -70,7 +70,7 @@ public class AuthenticationHelperTest {
   @Test
   public void shouldReturnUser() {
     // given
-    UserDto userMock = mock(UserDto.class);
+    UserDto userMock = new UserDto();
     when(authentication.isClientOnly()).thenReturn(false);
     when(userReferenceDataService.findOne(userId)).thenReturn(userMock);
 

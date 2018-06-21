@@ -13,26 +13,25 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.notification.web;
+package org.openlmis.notification.web.notification;
 
 import org.openlmis.notification.i18n.MessageKeys;
-import org.openlmis.util.NotificationRequest;
+import org.openlmis.notification.web.BaseValidator;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 
 @Component
-public class NotificationRequestValidator implements BaseValidator {
+public class NotificationDtoValidator implements BaseValidator {
 
   @Override
   public boolean supports(Class<?> clazz) {
-    return NotificationRequest.class.equals(clazz);
+    return NotificationDto.class.equals(clazz);
   }
 
   @Override
   public void validate(Object target, Errors errors) {
     verifyArguments(target, errors, MessageKeys.ERROR_NOTIFICATION_REQUEST_NULL);
-    rejectIfEmptyOrWhitespace(errors, "from", MessageKeys.ERROR_FROM_REQUIRED);
-    rejectIfEmptyOrWhitespace(errors, "to", MessageKeys.ERROR_TO_REQUIRED);
+    rejectIfEmptyOrWhitespace(errors, "userId", MessageKeys.ERROR_USER_ID_REQUIRED);
     rejectIfEmptyOrWhitespace(errors, "subject", MessageKeys.ERROR_SUBJECT_REQUIRED);
     rejectIfEmptyOrWhitespace(errors, "content", MessageKeys.ERROR_CONTENT_REQUIRED);
   }

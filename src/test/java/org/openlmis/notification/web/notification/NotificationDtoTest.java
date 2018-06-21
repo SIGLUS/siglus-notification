@@ -13,23 +13,26 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.notification.web;
+package org.openlmis.notification.web.notification;
 
-import static javax.mail.Message.RecipientType.TO;
+import nl.jqno.equalsverifier.EqualsVerifier;
+import nl.jqno.equalsverifier.Warning;
+import org.junit.Test;
+import org.openlmis.notification.testutils.ToStringTestUtils;
 
-import javax.mail.Address;
-import javax.mail.MessagingException;
-import javax.mail.Session;
-import javax.mail.internet.MimeMessage;
+public class NotificationDtoTest {
 
-class DummyMessage extends MimeMessage {
-
-  DummyMessage() {
-    super((Session) null);
+  @Test
+  public void equalsContract() {
+    EqualsVerifier
+        .forClass(NotificationDto.class)
+        .suppress(Warning.NONFINAL_FIELDS)
+        .verify();
   }
 
-  Address[] getTo() throws MessagingException {
-    return getRecipients(TO);
+  @Test
+  public void shouldImplementToString() {
+    ToStringTestUtils.verify(NotificationDto.class, new NotificationDto());
   }
 
 }

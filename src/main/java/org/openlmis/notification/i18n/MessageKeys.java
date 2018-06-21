@@ -44,6 +44,7 @@ public abstract class MessageKeys {
   public static final String ERROR_TO_REQUIRED = NOTIFICATION_REQUEST + ".to.required";
   public static final String ERROR_SUBJECT_REQUIRED = NOTIFICATION_REQUEST + ".subject.required";
   public static final String ERROR_CONTENT_REQUIRED = NOTIFICATION_REQUEST + ".content.required";
+  public static final String ERROR_USER_ID_REQUIRED = NOTIFICATION_REQUEST + ".userId.required";
 
   public static final String ERROR_EMAIL_INVALID =
       ERROR_PREFIX + ".userContactDetails.email.invalid";
