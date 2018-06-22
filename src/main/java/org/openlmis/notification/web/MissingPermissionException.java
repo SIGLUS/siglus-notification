@@ -15,19 +15,19 @@
 
 package org.openlmis.notification.web;
 
-import static org.openlmis.notification.i18n.MessageKeys.PERMISSIONS_MISSING;
 import static org.openlmis.notification.i18n.MessageKeys.PERMISSION_MISSING;
+import static org.openlmis.notification.i18n.MessageKeys.PERMISSION_MISSING_GENERIC;
 
 import org.openlmis.notification.service.NotificationException;
 
 public class MissingPermissionException extends NotificationException {
 
-  public MissingPermissionException(String permissionName) {
-    super(PERMISSION_MISSING, permissionName);
+  public MissingPermissionException() {
+    super(PERMISSION_MISSING_GENERIC);
   }
 
-  public MissingPermissionException(String... permissionNames) {
-    super(PERMISSIONS_MISSING, String.join(", ", permissionNames));
+  public MissingPermissionException(String permissionName) {
+    super(PERMISSION_MISSING, permissionName);
   }
 
 }

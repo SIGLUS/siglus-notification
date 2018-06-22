@@ -21,8 +21,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_CONTENT_REQUIRED;
-import static org.openlmis.notification.i18n.MessageKeys.ERROR_FROM_REQUIRED;
-import static org.springframework.http.HttpHeaders.AUTHORIZATION;
+import static org.openlmis.notification.i18n.MessageKeys.PERMISSION_MISSING_GENERIC;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
@@ -40,14 +39,12 @@ import org.openlmis.notification.service.referencedata.UserReferenceDataService;
 import org.openlmis.notification.testutils.UserDataBuilder;
 import org.openlmis.notification.util.UserContactDetailsDataBuilder;
 import org.openlmis.notification.web.BaseWebIntegrationTest;
-import org.openlmis.util.NotificationRequest;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class NotificationControllerIntegrationTest extends BaseWebIntegrationTest {
-  private static final String RESOURCE_URL = "/api/notification";
-  private static final String V2_RESOURCE_URL = "/api/v2/notification";
+  private static final String RESOURCE_URL = "/api/notifications";
   private static final UUID USER_ID = UUID.randomUUID();
   private static final String SUBJECT = "subject";
   private static final String CONTENT = "content";
@@ -75,40 +72,11 @@ public class NotificationControllerIntegrationTest extends BaseWebIntegrationTes
     given(userReferenceDataService.findOne(USER_ID)).willReturn(user);
   }
 
-  // POST /api/notification
-
-  @Test
-  public void shouldSendMessageForValidNotificationRequest() throws MessagingException {
-    String from = "example@test.org";
-
-    sendNotificationRequest(from)
-        .then()
-        .statusCode(200);
-
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-    verify(notificationService)
-        .sendNotification(from, contactDetails.getEmailAddress(), SUBJECT, CONTENT);
-  }
-
-  @Test
-  public void shouldNotSendMessageForInvalidNotificationRequest() {
-    sendNotificationRequest(null)
-        .then()
-        .statusCode(400)
-        .body(MESSAGE_KEY, is(ERROR_FROM_REQUIRED));
-
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.validates());
-
-    verifyZeroInteractions(notificationService);
-  }
-
-  // POST /api/notification/v2
-
   @Test
   public void shouldSendMessageForValidNotification() throws MessagingException {
     String from = "example@test.org";
 
-    sendNotification(from, CONTENT)
+    send(from, CONTENT, getServiceTokenHeader())
         .then()
         .statusCode(200);
 
@@ -119,7 +87,7 @@ public class NotificationControllerIntegrationTest extends BaseWebIntegrationTes
 
   @Test
   public void shouldSendMessageForValidNotificationWithNullFrom() throws MessagingException {
-    sendNotification(null, CONTENT)
+    send(null, CONTENT, getServiceTokenHeader())
         .then()
         .statusCode(200);
 
@@ -130,7 +98,7 @@ public class NotificationControllerIntegrationTest extends BaseWebIntegrationTes
 
   @Test
   public void shouldNotSendMessageForInvalidNotification() {
-    sendNotification(null, null)
+    send(null, null, getServiceTokenHeader())
         .then()
         .statusCode(400)
         .body(MESSAGE_KEY, is(ERROR_CONTENT_REQUIRED));
@@ -146,7 +114,7 @@ public class NotificationControllerIntegrationTest extends BaseWebIntegrationTes
   public void shouldNotSendMessageIfUserContactDetailsDoesNotExist() {
     given(userContactDetailsRepository.findOne(USER_ID)).willReturn(null);
 
-    sendNotification(null, CONTENT)
+    send(null, CONTENT, getServiceTokenHeader())
         .then()
         .statusCode(200);
 
@@ -159,7 +127,7 @@ public class NotificationControllerIntegrationTest extends BaseWebIntegrationTes
   public void shouldNotSendMessageIfUserEmailIsNotVerified() {
     contactDetails.getEmailDetails().setEmailVerified(false);
 
-    sendNotification(null, CONTENT)
+    send(null, CONTENT, getServiceTokenHeader())
         .then()
         .statusCode(200);
 
@@ -172,7 +140,7 @@ public class NotificationControllerIntegrationTest extends BaseWebIntegrationTes
   public void shouldNotSendMessageIfUserIsNotActive() {
     user.setActive(false);
 
-    sendNotification(null, CONTENT)
+    send(null, CONTENT, getServiceTokenHeader())
         .then()
         .statusCode(200);
 
@@ -181,28 +149,27 @@ public class NotificationControllerIntegrationTest extends BaseWebIntegrationTes
     verifyZeroInteractions(notificationService);
   }
 
-  private Response sendNotificationRequest(String from) {
-    NotificationRequest notificationRequest = new NotificationRequest();
-    notificationRequest.setFrom(from);
-    notificationRequest.setTo(contactDetails.getEmailAddress());
-    notificationRequest.setSubject(SUBJECT);
-    notificationRequest.setContent(CONTENT);
-
-    return send(notificationRequest, RESOURCE_URL);
+  @Test
+  public void shouldNotSendMessageForUserRequest() {
+    send(null, CONTENT, getUserTokenHeader())
+        .then()
+        .statusCode(403)
+        .body(MESSAGE_KEY, is(PERMISSION_MISSING_GENERIC));
   }
 
-  private Response sendNotification(String from, String content) {
-    return send(new NotificationDto(from, USER_ID, SUBJECT, content), V2_RESOURCE_URL);
+  @Test
+  public void shouldNotSendMessageIfRequestTokenIsInvalid() {
+    send(null, CONTENT, null)
+        .then()
+        .statusCode(401);
   }
 
-  private Response send(Object body, String url) {
-    return restAssured
-        .given()
-        .header(AUTHORIZATION, getTokenHeader())
+  private Response send(String from, String content, String token) {
+    return startRequest(token)
         .header(CONTENT_TYPE, APPLICATION_JSON_VALUE)
-        .body(body)
+        .body(new NotificationDto(from, USER_ID, SUBJECT, content))
         .when()
-        .post(url);
+        .post(RESOURCE_URL);
   }
 
 }

@@ -16,7 +16,7 @@
 package org.openlmis.notification.service;
 
 
-import static org.apache.commons.lang3.BooleanUtils.isTrue;
+import static org.apache.commons.lang3.BooleanUtils.isNotTrue;
 
 import java.util.UUID;
 import org.openlmis.notification.service.referencedata.RightDto;
@@ -33,8 +33,7 @@ import org.springframework.stereotype.Service;
 @Service
 @SuppressWarnings("PMD.TooManyMethods")
 public class PermissionService {
-
-  static final String USERS_MANAGE = "USERS_MANAGE";
+  private static final String USERS_MANAGE = "USERS_MANAGE";
 
   @Autowired
   private UserReferenceDataService userReferenceDataService;
@@ -45,10 +44,6 @@ public class PermissionService {
   @Value("${auth.server.clientId}")
   private String serviceTokenClientId;
 
-  public void canCreateUserContactDetails() {
-    checkPermission(USERS_MANAGE);
-  }
-
   /**
    * Checks whether current request has access to viewing contact details of user with the given
    * userId.
@@ -56,11 +51,18 @@ public class PermissionService {
    * @param userId  the reference data user ID
    */
   public void canManageUserContactDetails(UUID userId) {
-    if (isCurrentUser(userId) || hasPermission(USERS_MANAGE)) {
-      return;
+    if (!isCurrentUser(userId) && hasNoPermission(USERS_MANAGE, true)) {
+      throw new MissingPermissionException(USERS_MANAGE);
     }
+  }
 
-    throw new MissingPermissionException(USERS_MANAGE);
+  /**
+   * Checks whether current request has access to sending notification.
+   */
+  public void canSendNotification() {
+    if (hasNoPermission(null, false)) {
+      throw new MissingPermissionException();
+    }
   }
 
   private boolean isCurrentUser(UUID userId) {
@@ -73,36 +75,34 @@ public class PermissionService {
     return userId.equals(user.getId());
   }
 
-  private void checkPermission(String rightName) {
-    if (hasPermission(rightName)) {
-      return;
-    }
-
-    throw new MissingPermissionException(rightName);
-  }
-
-  private boolean hasPermission(String rightName) {
+  private boolean hasNoPermission(String rightName, boolean allowUsers) {
     OAuth2Authentication authentication = (OAuth2Authentication) SecurityContextHolder
         .getContext()
         .getAuthentication();
 
-    return authentication.isClientOnly()
-        ? checkServiceToken(authentication)
-        : checkUserToken(rightName);
+    if (authentication.isClientOnly()) {
+      return isNotValidServiceToken(authentication);
+    }
+
+    if (allowUsers) {
+      return isNotValidUserToken(rightName);
+    }
+
+    return true;
   }
 
-  private boolean checkUserToken(String rightName) {
+  private boolean isNotValidUserToken(String rightName) {
     UserDto user = authenticationHelper.getCurrentUser();
     RightDto right = authenticationHelper.getRight(rightName);
     ResultDto<Boolean> result =  userReferenceDataService.hasRight(
         user.getId(), right.getId(), null, null, null
     );
 
-    return null != result && isTrue(result.getResult());
+    return null == result || isNotTrue(result.getResult());
   }
 
-  private boolean checkServiceToken(OAuth2Authentication authentication) {
+  private boolean isNotValidServiceToken(OAuth2Authentication authentication) {
     String clientId = authentication.getOAuth2Request().getClientId();
-    return serviceTokenClientId.equals(clientId);
+    return !serviceTokenClientId.equals(clientId);
   }
 }

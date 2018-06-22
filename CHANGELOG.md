@@ -3,10 +3,12 @@
 
 Breaking changes:
 * [OLMIS-4903](https://openlmis.atlassian.net/browse/OLMIS-4903): Added user contact details resource with related endpoints
+* [OLMIS-4904](https://openlmis.atlassian.net/browse/OLMIS-4904): Modified /api/notification endpoint
+  * The request body has been changed.
+  * The endpoint checks if user is active, has an email address and the address has been verified.
+  * The endpoint has been pluralized and now it is available under /api/notifications address.
 
 New functionality added in a backwards-compatible manner:
-* [OLMIS-4904](https://openlmis.atlassian.net/browse/OLMIS-4904): Added new notification endpoint
-  * The endpoint checks if user is active, has an email address and the address has been verified.
 * [OLMIS-4907](https://openlmis.atlassian.net/browse/OLMIS-4907): Added Email verification functionality
   * the verification email will be sent for a new created users with email address
   * the verification email can be resent if there is a need

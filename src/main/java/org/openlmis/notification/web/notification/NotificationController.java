@@ -20,9 +20,9 @@ import org.apache.commons.lang3.StringUtils;
 import org.openlmis.notification.domain.UserContactDetails;
 import org.openlmis.notification.repository.UserContactDetailsRepository;
 import org.openlmis.notification.service.NotificationService;
+import org.openlmis.notification.service.PermissionService;
 import org.openlmis.notification.service.referencedata.UserReferenceDataService;
 import org.openlmis.notification.web.ValidationException;
-import org.openlmis.util.NotificationRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -44,13 +44,13 @@ public class NotificationController {
   private UserContactDetailsRepository userContactDetailsRepository;
 
   @Autowired
-  private NotificationRequestValidator notificationRequestValidator;
-
-  @Autowired
   private NotificationDtoValidator notificationValidator;
 
   @Autowired
   private UserReferenceDataService userReferenceDataService;
+
+  @Autowired
+  private PermissionService permissionService;
 
   @Value("${email.noreply}")
   private String defaultFrom;
@@ -58,32 +58,13 @@ public class NotificationController {
   /**
    * Send an email notification.
    *
-   * @param notificationRequest details of the message
-   */
-  @PostMapping("/notification")
-  @ResponseStatus(HttpStatus.OK)
-  public void sendNotificationRequest(@RequestBody NotificationRequest notificationRequest,
-      BindingResult bindingResult) throws MessagingException {
-    notificationRequestValidator.validate(notificationRequest, bindingResult);
-
-    if (bindingResult.getErrorCount() > 0) {
-      throw new ValidationException(bindingResult.getFieldError().getDefaultMessage());
-    }
-
-    notificationService.sendNotification(notificationRequest.getFrom(),
-        notificationRequest.getTo(), notificationRequest.getSubject(),
-        notificationRequest.getContent());
-  }
-
-  /**
-   * Send an email notification.
-   *
    * @param notification details of the message
    */
-  @PostMapping("/v2/notification")
+  @PostMapping("/notifications")
   @ResponseStatus(HttpStatus.OK)
   public void sendNotification(@RequestBody NotificationDto notification,
       BindingResult bindingResult) throws MessagingException {
+    permissionService.canSendNotification();
     notificationValidator.validate(notification, bindingResult);
 
     if (bindingResult.getErrorCount() > 0) {

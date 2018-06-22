@@ -21,7 +21,6 @@ public abstract class MessageKeys {
   private static final String DELIMITER = ".";
 
   private static final String PERMISSION = "permission";
-  private static final String PERMISSIONS = PERMISSION + "s";
   private static final String MISSING = "missing";
   private static final String USER_CONTACT_DETAILS = "userContactDetails";
   private static final String VERIFICATIONS = "verifications";
@@ -59,7 +58,8 @@ public abstract class MessageKeys {
 
   public static final String ERROR_FIELD_IS_INVARIANT = ERROR_PREFIX + ".fieldIsInvariant";
   public static final String PERMISSION_MISSING = join(ERROR_PREFIX, PERMISSION, MISSING);
-  public static final String PERMISSIONS_MISSING = join(ERROR_PREFIX, PERMISSIONS, MISSING);
+  public static final String PERMISSION_MISSING_GENERIC =
+      join(ERROR_PREFIX, PERMISSION, "missingGeneric");
   public static final String USER_NOT_FOUND =
       join(ERROR_PREFIX, AUTHENTICATION, USER, NOT_FOUND);
 

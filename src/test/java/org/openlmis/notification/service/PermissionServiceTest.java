@@ -19,6 +19,7 @@ import static org.hamcrest.Matchers.arrayContaining;
 import static org.hamcrest.Matchers.hasProperty;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.when;
+import static org.openlmis.notification.i18n.MessageKeys.PERMISSION_MISSING_GENERIC;
 import static org.openlmis.notification.testutils.OAuth2AuthenticationDataBuilder.SERVICE_CLIENT_ID;
 import static org.openlmis.notification.i18n.MessageKeys.PERMISSION_MISSING;
 
@@ -80,37 +81,6 @@ public class PermissionServiceTest {
   }
 
   @Test
-  public void shouldAllowOtherServiceToCreateUserContactDetails() {
-    when(securityContext.getAuthentication()).thenReturn(serviceAuthentication);
-
-    permissionService.canCreateUserContactDetails();
-  }
-
-  @Test
-  public void shouldAllowUserWithUsersManageRightToCreateUserContactDetails() {
-    when(securityContext.getAuthentication()).thenReturn(userAuthentication);
-    when(authenticationHelper.getCurrentUser()).thenReturn(userDto);
-    when(authenticationHelper.getRight(eq(USERS_MANAGE))).thenReturn(rightDto);
-    when(userReferenceDataService.hasRight(userDto.getId(), rightDto.getId(), null, null, null))
-        .thenReturn(new ResultDto<>(true));
-
-    permissionService.canCreateUserContactDetails();
-  }
-
-  @Test
-  public void shouldNotAllowUserWithoutUsersManageRightToCreateUserContactDetails() {
-    when(securityContext.getAuthentication()).thenReturn(userAuthentication);
-    when(authenticationHelper.getCurrentUser()).thenReturn(userDto);
-    when(authenticationHelper.getRight(eq(USERS_MANAGE))).thenReturn(rightDto);
-    when(userReferenceDataService.hasRight(userDto.getId(), rightDto.getId(), null, null, null))
-        .thenReturn(new ResultDto<>(false));
-
-    expectException();
-
-    permissionService.canCreateUserContactDetails();
-  }
-
-  @Test
   public void shouldAllowOtherServiceToGetUserContactDetails() {
     when(securityContext.getAuthentication()).thenReturn(serviceAuthentication);
 
@@ -152,10 +122,29 @@ public class PermissionServiceTest {
     permissionService.canManageUserContactDetails(UUID.randomUUID());
   }
 
+  @Test
+  public void shouldNotAllowToSendNotificationForUsers() {
+    when(securityContext.getAuthentication()).thenReturn(userAuthentication);
+    expectGenericException();
+
+    permissionService.canSendNotification();
+  }
+
+  @Test
+  public void shouldAllowToSendNotificationForServiceLevelToken() {
+    when(securityContext.getAuthentication()).thenReturn(serviceAuthentication);
+    permissionService.canSendNotification();
+  }
+
   private void expectException() {
     exception.expect(MissingPermissionException.class);
     exception.expect(hasProperty("params", arrayContaining(USERS_MANAGE)));
     exception.expectMessage(PERMISSION_MISSING);
+  }
+
+  private void expectGenericException() {
+    exception.expect(MissingPermissionException.class);
+    exception.expectMessage(PERMISSION_MISSING_GENERIC);
   }
 
 }

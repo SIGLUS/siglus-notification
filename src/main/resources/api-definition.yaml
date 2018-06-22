@@ -6,7 +6,6 @@ protocols: [ HTTP, HTTPS ]
 
 schemas:
     - notification: !include schemas/notification.json
-    - notificationRequest: !include schemas/notificationRequest.json
     - userContactDetails: !include schemas/userContactDetails.json
     - emailVerificationToken: !include schemas/emailVerificationToken.json
     - errorResponse: !include schemas/errorResponse.json
@@ -29,21 +28,8 @@ traits:
                   repeat: false
 
 /api:
-  /notification:
+  /notifications:
       displayName: Notification
-      post:
-          is: [ secured ]
-          description: WARNING! deprecated; please use /v2/notification. Send a notification.
-          body:
-              application/json:
-                  schema: notificationRequest
-          responses:
-              200:
-              400:
-                  body:
-                      application/json:
-                          schema: errorResponse
-  /v2/notification:
       post:
           is: [ secured ]
           description: Send a notification to the given user with provided subject and body.
@@ -52,7 +38,16 @@ traits:
                   schema: notification
           responses:
               200:
+                  description: The notification request has been accepted and sent to the given user.
+              401:
+                  description: The token used in the request is invalid
+              403:
+                  description: The token used in the request is not a service-level token.
+                  body:
+                      application/json:
+                          schema: errorResponse
               400:
+                  description: The request body is incorrect
                   body:
                       application/json:
                           schema: errorResponse

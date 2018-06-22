@@ -41,7 +41,6 @@ import static org.openlmis.notification.i18n.MessageKeys.ERROR_USER_CONTACT_DETA
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_USER_EMAIL_ALREADY_VERIFIED;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_USER_HAS_NO_EMAIL;
 import static org.openlmis.notification.i18n.MessageKeys.PERMISSION_MISSING;
-import static org.springframework.http.HttpHeaders.AUTHORIZATION;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
@@ -67,7 +66,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 
 @SuppressWarnings({"PMD.TooManyMethods"})
@@ -295,7 +293,7 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
         new Object[]{token.getEmailAddress()},
         LocaleContextHolder.getLocale());
 
-    String response = startRequest()
+    String response = startUserRequest()
         .pathParam(ID, userContactDetails.getId())
         .pathParam(TOKEN, token.getId())
         .given()
@@ -321,7 +319,7 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
     given(emailVerificationTokenRepository.findOne(any(UUID.class)))
         .willReturn(null);
 
-    startRequest()
+    startUserRequest()
         .pathParam(ID, userContactDetails.getId())
         .pathParam(TOKEN, UUID.randomUUID())
         .given()
@@ -343,7 +341,7 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
     given(emailVerificationTokenRepository.findOne(token.getId()))
         .willReturn(token);
 
-    startRequest()
+    startUserRequest()
         .pathParam(ID, userContactDetails.getId())
         .pathParam(TOKEN, token.getId())
         .given()
@@ -364,7 +362,7 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
     given(emailVerificationTokenRepository.findOne(token.getId()))
         .willReturn(token);
 
-    startRequest()
+    startUserRequest()
         .pathParam(ID, UUID.randomUUID())
         .pathParam(TOKEN, token.getId())
         .given()
@@ -386,7 +384,7 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
         .findOneByUserContactDetails(any(UserContactDetails.class)))
         .willReturn(token);
 
-    startRequest()
+    startUserRequest()
         .pathParam(ID, userContactDetails.getId())
         .given()
         .get(VERIFICATIONS_URL)
@@ -400,7 +398,7 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
   public void shouldReturnNotFoundIfContactDetailsDoesNotExist() {
     given(repository.findOne(any(UUID.class))).willReturn(null);
 
-    startRequest()
+    startUserRequest()
         .pathParam(ID, userContactDetails.getId())
         .given()
         .get(VERIFICATIONS_URL)
@@ -422,7 +420,7 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
         .given(emailVerificationNotifier)
         .sendNotification(any(UserContactDetails.class), anyString());
 
-    startRequest()
+    startUserRequest()
         .pathParam(ID, userContactDetails.getId())
         .given()
         .post(VERIFICATIONS_URL)
@@ -440,7 +438,7 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
     MissingPermissionException ex = new MissingPermissionException("test");
     willThrow(ex).given(permissionService).canManageUserContactDetails(userContactDetails.getId());
 
-    startRequest()
+    startUserRequest()
         .pathParam(ID, userContactDetails.getId())
         .given()
         .post(VERIFICATIONS_URL)
@@ -454,7 +452,7 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
 
   @Test
   public void shouldNotResendVerificationEmailIfUserNotFound() {
-    startRequest()
+    startUserRequest()
         .pathParam(ID, UUID.randomUUID())
         .given()
         .post(VERIFICATIONS_URL)
@@ -470,7 +468,7 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
   public void shouldNotResendVerificationEmailIfUserHasNoEmail() {
     userContactDetails.getEmailDetails().setEmail(null);
 
-    startRequest()
+    startUserRequest()
         .pathParam(ID, userContactDetails.getId())
         .given()
         .post(VERIFICATIONS_URL)
@@ -486,7 +484,7 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
   public void shouldNotResendVerificationEmailIfUserEmailHasBeenVerified() {
     userContactDetails.setEmailDetails(new EmailDetailsDataBuilder().withVerified(true).build());
 
-    startRequest()
+    startUserRequest()
         .pathParam(ID, userContactDetails.getId())
         .given()
         .post(VERIFICATIONS_URL)
@@ -499,9 +497,7 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
   }
 
   private Response put(UserContactDetailsDto dto) {
-    return restAssured
-        .given()
-        .header(AUTHORIZATION, getTokenHeader())
+    return startUserRequest()
         .header(CONTENT_TYPE, APPLICATION_JSON_VALUE)
         .body(dto)
         .given()
@@ -510,9 +506,7 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
   }
 
   private Response get(UUID referenceDataUserId) {
-    return restAssured
-        .given()
-        .header(HttpHeaders.AUTHORIZATION, getTokenHeader())
+    return startUserRequest()
         .contentType(APPLICATION_JSON_VALUE)
         .pathParam(ID, referenceDataUserId)
         .given()

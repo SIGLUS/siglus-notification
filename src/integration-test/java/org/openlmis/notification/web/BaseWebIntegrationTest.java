@@ -16,11 +16,13 @@
 package org.openlmis.notification.web;
 
 import static com.github.tomakehurst.wiremock.client.WireMock.aResponse;
+import static com.github.tomakehurst.wiremock.client.WireMock.equalTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.post;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlEqualTo;
 import static com.github.tomakehurst.wiremock.client.WireMock.urlPathEqualTo;
-import static org.openlmis.notification.web.WireMockResponses.MOCK_CHECK_RESULT;
+import static org.openlmis.notification.web.WireMockResponses.MOCK_SERVICE_CHECK_RESULT;
 import static org.openlmis.notification.web.WireMockResponses.MOCK_TOKEN_REQUEST_RESPONSE;
+import static org.openlmis.notification.web.WireMockResponses.MOCK_USER_CHECK_RESULT;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
@@ -50,6 +52,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 public abstract class BaseWebIntegrationTest {
   private static final String USER_ACCESS_TOKEN = "418c89c5-7f21-4cd1-a63a-38c47892b0fe";
   private static final String USER_ACCESS_TOKEN_HEADER = "Bearer " + USER_ACCESS_TOKEN;
+  private static final String SERVICE_ACCESS_TOKEN = "6d6896a5-e94c-4183-839d-911bc63174ff";
+  private static final String SERVICE_ACCESS_TOKEN_HEADER = "Bearer " + SERVICE_ACCESS_TOKEN;
 
   protected static final String RAML_ASSERT_MESSAGE =
       "HTTP request/response should match RAML definition.";
@@ -79,9 +83,17 @@ public abstract class BaseWebIntegrationTest {
   protected BaseWebIntegrationTest() {
     // This mocks the auth check to always return valid admin credentials.
     wireMockRule.stubFor(post(urlEqualTo("/api/oauth/check_token"))
+        .withRequestBody(equalTo("token=" + USER_ACCESS_TOKEN))
         .willReturn(aResponse()
             .withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
-            .withBody(MOCK_CHECK_RESULT)));
+            .withBody(MOCK_USER_CHECK_RESULT)));
+
+    // This mocks the auth check to always return valid trusted client credentials.
+    wireMockRule.stubFor(post(urlEqualTo("/api/oauth/check_token"))
+        .withRequestBody(equalTo("token=" + SERVICE_ACCESS_TOKEN))
+        .willReturn(aResponse()
+            .withHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
+            .withBody(MOCK_SERVICE_CHECK_RESULT)));
 
     // This mocks the auth token request response
     wireMockRule.stubFor(post(urlPathEqualTo("/api/oauth/token?grant_type=client_credentials"))
@@ -112,14 +124,36 @@ public abstract class BaseWebIntegrationTest {
    *
    * @return an access token
    */
-  protected String getTokenHeader() {
+  protected String getUserTokenHeader() {
     return USER_ACCESS_TOKEN_HEADER;
   }
 
+  /**
+   * Get a trusted client access token. An arbitrary UUID string is returned and the tests assume it
+   * is a valid one for a trusted client. This is for service-to-service communication.
+   *
+   * @return an access token
+   */
+  protected String getServiceTokenHeader() {
+    return SERVICE_ACCESS_TOKEN_HEADER;
+  }
+
   protected RequestSpecification startRequest() {
-    return restAssured
-        .given()
-        .header(HttpHeaders.AUTHORIZATION, USER_ACCESS_TOKEN_HEADER);
+    return restAssured.given();
+  }
+
+  protected RequestSpecification startRequest(String token) {
+    RequestSpecification request = startRequest();
+
+    if (null != token) {
+      request = request.header(HttpHeaders.AUTHORIZATION, token);
+    }
+
+    return request;
+  }
+
+  protected RequestSpecification startUserRequest() {
+    return startRequest(getUserTokenHeader());
   }
 
 }
