@@ -158,10 +158,10 @@ public class UserContactDetailsController {
       throw new NotFoundException(ERROR_USER_CONTACT_DETAILS_NOT_FOUND);
     }
 
-    EmailVerificationToken existsToken = emailVerificationTokenRepository
+    EmailVerificationToken token = emailVerificationTokenRepository
         .findOneByUserContactDetails(contactDetails);
 
-    if (null == existsToken) {
+    if (null == token) {
       if (null == contactDetails.getEmailAddress()) {
         throw new ValidationException(ERROR_USER_HAS_NO_EMAIL);
       } else {
@@ -169,7 +169,7 @@ public class UserContactDetailsController {
       }
     }
 
-    emailVerificationNotifier.sendNotification(contactDetails, existsToken.getEmailAddress());
+    emailVerificationNotifier.sendNotification(contactDetails, token.getEmailAddress());
   }
 
   /**
@@ -180,29 +180,29 @@ public class UserContactDetailsController {
   @ResponseBody
   public String verifyContactDetail(@PathVariable("id") UUID id,
       @PathVariable("token") UUID token) {
-    EmailVerificationToken details = emailVerificationTokenRepository.findOne(token);
+    EmailVerificationToken verificationToken = emailVerificationTokenRepository.findOne(token);
 
-    if (details == null) {
+    if (verificationToken == null) {
       throw new ValidationException(ERROR_TOKEN_INVALID);
     }
 
-    if (!id.equals(details.getUserContactDetails().getId())) {
+    if (!id.equals(verificationToken.getUserContactDetails().getId())) {
       throw new ValidationException(ERROR_ID_MISMATCH);
     }
 
-    if (details.isExpired()) {
+    if (verificationToken.isExpired()) {
       throw new ValidationException(ERROR_TOKEN_EXPIRED);
     }
 
     UserContactDetails userContactDetails = userContactDetailsRepository.findOne(id);
-    userContactDetails.setEmailDetails(new EmailDetails(details.getEmailAddress(), true));
+    userContactDetails.setEmailDetails(new EmailDetails(verificationToken.getEmailAddress(), true));
 
     userContactDetailsRepository.save(userContactDetails);
     emailVerificationTokenRepository.delete(token);
 
     return messageSource.getMessage(
         EMAIL_VERIFICATION_SUCCESS,
-        new Object[]{details.getEmailAddress()},
+        new Object[]{verificationToken.getEmailAddress()},
         LocaleContextHolder.getLocale()
     );
   }
