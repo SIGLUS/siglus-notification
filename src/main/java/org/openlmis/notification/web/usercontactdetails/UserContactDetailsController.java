@@ -178,7 +178,7 @@ public class UserContactDetailsController {
   @GetMapping(value = "/userContactDetails/{id}/verifications/{token}")
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
-  public String verifyContactDetail(@PathVariable("id") UUID id,
+  public String verifyContactDetail(@PathVariable("id") UUID userId,
       @PathVariable("token") UUID token) {
     EmailVerificationToken verificationToken = emailVerificationTokenRepository.findOne(token);
 
@@ -186,7 +186,7 @@ public class UserContactDetailsController {
       throw new ValidationException(ERROR_TOKEN_INVALID);
     }
 
-    if (!id.equals(verificationToken.getUserContactDetails().getId())) {
+    if (!userId.equals(verificationToken.getUserContactDetails().getReferenceDataUserId())) {
       throw new ValidationException(ERROR_ID_MISMATCH);
     }
 
@@ -194,7 +194,7 @@ public class UserContactDetailsController {
       throw new ValidationException(ERROR_TOKEN_EXPIRED);
     }
 
-    UserContactDetails userContactDetails = userContactDetailsRepository.findOne(id);
+    UserContactDetails userContactDetails = userContactDetailsRepository.findOne(userId);
     userContactDetails.setEmailDetails(new EmailDetails(verificationToken.getEmailAddress(), true));
 
     userContactDetailsRepository.save(userContactDetails);
