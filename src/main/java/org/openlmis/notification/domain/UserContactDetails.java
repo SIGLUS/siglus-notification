@@ -109,7 +109,7 @@ public class UserContactDetails implements Identifiable {
    * Checks if this contact details has verified email address.
    * @return true if email is set to valid email address and flag is set to true; otherwise false.
    */
-  public boolean isEmailVerified() {
+  public boolean isEmailAddressVerified() {
     if (null == emailDetails) {
       return false;
     }
@@ -119,10 +119,6 @@ public class UserContactDetails implements Identifiable {
     }
 
     return isTrue(emailDetails.getEmailVerified());
-  }
-
-  public boolean isNotEmailVerified() {
-    return !isEmailVerified();
   }
 
   public boolean isAllowNotify() {

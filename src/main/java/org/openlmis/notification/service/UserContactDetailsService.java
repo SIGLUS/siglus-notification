@@ -67,7 +67,7 @@ public class UserContactDetailsService {
         && !toUpdate.getEmailAddress().equals(existing.getEmailAddress())) {
       newEmailDetails = toUpdate.getEmailDetails();
       toUpdate.setEmailDetails(new EmailDetails(
-          existing.getEmailAddress(), existing.isEmailVerified()
+          existing.getEmailAddress(), existing.isEmailAddressVerified()
       ));
     }
 

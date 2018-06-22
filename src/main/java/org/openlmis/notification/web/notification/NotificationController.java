@@ -105,7 +105,7 @@ public class NotificationController {
 
   private boolean canBeNotified(UserContactDetails contactDetails) {
     if (null == contactDetails
-        || !contactDetails.isEmailVerified()
+        || !contactDetails.isEmailAddressVerified()
         || !contactDetails.isAllowNotify()) {
       return false;
     }

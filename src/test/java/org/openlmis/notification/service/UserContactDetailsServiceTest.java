@@ -173,7 +173,7 @@ public class UserContactDetailsServiceTest {
         .withReferenceDataUserId(contactDetails.getId())
         .withEmailDetails(new EmailDetailsDataBuilder()
             .withEmail(contactDetails.getEmailAddress())
-            .withVerified(contactDetails.isEmailVerified())
+            .withVerified(contactDetails.isEmailAddressVerified())
             .build())
         .build();
 

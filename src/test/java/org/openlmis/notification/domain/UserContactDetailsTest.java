@@ -55,30 +55,30 @@ public class UserContactDetailsTest {
   @Test
   public void shouldSayEmailIsNotVerifiedIfEmailDetailsAreNotSet() {
     contactDetails.setEmailDetails(null);
-    assertThat(contactDetails.isEmailVerified(), is(false));
+    assertThat(contactDetails.isEmailAddressVerified(), is(false));
   }
 
   @Test
   public void shouldSayEmailIsNotVerifiedIfEmailIsNotSet() {
     contactDetails.getEmailDetails().setEmail(null);
-    assertThat(contactDetails.isEmailVerified(), is(false));
+    assertThat(contactDetails.isEmailAddressVerified(), is(false));
   }
 
   @Test
   public void shouldSayEmailIsNotVerifiedIfEmailVerifiedIsFalse() {
     contactDetails.getEmailDetails().setEmailVerified(false);
-    assertThat(contactDetails.isEmailVerified(), is(false));
+    assertThat(contactDetails.isEmailAddressVerified(), is(false));
   }
 
   @Test
   public void shouldSayEmailIsNotVerifiedIfEmailVerifiedIsNotSet() {
     contactDetails.getEmailDetails().setEmailVerified(null);
-    assertThat(contactDetails.isEmailVerified(), is(false));
+    assertThat(contactDetails.isEmailAddressVerified(), is(false));
   }
 
   @Test
   public void shouldSayEmailIsVerifiedIfEmailIsSetAndEmailVerifiedIsTrue() {
-    assertThat(contactDetails.isEmailVerified(), is(true));
+    assertThat(contactDetails.isEmailAddressVerified(), is(true));
   }
 
   @Test

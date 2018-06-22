@@ -227,7 +227,7 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
         .willReturn(userContactDetails);
 
     UserContactDetailsDto request = toDto(userContactDetails);
-    request.getEmailDetails().setEmailVerified(!userContactDetails.isEmailVerified());
+    request.getEmailDetails().setEmailVerified(!userContactDetails.isEmailAddressVerified());
 
     String response = put(request)
         .then()
@@ -308,7 +308,7 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
     assertThat(response, is(expectedResponse));
 
     assertThat(userContactDetails.getEmailAddress(), is(token.getEmailAddress()));
-    assertThat(userContactDetails.isEmailVerified(), is(true));
+    assertThat(userContactDetails.isEmailAddressVerified(), is(true));
 
     verify(repository).save(userContactDetails);
     verify(emailVerificationTokenRepository).delete(token.getId());
