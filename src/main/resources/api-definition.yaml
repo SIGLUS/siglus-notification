@@ -110,6 +110,11 @@ traits:
                           body:
                               application/json:
                                   schema: emailVerificationToken
+                      404:
+                          description: User contact details with the given id does not exist.
+                          body:
+                              application/json:
+                                  schema: errorResponse
                       403:
                           description: The current logged user has no permission to perform action.
                           body:

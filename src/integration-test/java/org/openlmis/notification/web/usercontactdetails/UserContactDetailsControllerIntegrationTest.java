@@ -397,6 +397,21 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
   }
 
   @Test
+  public void shouldReturnNotFoundIfContactDetailsDoesNotExist() {
+    given(repository.findOne(any(UUID.class))).willReturn(null);
+
+    startRequest()
+        .pathParam(ID, userContactDetails.getId())
+        .given()
+        .get(VERIFICATIONS_URL)
+        .then()
+        .statusCode(HttpStatus.NOT_FOUND.value())
+        .body(MESSAGE_KEY, is(ERROR_USER_CONTACT_DETAILS_NOT_FOUND));
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
   public void shouldResendVerificationEmail() {
     EmailVerificationToken token = new EmailVerificationTokenDataBuilder().build();
 

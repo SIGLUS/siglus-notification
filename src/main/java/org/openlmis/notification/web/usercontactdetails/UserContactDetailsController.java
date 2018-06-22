@@ -132,6 +132,11 @@ public class UserContactDetailsController {
   public EmailVerificationTokenDto getVerifications(@PathVariable("id") UUID userId) {
     permissionService.canManageUserContactDetails(userId);
     UserContactDetails contactDetails = userContactDetailsRepository.findOne(userId);
+
+    if (null == contactDetails) {
+      throw new NotFoundException(ERROR_USER_CONTACT_DETAILS_NOT_FOUND);
+    }
+
     EmailVerificationToken token = emailVerificationTokenRepository
         .findOneByUserContactDetails(contactDetails);
     return null == token
