@@ -44,11 +44,15 @@ public class NotificationDtoValidator implements BaseValidator {
       if (CollectionUtils.isEmpty(dto.getMessages())) {
         rejectValue(errors, "messages", ERROR_NOTIFICATION_REQUEST_MESSAGES_EMPTY);
       } else {
-        for (MessageDto message : dto.getMessages().values()) {
-          if (isBlank(message.getBody())) {
-            rejectValue(errors, "messages", ERROR_NOTIFICATION_REQUEST_FIELD_REQUIRED);
-          }
-        }
+        validateMessages(errors, dto);
+      }
+    }
+  }
+
+  private void validateMessages(Errors errors, NotificationDto dto) {
+    for (MessageDto message : dto.getMessages().values()) {
+      if (isBlank(message.getBody())) {
+        rejectValue(errors, "messages", ERROR_NOTIFICATION_REQUEST_FIELD_REQUIRED);
       }
     }
   }
