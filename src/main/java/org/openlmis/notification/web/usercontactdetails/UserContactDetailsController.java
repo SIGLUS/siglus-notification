@@ -32,6 +32,7 @@ import org.openlmis.notification.repository.EmailVerificationTokenRepository;
 import org.openlmis.notification.repository.UserContactDetailsRepository;
 import org.openlmis.notification.service.EmailVerificationNotifier;
 import org.openlmis.notification.service.PermissionService;
+import org.openlmis.notification.service.UserContactDetailsService;
 import org.openlmis.notification.web.NotFoundException;
 import org.openlmis.notification.web.ValidationException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,6 +70,9 @@ public class UserContactDetailsController {
 
   @Autowired
   private ExposedMessageSource messageSource;
+
+  @Autowired
+  private UserContactDetailsService userContactDetailsService;
 
   /**
    * Returns an instance of the {@link UserContactDetailsDto} class with the given reference data
@@ -114,48 +118,10 @@ public class UserContactDetailsController {
       throw new ValidationException(bindingResult.getFieldError().getDefaultMessage());
     }
 
-    return userContactDetailsRepository.exists(userContactDetailsDto.getReferenceDataUserId())
-        ? updateUserContactDetails(userContactDetailsDto)
-        : addUserContactDetails(userContactDetailsDto);
-  }
+    UserContactDetails contactDetails = fromDto(userContactDetailsDto);
+    contactDetails = userContactDetailsService.addOrUpdate(contactDetails);
 
-  private UserContactDetailsDto addUserContactDetails(UserContactDetailsDto toSave) {
-    toSave.getEmailDetails().setEmailVerified(false);
-
-    UserContactDetails saved = userContactDetailsRepository
-        .save(fromDto(toSave));
-
-    if (saved.hasEmailAddress() && saved.isNotEmailVerified()) {
-      emailVerificationNotifier.sendNotification(saved, saved.getEmailAddress());
-    }
-
-    return toDto(saved);
-  }
-
-  private UserContactDetailsDto updateUserContactDetails(UserContactDetailsDto toUpdate) {
-    EmailDetails newEmailDetails = null;
-
-    UserContactDetails toSave = fromDto(toUpdate);
-    UserContactDetails existing = userContactDetailsRepository
-        .findOne(toUpdate.getReferenceDataUserId());
-
-    if (toSave.hasEmailAddress() && !toSave.getEmailAddress().equals(existing.getEmailAddress())) {
-      newEmailDetails = toSave.getEmailDetails();
-      toSave.setEmailDetails(new EmailDetails(
-          existing.getEmailAddress(), existing.isEmailVerified()
-      ));
-    }
-
-    UserContactDetails saved = userContactDetailsRepository.save(toSave);
-    EmailVerificationToken token = emailVerificationTokenRepository
-        .findOneByUserContactDetails(saved);
-
-    if (null != newEmailDetails
-        && (null == token || !token.getEmailAddress().equals(newEmailDetails.getEmail()))) {
-      emailVerificationNotifier.sendNotification(existing, newEmailDetails.getEmail());
-    }
-
-    return toDto(saved);
+    return toDto(contactDetails);
   }
 
   /**
