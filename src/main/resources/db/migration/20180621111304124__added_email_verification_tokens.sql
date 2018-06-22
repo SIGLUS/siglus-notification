@@ -1,7 +1,7 @@
 CREATE TABLE email_verification_tokens (
     id uuid PRIMARY KEY,
     expirydate timestamp with time zone NOT NULL,
-    emailAddress CHARACTER VARYING(255) NOT NULL,
+    emailAddress CHARACTER VARYING NOT NULL,
     userContactDetailsId uuid NOT NULL
 );
 
