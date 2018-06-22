@@ -17,14 +17,11 @@ package org.openlmis.notification;
 
 import static java.util.stream.Collectors.joining;
 
-import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.stream.Collectors;
-import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.collections4.IteratorUtils;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
@@ -61,20 +58,6 @@ class Resource2Db {
   }
 
   /**
-   * Update the database from a Resource which has lines of SQL.  One SQL statement per line.
-   * @param resource the Resource with SQL in lines.
-   * @throws IOException if the Resource can't be used.
-   * @throws NullPointerException if the resource is null.
-   */
-  void updateDbFromSql(Resource resource) throws IOException {
-    XLOGGER.entry(resource.getDescription());
-    Validate.notNull(resource);
-    List<String> sqlLines = resourceToStrings(resource);
-    updateDbFromSqlStrings(sqlLines);
-    XLOGGER.exit();
-  }
-
-  /**
    * Insert into the database (a table) from a Resource with CSV data.
    * @param tableName the name of the table (incl schema) to load the data into.
    * @param resource the Resource as a CSV, with a header, that has the data to load.
@@ -88,22 +71,6 @@ class Resource2Db {
     Validate.notNull(resource);
     insertToDbFromBatchedPair(tableName, resourceCsvToBatchedPair(resource));
     XLOGGER.exit();
-  }
-
-  /*
-   converts a Resource into a List of Strings - used when those strings are direct SQL
-   */
-  private List<String> resourceToStrings(final Resource resource) throws IOException {
-    XLOGGER.entry(resource.getDescription());
-
-    List<String> lines;
-    try (InputStreamReader isReader = new InputStreamReader(resource.getInputStream())) {
-      lines = new BufferedReader(isReader).lines().collect(Collectors.toList());
-    }
-    assert null != lines;
-
-    XLOGGER.exit("SQL lines read: " + lines.size());
-    return lines;
   }
 
   /*
@@ -140,20 +107,6 @@ class Resource2Db {
       XLOGGER.exit("Records read: " + readData.getRight().size());
       return readData;
     }
-  }
-
-  /*
-   runs the list of SQL strings directly on the database - could be insert / update
-   */
-  void updateDbFromSqlStrings(final List<String> sqlLines) {
-    XLOGGER.entry();
-
-    if (CollectionUtils.isEmpty(sqlLines)) {
-      return;
-    }
-
-    int[] updateCounts = template.batchUpdate(sqlLines.toArray(new String[0]));
-    XLOGGER.exit("Total db updates: " + Arrays.stream(updateCounts).sum());
   }
 
   /**

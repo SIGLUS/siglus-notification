@@ -26,7 +26,6 @@ import static org.mockito.Mockito.when;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Collections;
 import java.util.List;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.tuple.Pair;
@@ -46,22 +45,6 @@ public class Resource2DbTest {
 
   @InjectMocks
   private Resource2Db resource2Db;
-
-  @Test
-  public void updateDbFromSqlShouldCloseInputStream() throws IOException {
-    // given
-    Resource resource = mock(Resource.class);
-    InputStream inputStream = spy(IOUtils.toInputStream("some data"));
-    when(resource.getInputStream()).thenReturn(inputStream);
-    when(template.batchUpdate(any(String.class))).thenReturn(new int[]{1});
-
-    // when
-    resource2Db.updateDbFromSql(resource);
-
-    // then
-    verify(inputStream, times(1)).close();
-    assertFalse(resource.isOpen());
-  }
 
   @Test
   public void insertToDbFromCsvShouldCloseInputStream() throws IOException {
@@ -115,23 +98,9 @@ public class Resource2DbTest {
     resource2Db.resourceCsvToBatchedPair(resource);
   }
 
-  @Test
-  public void updateDbFromSqlStringsShouldReturnWithoutUpdateIfNoSqlLines() {
-    // when
-    resource2Db.updateDbFromSqlStrings(Collections.emptyList());
-
-    // then
-    verify(template, times(0)).batchUpdate(any(String.class));
-  }
-
   @Test(expected = NullPointerException.class)
   public void resource2DbWithNullResourceShouldThrowException() {
     new Resource2Db(null);
-  }
-
-  @Test(expected = NullPointerException.class)
-  public void updateDbFromSqlWithNullShouldThrowException() throws IOException {
-    resource2Db.updateDbFromSql(null);
   }
 
   @Test(expected = IllegalArgumentException.class)
