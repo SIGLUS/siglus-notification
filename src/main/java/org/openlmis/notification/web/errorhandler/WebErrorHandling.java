@@ -16,6 +16,7 @@
 package org.openlmis.notification.web.errorhandler;
 
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_CONSTRAINT;
+import static org.openlmis.notification.i18n.MessageKeys.ERROR_EMAIL_DUPLICATED;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_SEND_REQUEST;
 
 import java.util.HashMap;
@@ -23,7 +24,6 @@ import java.util.Map;
 import javax.persistence.PersistenceException;
 import org.hibernate.exception.ConstraintViolationException;
 import org.openlmis.notification.i18n.Message;
-import org.openlmis.notification.i18n.MessageKeys;
 import org.openlmis.notification.service.ServerException;
 import org.openlmis.notification.web.MissingPermissionException;
 import org.openlmis.notification.web.NotFoundException;
@@ -45,7 +45,8 @@ public class WebErrorHandling extends AbstractErrorHandling {
   private static final Map<String, String> CONSTRAINT_MAP = new HashMap<>();
 
   static {
-    CONSTRAINT_MAP.put("unq_contact_details_email", MessageKeys.ERROR_EMAIL_DUPLICATED);
+    CONSTRAINT_MAP.put("unq_contact_details_email", ERROR_EMAIL_DUPLICATED);
+    CONSTRAINT_MAP.put("unq_email_verification_tokens_emailaddress", ERROR_EMAIL_DUPLICATED);
   }
 
   /**
