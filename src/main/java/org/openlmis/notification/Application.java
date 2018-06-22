@@ -16,6 +16,7 @@
 package org.openlmis.notification;
 
 import java.util.Locale;
+import org.flywaydb.core.api.callback.FlywayCallback;
 import org.openlmis.notification.domain.Identifiable;
 import org.openlmis.notification.i18n.ExposedMessageSourceImpl;
 import org.slf4j.Logger;
@@ -33,7 +34,7 @@ import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 @SpringBootApplication(scanBasePackages = "org.openlmis.notification")
 @EntityScan(basePackageClasses = {Identifiable.class})
 public class Application {
-  private Logger logger = LoggerFactory.getLogger(Application.class);
+  private static final Logger LOGGER = LoggerFactory.getLogger(Application.class);
 
   @Value("${defaultLocale}")
   private Locale locale;
@@ -71,7 +72,7 @@ public class Application {
 
 
   /**
-   * Configures the Flyway migration strategy to clean the DB before migration first. This is used
+   * Configures the Flyway migration strategy to clean the DB before migration first.  This is used
    * as the default unless the Spring Profile "production" is active.
    *
    * @return the clean-migrate strategy
@@ -80,9 +81,15 @@ public class Application {
   @Profile("!production")
   public FlywayMigrationStrategy cleanMigrationStrategy() {
     return flyway -> {
-      logger.info("Using clean-migrate flyway strategy -- production profile not active");
+      LOGGER.info("Using clean-migrate flyway strategy -- production profile not active");
+      flyway.setCallbacks(flywayCallback());
       flyway.clean();
       flyway.migrate();
     };
+  }
+
+  @Bean
+  public FlywayCallback flywayCallback() {
+    return new ExportSchemaFlywayCallback();
   }
 }

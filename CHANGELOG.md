@@ -16,7 +16,7 @@ New functionality added in a backwards-compatible manner:
 
 Improvements:
 * [OLMIS-4645](https://openlmis.atlassian.net/browse/OLMIS-4645): Added Jenkinsfile
-
+* [OLMIS-4908](https://openlmis.atlassian.net/browse/OLMIS-4908): Moved demo data contact details from the reference data service.
 
 3.0.5 / 2018-04-24
 ==================

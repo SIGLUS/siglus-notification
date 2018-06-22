@@ -77,3 +77,36 @@ This services also uses the following variables:
 * **MAIL_USERNAME** - The SMTP username to use for sending outgoing email. Usually required by the SMTP server.  
 * **MAIL_PASSWORD** - The SMTP password to use for sending outgoing email. Usually required by the SMTP server.
 * **MAIL_ADDRESS** - The sender email address that will be used for sending all outgoing email messages (the from-address field). For example set it to noreply@mydomain.org in order for users to see that as the sender of the email they receive. Note that some email providers (like Gmail) might overwrite this value with details from your account.   
+
+## Production by Spring Profile
+
+By default when this service is started, it will clean its schema in the database before migrating
+it. This is meant for use during the normal development cycle. For production data, this obviously
+is not desired as it would remove all of the production data. To change the default clean & migrate
+behavior to just be a migrate behavior (which is still desired for production use), we use a Spring
+Profile named `production`. To use this profile, it must be marked as Active. The easiest way to
+do so is to add to the .env file:
+
+```java
+spring_profiles_active=production
+```
+
+This will set the similarly named environment variable and limit the profile in use.  The
+expected use-case for this is when this service is deployed through the
+[Reference Distribution](https://github.com/openlmis/openlmis-ref-distro).
+
+### Demo Data
+A basic set of demo data is included with this service, defined under 
+`./src/main/resources/db/demo-data/`.  This data may be optionally loaded by using the `demo-data` 
+Spring Profile.  Setting this profile may be done by setting the `spring.profiles.active` 
+environment variable.
+
+When building locally from the development environment, you may run:
+
+```shell
+$ export spring_profiles_active=demo-data
+$ gradle bootRun
+```
+
+To see how to set environment variables through Docker Compose, see the 
+[Reference Distribution](https://github.com/openlmis/openlmis-ref-distro)
