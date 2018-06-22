@@ -26,10 +26,13 @@ public abstract class MessageKeys {
   private static final String VERIFICATIONS = "verifications";
   private static final String TOKEN = "token";
   private static final String EMAIL = "email";
+  private static final String MESSAGES = "messages";
+  private static final String MESSAGE_TYPE = "messageType";
 
   private static final String AUTHENTICATION = "authentication";
   private static final String USER = "user";
   private static final String NOT_FOUND = "notFound";
+  private static final String UNSUPPORTED = "unsupported";
 
   private static final String SERVICE_PREFIX = "notification";
   private static final String ERROR_PREFIX = SERVICE_PREFIX + ".error";
@@ -41,12 +44,15 @@ public abstract class MessageKeys {
   public static final String ERROR_USER_CONTACT_DETAILS_NOT_FOUND =
       ERROR_PREFIX + DELIMITER + USER_CONTACT_DETAILS + DELIMITER + NOT_FOUND;
 
-  public static final String ERROR_NOTIFICATION_REQUEST_NULL = NOTIFICATION_REQUEST + ".null";
-  public static final String ERROR_FROM_REQUIRED = NOTIFICATION_REQUEST + ".from.required";
-  public static final String ERROR_TO_REQUIRED = NOTIFICATION_REQUEST + ".to.required";
-  public static final String ERROR_SUBJECT_REQUIRED = NOTIFICATION_REQUEST + ".subject.required";
-  public static final String ERROR_CONTENT_REQUIRED = NOTIFICATION_REQUEST + ".content.required";
-  public static final String ERROR_USER_ID_REQUIRED = NOTIFICATION_REQUEST + ".userId.required";
+  public static final String ERROR_NOTIFICATION_REQUEST_NULL = join(NOTIFICATION_REQUEST, "null");
+  public static final String ERROR_NOTIFICATION_REQUEST_FIELD_REQUIRED =
+      join(NOTIFICATION_REQUEST, "fieldRequired");
+  public static final String ERROR_NOTIFICATION_REQUEST_MESSAGES_EMPTY =
+      join(NOTIFICATION_REQUEST, MESSAGES, "empty");
+
+
+  public static final String ERROR_UNSUPPORTED_MESSAGE_TYPE =
+      join(NOTIFICATION_REQUEST, MESSAGE_TYPE, UNSUPPORTED);
 
   public static final String ERROR_EMAIL_INVALID =
       ERROR_PREFIX + ".userContactDetails.email.invalid";
@@ -81,8 +87,8 @@ public abstract class MessageKeys {
   public static final String ERROR_USER_HAS_NO_EMAIL =
       join(ERROR_PREFIX, VERIFICATIONS, EMAIL, "null");
 
-  public static final String ERROR_SEND_NOTIFICATION_FAILURE =
-      join(ERROR_PREFIX, "sendNotification", "failure");
+  public static final String ERROR_SEND_MAIL_FAILURE =
+      join(ERROR_PREFIX, "sendMail", "failure");
 
   public static final String EMAIL_VERIFICATION_SUCCESS =
       join(SERVICE_PREFIX, VERIFICATIONS, EMAIL, "success");

@@ -13,24 +13,15 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.notification.web.notification;
+package org.openlmis.notification.service;
 
-import java.util.Map;
-import java.util.UUID;
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import org.openlmis.notification.domain.UserContactDetails;
+import org.openlmis.notification.web.notification.MessageDto;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@EqualsAndHashCode
-@ToString
-public final class NotificationDto {
-  private UUID userId;
-  private Map<String, MessageDto> messages;
+public interface MessageHandler {
+
+  MessageType getMessageType();
+
+  void handle(UserContactDetails contactDetails, MessageDto message);
+
 }

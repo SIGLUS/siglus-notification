@@ -20,7 +20,7 @@ import static org.junit.Assert.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
-import static org.openlmis.notification.i18n.MessageKeys.ERROR_CONTENT_REQUIRED;
+import static org.openlmis.notification.i18n.MessageKeys.ERROR_NOTIFICATION_REQUEST_FIELD_REQUIRED;
 import static org.openlmis.notification.i18n.MessageKeys.PERMISSION_MISSING_GENERIC;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -28,18 +28,18 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 import com.jayway.restassured.response.Response;
 import guru.nidi.ramltester.junit.RamlMatchers;
 import java.util.UUID;
-import javax.mail.MessagingException;
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.notification.domain.UserContactDetails;
 import org.openlmis.notification.repository.UserContactDetailsRepository;
-import org.openlmis.notification.service.NotificationService;
+import org.openlmis.notification.service.EmailMessageHandler;
+import org.openlmis.notification.service.MessageType;
 import org.openlmis.notification.service.referencedata.UserDto;
 import org.openlmis.notification.service.referencedata.UserReferenceDataService;
 import org.openlmis.notification.testutils.UserDataBuilder;
+import org.openlmis.notification.util.NotificationDataBuilder;
 import org.openlmis.notification.util.UserContactDetailsDataBuilder;
 import org.openlmis.notification.web.BaseWebIntegrationTest;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.mock.mockito.MockBean;
 
 @SuppressWarnings("PMD.TooManyMethods")
@@ -50,16 +50,13 @@ public class NotificationControllerIntegrationTest extends BaseWebIntegrationTes
   private static final String CONTENT = "content";
 
   @MockBean
-  private NotificationService notificationService;
+  private EmailMessageHandler emailMessageHandler;
 
   @MockBean
   private UserContactDetailsRepository userContactDetailsRepository;
 
   @MockBean
   private UserReferenceDataService userReferenceDataService;
-
-  @Value("${email.noreply}")
-  private String defaultFrom;
 
   private UserContactDetails contactDetails = new UserContactDetailsDataBuilder()
       .withReferenceDataUserId(USER_ID)
@@ -70,104 +67,61 @@ public class NotificationControllerIntegrationTest extends BaseWebIntegrationTes
   public void setUp() {
     given(userContactDetailsRepository.findOne(USER_ID)).willReturn(contactDetails);
     given(userReferenceDataService.findOne(USER_ID)).willReturn(user);
+    given(emailMessageHandler.getMessageType()).willReturn(MessageType.EMAIL);
   }
 
   @Test
-  public void shouldSendMessageForValidNotification() throws MessagingException {
-    String from = "example@test.org";
-
-    send(from, CONTENT, getServiceTokenHeader())
+  public void shouldSendMessageForValidNotification() {
+    send(CONTENT, getServiceTokenHeader())
         .then()
         .statusCode(200);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-    verify(notificationService)
-        .sendNotification(from, contactDetails.getEmailAddress(), SUBJECT, CONTENT);
-  }
-
-  @Test
-  public void shouldSendMessageForValidNotificationWithNullFrom() throws MessagingException {
-    send(null, CONTENT, getServiceTokenHeader())
-        .then()
-        .statusCode(200);
-
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-    verify(notificationService)
-        .sendNotification(defaultFrom, contactDetails.getEmailAddress(), SUBJECT, CONTENT);
+    verify(emailMessageHandler).handle(contactDetails, new MessageDto(SUBJECT, CONTENT));
   }
 
   @Test
   public void shouldNotSendMessageForInvalidNotification() {
-    send(null, null, getServiceTokenHeader())
+    send(null, getServiceTokenHeader())
         .then()
         .statusCode(400)
-        .body(MESSAGE_KEY, is(ERROR_CONTENT_REQUIRED));
+        .body(MESSAGE_KEY, is(ERROR_NOTIFICATION_REQUEST_FIELD_REQUIRED));
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.validates());
 
-    verifyZeroInteractions(
-        notificationService, userContactDetailsRepository, userReferenceDataService
-    );
-  }
-
-  @Test
-  public void shouldNotSendMessageIfUserContactDetailsDoesNotExist() {
-    given(userContactDetailsRepository.findOne(USER_ID)).willReturn(null);
-
-    send(null, CONTENT, getServiceTokenHeader())
-        .then()
-        .statusCode(200);
-
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-
-    verifyZeroInteractions(notificationService, userReferenceDataService);
-  }
-
-  @Test
-  public void shouldNotSendMessageIfUserEmailIsNotVerified() {
-    contactDetails.getEmailDetails().setEmailVerified(false);
-
-    send(null, CONTENT, getServiceTokenHeader())
-        .then()
-        .statusCode(200);
-
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-
-    verifyZeroInteractions(notificationService, userReferenceDataService);
-  }
-
-  @Test
-  public void shouldNotSendMessageIfUserIsNotActive() {
-    user.setActive(false);
-
-    send(null, CONTENT, getServiceTokenHeader())
-        .then()
-        .statusCode(200);
-
-    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-
-    verifyZeroInteractions(notificationService);
+    verifyZeroInteractions(emailMessageHandler);
   }
 
   @Test
   public void shouldNotSendMessageForUserRequest() {
-    send(null, CONTENT, getUserTokenHeader())
+    send(CONTENT, getUserTokenHeader())
         .then()
         .statusCode(403)
         .body(MESSAGE_KEY, is(PERMISSION_MISSING_GENERIC));
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.validates());
+    verifyZeroInteractions(emailMessageHandler);
   }
 
   @Test
   public void shouldNotSendMessageIfRequestTokenIsInvalid() {
-    send(null, CONTENT, null)
+    send(CONTENT, null)
         .then()
         .statusCode(401);
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.validates());
+    verifyZeroInteractions(emailMessageHandler);
   }
 
-  private Response send(String from, String content, String token) {
+  private Response send(String content, String token) {
+    NotificationDto body = new NotificationDataBuilder()
+        .withUserId(USER_ID)
+        .withMessage("email", new MessageDto(SUBJECT, content))
+        .build();
+
     return startRequest(token)
         .header(CONTENT_TYPE, APPLICATION_JSON_VALUE)
-        .body(new NotificationDto(from, USER_ID, SUBJECT, content))
+        .body(body)
         .when()
         .post(RESOURCE_URL);
   }

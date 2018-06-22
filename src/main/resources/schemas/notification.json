@@ -4,29 +4,23 @@
   "description": "A notification request",
   "title": "The following schema presents a body for notification request",
   "properties": {
-    "from": {
-      "type": [
-        "string",
-        "null"
-      ],
-      "title": "from"
-    },
     "userId": {
       "type": "string",
       "title": "userId"
     },
-    "subject": {
-      "type": "string",
-      "title": "subject"
-    },
-    "content": {
-      "type": "string",
-      "title": "content"
+    "messages": {
+      "type": "object",
+      "title": "messages",
+      "patternProperties": {
+        ".{1,}": {
+          "type": "object",
+          "$ref": "message.json"
+        }
+      }
     }
   },
   "required": [
     "userId",
-    "subject",
-    "content"
+    "messages"
   ]
 }

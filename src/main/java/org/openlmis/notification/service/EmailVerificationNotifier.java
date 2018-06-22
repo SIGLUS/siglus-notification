@@ -18,28 +18,24 @@ package org.openlmis.notification.service;
 
 import static org.openlmis.notification.i18n.MessageKeys.EMAIL_VERIFICATION_EMAIL_BODY;
 import static org.openlmis.notification.i18n.MessageKeys.EMAIL_VERIFICATION_EMAIL_SUBJECT;
-import static org.openlmis.notification.i18n.MessageKeys.ERROR_SEND_NOTIFICATION_FAILURE;
 
 import java.time.ZonedDateTime;
+import java.util.Locale;
 import org.openlmis.notification.domain.EmailVerificationToken;
 import org.openlmis.notification.domain.UserContactDetails;
 import org.openlmis.notification.i18n.ExposedMessageSource;
 import org.openlmis.notification.repository.EmailVerificationTokenRepository;
 import org.openlmis.notification.service.referencedata.UserDto;
 import org.openlmis.notification.service.referencedata.UserReferenceDataService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.openlmis.notification.web.notification.MessageDto;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 @Service
 public class EmailVerificationNotifier {
-  private static final Logger LOGGER = LoggerFactory.getLogger(EmailVerificationNotifier.class);
-
-  public static final long TOKEN_VALIDITY_HOURS = 12;
+  private static final long TOKEN_VALIDITY_HOURS = 12;
 
   @Autowired
   private EmailVerificationTokenRepository emailVerificationTokenRepository;
@@ -48,13 +44,10 @@ public class EmailVerificationNotifier {
   private ExposedMessageSource messageSource;
 
   @Autowired
-  private NotificationService notificationService;
+  private EmailMessageHandler emailMessageHandler;
 
   @Autowired
   private UserReferenceDataService userReferenceDataService;
-
-  @Value("${email.noreply}")
-  private String mailAddress;
 
   /**
    * Sends email verification notification.
@@ -107,16 +100,13 @@ public class EmailVerificationNotifier {
     };
     String[] subjectMsgArgs = {};
 
-    try {
-      notificationService.sendNotification(mailAddress, email,
-          messageSource.getMessage(
-              EMAIL_VERIFICATION_EMAIL_SUBJECT, subjectMsgArgs, LocaleContextHolder.getLocale()),
-          messageSource.getMessage(
-              EMAIL_VERIFICATION_EMAIL_BODY, bodyMsgArgs, LocaleContextHolder.getLocale()));
-    } catch (Exception exp) {
-      LOGGER.warn("Can't send request to the notification service", exp);
-      throw new ServerException(exp, ERROR_SEND_NOTIFICATION_FAILURE);
-    }
+    Locale locale = LocaleContextHolder.getLocale();
+    String subject = messageSource
+        .getMessage(EMAIL_VERIFICATION_EMAIL_SUBJECT, subjectMsgArgs, locale);
+    String body = messageSource
+        .getMessage(EMAIL_VERIFICATION_EMAIL_BODY, bodyMsgArgs, locale);
+
+    emailMessageHandler.handle(email, new MessageDto(subject, body));
   }
 
   private String getVerificationPath(UserContactDetails contactDetails,

@@ -15,18 +15,13 @@
 
 package org.openlmis.notification.web.notification;
 
-import javax.mail.MessagingException;
-import org.apache.commons.lang3.StringUtils;
-import org.openlmis.notification.domain.UserContactDetails;
-import org.openlmis.notification.repository.UserContactDetailsRepository;
-import org.openlmis.notification.service.NotificationService;
+import org.openlmis.notification.service.NotificationHandler;
 import org.openlmis.notification.service.PermissionService;
-import org.openlmis.notification.service.referencedata.UserReferenceDataService;
 import org.openlmis.notification.web.ValidationException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -38,22 +33,13 @@ import org.springframework.web.bind.annotation.RestController;
 public class NotificationController {
 
   @Autowired
-  private NotificationService notificationService;
-
-  @Autowired
-  private UserContactDetailsRepository userContactDetailsRepository;
-
-  @Autowired
   private NotificationDtoValidator notificationValidator;
-
-  @Autowired
-  private UserReferenceDataService userReferenceDataService;
 
   @Autowired
   private PermissionService permissionService;
 
-  @Value("${email.noreply}")
-  private String defaultFrom;
+  @Autowired
+  private NotificationHandler notificationHandler;
 
   /**
    * Send an email notification.
@@ -63,37 +49,16 @@ public class NotificationController {
   @PostMapping("/notifications")
   @ResponseStatus(HttpStatus.OK)
   public void sendNotification(@RequestBody NotificationDto notification,
-      BindingResult bindingResult) throws MessagingException {
+      BindingResult bindingResult) {
     permissionService.canSendNotification();
     notificationValidator.validate(notification, bindingResult);
 
     if (bindingResult.getErrorCount() > 0) {
-      throw new ValidationException(bindingResult.getFieldError().getDefaultMessage());
+      FieldError fieldError = bindingResult.getFieldError();
+      throw new ValidationException(fieldError.getDefaultMessage(), fieldError.getField());
     }
 
-    UserContactDetails contactDetails = userContactDetailsRepository
-        .findOne(notification.getUserId());
-
-    if (canBeNotified(contactDetails)) {
-      String from = StringUtils.defaultIfBlank(notification.getFrom(), defaultFrom);
-
-      notificationService.sendNotification(
-          from, contactDetails.getEmailAddress(),
-          notification.getSubject(), notification.getContent()
-      );
-    }
-  }
-
-  private boolean canBeNotified(UserContactDetails contactDetails) {
-    if (null == contactDetails
-        || !contactDetails.isEmailAddressVerified()
-        || !contactDetails.isAllowNotify()) {
-      return false;
-    }
-
-    return userReferenceDataService
-        .findOne(contactDetails.getReferenceDataUserId())
-        .isActive();
+    notificationHandler.handle(notification);
   }
 
 }

@@ -13,24 +13,25 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.notification.web.notification;
+package org.openlmis.notification.service;
 
-import java.util.Map;
-import java.util.UUID;
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import java.util.Arrays;
+import org.apache.commons.lang3.StringUtils;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@EqualsAndHashCode
-@ToString
-public final class NotificationDto {
-  private UUID userId;
-  private Map<String, MessageDto> messages;
+public enum MessageType {
+  EMAIL;
+
+  /**
+   * Tries to convert the given string value to one of available {@link MessageType}.
+   *
+   * @param value a string representation of one of {@link MessageType}.
+   * @return related {@link MessageType} or null.
+   */
+  public static MessageType fromString(String value) {
+    return Arrays
+        .stream(values())
+        .filter(candidate -> StringUtils.equalsIgnoreCase(candidate.name(), value))
+        .findFirst()
+        .orElse(null);
+  }
 }

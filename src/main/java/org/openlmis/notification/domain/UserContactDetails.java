@@ -110,15 +110,8 @@ public class UserContactDetails implements Identifiable {
    * @return true if email is set to valid email address and flag is set to true; otherwise false.
    */
   public boolean isEmailAddressVerified() {
-    if (null == emailDetails) {
-      return false;
-    }
+    return hasEmailAddress() && isTrue(emailDetails.getEmailVerified());
 
-    if (!hasEmailAddress()) {
-      return false;
-    }
-
-    return isTrue(emailDetails.getEmailVerified());
   }
 
   public boolean isAllowNotify() {

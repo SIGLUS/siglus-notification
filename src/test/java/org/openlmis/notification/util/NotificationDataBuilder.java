@@ -13,24 +13,33 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.notification.web.notification;
+package org.openlmis.notification.util;
 
+import com.google.common.collect.Maps;
 import java.util.Map;
 import java.util.UUID;
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
+import org.openlmis.notification.web.notification.MessageDto;
+import org.openlmis.notification.web.notification.NotificationDto;
 
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@EqualsAndHashCode
-@ToString
-public final class NotificationDto {
-  private UUID userId;
-  private Map<String, MessageDto> messages;
+public class NotificationDataBuilder {
+  private UUID userId = UUID.randomUUID();
+  private Map<String, MessageDto> messages = Maps.newHashMap();
+
+  public NotificationDataBuilder() {
+    this.messages.put("email", new MessageDto("subject", "body"));
+  }
+
+  public NotificationDataBuilder withUserId(UUID userId) {
+    this.userId = userId;
+    return this;
+  }
+
+  public NotificationDataBuilder withMessage(String messageType, MessageDto message) {
+    this.messages.put(messageType, message);
+    return this;
+  }
+
+  public NotificationDto build() {
+    return new NotificationDto(userId, messages);
+  }
 }

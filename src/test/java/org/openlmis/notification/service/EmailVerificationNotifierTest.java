@@ -25,7 +25,6 @@ import static org.openlmis.notification.i18n.MessageKeys.EMAIL_VERIFICATION_EMAI
 
 import java.util.Locale;
 import java.util.UUID;
-import javax.mail.MessagingException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -43,7 +42,7 @@ import org.openlmis.notification.service.referencedata.UserReferenceDataService;
 import org.openlmis.notification.testutils.SaveAnswer;
 import org.openlmis.notification.testutils.UserDataBuilder;
 import org.openlmis.notification.util.UserContactDetailsDataBuilder;
-import org.springframework.test.util.ReflectionTestUtils;
+import org.openlmis.notification.web.notification.MessageDto;
 
 @RunWith(MockitoJUnitRunner.class)
 public class EmailVerificationNotifierTest {
@@ -52,7 +51,7 @@ public class EmailVerificationNotifierTest {
   private UserReferenceDataService userReferenceDataService;
 
   @Mock
-  private NotificationService notificationService;
+  private EmailMessageHandler emailMessageHandler;
 
   @Mock
   private ExposedMessageSource messageSource;
@@ -103,16 +102,15 @@ public class EmailVerificationNotifierTest {
   }
 
   @Test
-  public void shouldSendNotification() throws MessagingException {
-    // given
-    ReflectionTestUtils.setField(notifier, "mailAddress", email);
+  public void shouldSendNotification() {
     // when
     notifier.sendNotification(userContactDetails, email);
 
     // then
     verify(emailVerificationTokenRepository).save(tokenCaptor.capture());
-    verifyNotificationRequest(
-        email
+    verify(emailMessageHandler).handle(
+        email,
+        new MessageDto(EMAIL_VERIFICATION_EMAIL_SUBJECT, EMAIL_VERIFICATION_EMAIL_BODY)
     );
 
     EmailVerificationToken token = tokenCaptor.getValue();
@@ -120,9 +118,4 @@ public class EmailVerificationNotifierTest {
     assertThat(token.getEmailAddress()).isEqualTo(email);
   }
 
-  private void verifyNotificationRequest(String receiverEmail)
-      throws MessagingException {
-    verify(notificationService).sendNotification(email, receiverEmail,
-        EMAIL_VERIFICATION_EMAIL_SUBJECT, EMAIL_VERIFICATION_EMAIL_BODY);
-  }
 }

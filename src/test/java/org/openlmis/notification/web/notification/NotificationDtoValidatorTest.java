@@ -16,21 +16,18 @@
 package org.openlmis.notification.web.notification;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.openlmis.notification.i18n.MessageKeys.ERROR_NOTIFICATION_REQUEST_FIELD_REQUIRED;
+import static org.openlmis.notification.i18n.MessageKeys.ERROR_NOTIFICATION_REQUEST_MESSAGES_EMPTY;
 
-import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
-import org.openlmis.notification.i18n.MessageKeys;
-import org.openlmis.notification.web.notification.NotificationDto;
-import org.openlmis.notification.web.notification.NotificationDtoValidator;
+import org.openlmis.notification.util.NotificationDataBuilder;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
 
 public class NotificationDtoValidatorTest {
   private NotificationDtoValidator validator = new NotificationDtoValidator();
-  private NotificationDto request = new NotificationDto(
-      "from", UUID.randomUUID(), "subject", "content"
-  );
+  private NotificationDto request = new NotificationDataBuilder().build();
   private Errors errors;
 
   @Before
@@ -45,35 +42,29 @@ public class NotificationDtoValidatorTest {
   }
 
   @Test
-  public void shouldNotRejectIfFromIsEmpty() {
-    request.setFrom(null);
-
-    validator.validate(request, errors);
-    assertThat(errors.getErrorCount()).isEqualTo(0);
-  }
-
-  @Test
-  public void shouldRejectIfToIsEmpty() {
+  public void shouldRejectIfUserIdIsNull() {
     request.setUserId(null);
 
     validator.validate(request, errors);
-    assertErrorMessage(errors, "userId", MessageKeys.ERROR_USER_ID_REQUIRED);
+    assertErrorMessage(errors, "userId", ERROR_NOTIFICATION_REQUEST_FIELD_REQUIRED);
   }
 
   @Test
-  public void shouldRejectIfSubjectIsEmpty() {
-    request.setSubject(null);
+  public void shouldRejectIfMessagesAreNotSet() {
+    request.setMessages(null);
 
     validator.validate(request, errors);
-    assertErrorMessage(errors, "subject", MessageKeys.ERROR_SUBJECT_REQUIRED);
+    assertErrorMessage(errors, "messages", ERROR_NOTIFICATION_REQUEST_MESSAGES_EMPTY);
   }
 
   @Test
-  public void shouldRejectIfContentIsEmpty() {
-    request.setContent(null);
+  public void shouldRejectIfMessageBodyIsEmpty() {
+    request = new NotificationDataBuilder()
+        .withMessage("email", new MessageDto())
+        .build();
 
     validator.validate(request, errors);
-    assertErrorMessage(errors, "content", MessageKeys.ERROR_CONTENT_REQUIRED);
+    assertErrorMessage(errors, "messages", ERROR_NOTIFICATION_REQUEST_FIELD_REQUIRED);
   }
 
   private void assertErrorMessage(Errors errors, String field, String expectedMessage) {
@@ -81,7 +72,7 @@ public class NotificationDtoValidatorTest {
 
     boolean match = errors.getFieldErrors(field)
         .stream()
-        .anyMatch(e -> e.getField().equals(field) && e.getDefaultMessage().equals(expectedMessage));
+        .anyMatch(e -> field.equals(e.getField()) && expectedMessage.equals(e.getDefaultMessage()));
 
     assertThat(match).as("There is no error with default message: " + expectedMessage).isTrue();
   }

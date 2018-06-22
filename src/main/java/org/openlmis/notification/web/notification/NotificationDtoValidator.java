@@ -15,9 +15,14 @@
 
 package org.openlmis.notification.web.notification;
 
-import org.openlmis.notification.i18n.MessageKeys;
+import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.openlmis.notification.i18n.MessageKeys.ERROR_NOTIFICATION_REQUEST_FIELD_REQUIRED;
+import static org.openlmis.notification.i18n.MessageKeys.ERROR_NOTIFICATION_REQUEST_MESSAGES_EMPTY;
+import static org.openlmis.notification.i18n.MessageKeys.ERROR_NOTIFICATION_REQUEST_NULL;
+
 import org.openlmis.notification.web.BaseValidator;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 import org.springframework.validation.Errors;
 
 @Component
@@ -30,9 +35,21 @@ public class NotificationDtoValidator implements BaseValidator {
 
   @Override
   public void validate(Object target, Errors errors) {
-    verifyArguments(target, errors, MessageKeys.ERROR_NOTIFICATION_REQUEST_NULL);
-    rejectIfEmptyOrWhitespace(errors, "userId", MessageKeys.ERROR_USER_ID_REQUIRED);
-    rejectIfEmptyOrWhitespace(errors, "subject", MessageKeys.ERROR_SUBJECT_REQUIRED);
-    rejectIfEmptyOrWhitespace(errors, "content", MessageKeys.ERROR_CONTENT_REQUIRED);
+    verifyArguments(target, errors, ERROR_NOTIFICATION_REQUEST_NULL);
+    rejectIfEmptyOrWhitespace(errors, "userId", ERROR_NOTIFICATION_REQUEST_FIELD_REQUIRED);
+
+    if (!errors.hasErrors()) {
+      NotificationDto dto = (NotificationDto) target;
+
+      if (CollectionUtils.isEmpty(dto.getMessages())) {
+        rejectValue(errors, "messages", ERROR_NOTIFICATION_REQUEST_MESSAGES_EMPTY);
+      } else {
+        for (MessageDto message : dto.getMessages().values()) {
+          if (isBlank(message.getBody())) {
+            rejectValue(errors, "messages", ERROR_NOTIFICATION_REQUEST_FIELD_REQUIRED);
+          }
+        }
+      }
+    }
   }
 }
