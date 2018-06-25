@@ -38,7 +38,7 @@ import static org.openlmis.notification.i18n.MessageKeys.ERROR_ID_MISMATCH;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_TOKEN_EXPIRED;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_TOKEN_INVALID;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_USER_CONTACT_DETAILS_NOT_FOUND;
-import static org.openlmis.notification.i18n.MessageKeys.ERROR_USER_EMAIL_ALREADY_VERIFIED;
+import static org.openlmis.notification.i18n.MessageKeys.ERROR_VERIFICATION_EMAIL_VERIFIED;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_USER_HAS_NO_EMAIL;
 import static org.openlmis.notification.i18n.MessageKeys.PERMISSION_MISSING;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
@@ -490,7 +490,7 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
         .post(VERIFICATIONS_URL)
         .then()
         .statusCode(HttpStatus.BAD_REQUEST.value())
-        .body(MESSAGE_KEY, equalTo(ERROR_USER_EMAIL_ALREADY_VERIFIED));
+        .body(MESSAGE_KEY, equalTo(ERROR_VERIFICATION_EMAIL_VERIFIED));
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
     verifyZeroInteractions(emailVerificationNotifier);

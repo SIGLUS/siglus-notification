@@ -18,6 +18,7 @@ package org.openlmis.notification.web.errorhandler;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_CONSTRAINT;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_EMAIL_DUPLICATED;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_SEND_REQUEST;
+import static org.openlmis.notification.i18n.MessageKeys.ERROR_VERIFICATION_EMAIL_DUPLICATED;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -42,11 +43,12 @@ import org.springframework.web.client.HttpStatusCodeException;
 @ControllerAdvice
 public class WebErrorHandling extends AbstractErrorHandling {
 
-  private static final Map<String, String> CONSTRAINT_MAP = new HashMap<>();
+  static final Map<String, String> CONSTRAINT_MAP = new HashMap<>();
 
   static {
     CONSTRAINT_MAP.put("unq_contact_details_email", ERROR_EMAIL_DUPLICATED);
-    CONSTRAINT_MAP.put("unq_email_verification_tokens_emailaddress", ERROR_EMAIL_DUPLICATED);
+    CONSTRAINT_MAP.put(
+        "unq_email_verification_tokens_emailaddress", ERROR_VERIFICATION_EMAIL_DUPLICATED);
   }
 
   /**

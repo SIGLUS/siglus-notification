@@ -20,11 +20,11 @@ import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_CONSTRAINT;
-import static org.openlmis.notification.i18n.MessageKeys.ERROR_EMAIL_DUPLICATED;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_SEND_REQUEST;
 import static org.openlmis.notification.i18n.MessageKeys.PERMISSION_MISSING;
 
 import java.util.Locale;
+import java.util.Map;
 import javax.persistence.PersistenceException;
 import org.apache.commons.lang.StringUtils;
 import org.hibernate.exception.ConstraintViolationException;
@@ -140,10 +140,12 @@ public class WebErrorHandlingTest {
 
   @Test
   public void shouldHandleDataIntegrityViolationException() {
-    ConstraintViolationException cause = mock(ConstraintViolationException.class);
-    when(cause.getConstraintName()).thenReturn("email_verification_tokens_emailaddress_uk");
+    for (Map.Entry<String, String> entry : WebErrorHandling.CONSTRAINT_MAP.entrySet()) {
+      ConstraintViolationException cause = mock(ConstraintViolationException.class);
+      when(cause.getConstraintName()).thenReturn(entry.getKey());
 
-    testDataIntegrityViolation(cause, ERROR_EMAIL_DUPLICATED);
+      testDataIntegrityViolation(cause, entry.getValue());
+    }
   }
 
   @Test
@@ -173,7 +175,10 @@ public class WebErrorHandlingTest {
     DataIntegrityViolationException exp = mock(DataIntegrityViolationException.class);
 
     when(exp.getCause()).thenReturn(cause);
-    when(exp.getMessage()).thenReturn(nonNullMessageKey);
+
+    if (null == messageKey) {
+      when(exp.getMessage()).thenReturn(nonNullMessageKey);
+    }
 
     // when
     mockMessage(nonNullMessageKey);

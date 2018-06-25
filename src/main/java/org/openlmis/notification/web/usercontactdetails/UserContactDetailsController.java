@@ -20,7 +20,7 @@ import static org.openlmis.notification.i18n.MessageKeys.ERROR_ID_MISMATCH;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_TOKEN_EXPIRED;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_TOKEN_INVALID;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_USER_CONTACT_DETAILS_NOT_FOUND;
-import static org.openlmis.notification.i18n.MessageKeys.ERROR_USER_EMAIL_ALREADY_VERIFIED;
+import static org.openlmis.notification.i18n.MessageKeys.ERROR_VERIFICATION_EMAIL_VERIFIED;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_USER_HAS_NO_EMAIL;
 
 import java.util.UUID;
@@ -165,7 +165,7 @@ public class UserContactDetailsController {
       if (null == contactDetails.getEmailAddress()) {
         throw new ValidationException(ERROR_USER_HAS_NO_EMAIL);
       } else {
-        throw new ValidationException(ERROR_USER_EMAIL_ALREADY_VERIFIED);
+        throw new ValidationException(ERROR_VERIFICATION_EMAIL_VERIFIED);
       }
     }
 

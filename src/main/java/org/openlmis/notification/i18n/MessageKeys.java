@@ -81,8 +81,11 @@ public abstract class MessageKeys {
   public static final String EMAIL_VERIFICATION_EMAIL_BODY =
       join(SERVICE_PREFIX, VERIFICATIONS, EMAIL, "body");
 
-  public static final String ERROR_USER_EMAIL_ALREADY_VERIFIED =
+  public static final String ERROR_VERIFICATION_EMAIL_VERIFIED =
       join(ERROR_PREFIX, VERIFICATIONS, EMAIL, "verified");
+
+  public static final String ERROR_VERIFICATION_EMAIL_DUPLICATED =
+      join(ERROR_PREFIX, VERIFICATIONS, EMAIL, "duplicated");
 
   public static final String ERROR_USER_HAS_NO_EMAIL =
       join(ERROR_PREFIX, VERIFICATIONS, EMAIL, "null");
