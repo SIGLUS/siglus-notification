@@ -22,6 +22,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
+import org.springframework.validation.annotation.Validated;
+import org.springframework.web.bind.WebDataBinder;
+import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -41,6 +44,11 @@ public class NotificationController {
   @Autowired
   private NotificationHandler notificationHandler;
 
+  @InitBinder
+  private void initBinder(WebDataBinder binder) {
+    binder.setValidator(notificationValidator);
+  }
+
   /**
    * Send an email notification.
    *
@@ -48,10 +56,9 @@ public class NotificationController {
    */
   @PostMapping("/notifications")
   @ResponseStatus(HttpStatus.OK)
-  public void sendNotification(@RequestBody NotificationDto notification,
+  public void sendNotification(@RequestBody @Validated NotificationDto notification,
       BindingResult bindingResult) {
     permissionService.canSendNotification();
-    notificationValidator.validate(notification, bindingResult);
 
     if (bindingResult.getErrorCount() > 0) {
       FieldError fieldError = bindingResult.getFieldError();
