@@ -32,7 +32,7 @@ traits:
       displayName: Notification
       post:
           is: [ secured ]
-          description: Send a notification to the given user with provided subject and body.
+          description: Send a notification to the given user with provided messages.
           body:
               application/json:
                   schema: notification
@@ -40,9 +40,9 @@ traits:
               200:
                   description: The notification request has been accepted and sent to the given user.
               401:
-                  description: The token used in the request is invalid
+                  description: The request does not contain a token.
               403:
-                  description: The token used in the request is not a service-level token.
+                  description: The request is invalid.
                   body:
                       application/json:
                           schema: errorResponse
