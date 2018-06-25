@@ -51,9 +51,9 @@ import org.springframework.test.context.junit4.SpringRunner;
 @ActiveProfiles("test")
 public abstract class BaseWebIntegrationTest {
   private static final String USER_ACCESS_TOKEN = "418c89c5-7f21-4cd1-a63a-38c47892b0fe";
-  private static final String USER_ACCESS_TOKEN_HEADER = "Bearer " + USER_ACCESS_TOKEN;
+  protected static final String USER_ACCESS_TOKEN_HEADER = "Bearer " + USER_ACCESS_TOKEN;
   private static final String SERVICE_ACCESS_TOKEN = "6d6896a5-e94c-4183-839d-911bc63174ff";
-  private static final String SERVICE_ACCESS_TOKEN_HEADER = "Bearer " + SERVICE_ACCESS_TOKEN;
+  protected static final String SERVICE_ACCESS_TOKEN_HEADER = "Bearer " + SERVICE_ACCESS_TOKEN;
 
   protected static final String RAML_ASSERT_MESSAGE =
       "HTTP request/response should match RAML definition.";
@@ -118,26 +118,6 @@ public abstract class BaseWebIntegrationTest {
     restAssured = ramlDefinition.createRestAssured();
   }
 
-  /**
-   * Get a user access token. An arbitrary UUID string is returned and the tests assume it is a
-   * valid one for an admin user.
-   *
-   * @return an access token
-   */
-  protected String getUserTokenHeader() {
-    return USER_ACCESS_TOKEN_HEADER;
-  }
-
-  /**
-   * Get a trusted client access token. An arbitrary UUID string is returned and the tests assume it
-   * is a valid one for a trusted client. This is for service-to-service communication.
-   *
-   * @return an access token
-   */
-  protected String getServiceTokenHeader() {
-    return SERVICE_ACCESS_TOKEN_HEADER;
-  }
-
   protected RequestSpecification startRequest() {
     return restAssured.given();
   }
@@ -153,7 +133,7 @@ public abstract class BaseWebIntegrationTest {
   }
 
   protected RequestSpecification startUserRequest() {
-    return startRequest(getUserTokenHeader());
+    return startRequest(USER_ACCESS_TOKEN_HEADER);
   }
 
 }

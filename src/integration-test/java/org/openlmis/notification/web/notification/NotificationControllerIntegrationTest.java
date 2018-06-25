@@ -72,7 +72,7 @@ public class NotificationControllerIntegrationTest extends BaseWebIntegrationTes
 
   @Test
   public void shouldSendMessageForValidNotification() {
-    send(CONTENT, getServiceTokenHeader())
+    send(CONTENT, SERVICE_ACCESS_TOKEN_HEADER)
         .then()
         .statusCode(200);
 
@@ -82,7 +82,7 @@ public class NotificationControllerIntegrationTest extends BaseWebIntegrationTes
 
   @Test
   public void shouldNotSendMessageForInvalidNotification() {
-    send(null, getServiceTokenHeader())
+    send(null, SERVICE_ACCESS_TOKEN_HEADER)
         .then()
         .statusCode(400)
         .body(MESSAGE_KEY, is(ERROR_NOTIFICATION_REQUEST_FIELD_REQUIRED));
@@ -94,7 +94,7 @@ public class NotificationControllerIntegrationTest extends BaseWebIntegrationTes
 
   @Test
   public void shouldNotSendMessageForUserRequest() {
-    send(CONTENT, getUserTokenHeader())
+    send(CONTENT, USER_ACCESS_TOKEN_HEADER)
         .then()
         .statusCode(403)
         .body(MESSAGE_KEY, is(PERMISSION_MISSING_GENERIC));
