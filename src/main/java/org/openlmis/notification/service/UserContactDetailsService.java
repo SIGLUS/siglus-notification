@@ -45,44 +45,66 @@ public class UserContactDetailsService {
   }
 
   private UserContactDetails addUserContactDetails(UserContactDetails toSave) {
-    if (null != toSave.getEmailDetails()) {
-      toSave.getEmailDetails().setEmailVerified(false);
-    }
-
+    unsetEmailVerifiedFlag(toSave);
     UserContactDetails saved = userContactDetailsRepository.save(toSave);
 
     if (saved.hasEmailAddress()) {
-      emailVerificationNotifier.sendNotification(saved, saved.getEmailAddress());
+      sendVerificationEmail(saved, saved.getEmailAddress());
     }
 
     return saved;
   }
 
+  private void unsetEmailVerifiedFlag(UserContactDetails toSave) {
+    if (null != toSave.getEmailDetails()) {
+      toSave.getEmailDetails().setEmailVerified(false);
+    }
+  }
+
   private UserContactDetails updateUserContactDetails(UserContactDetails toUpdate) {
+    EmailDetails newEmailDetails = checkIfEmailAddressHasBeenChanged(toUpdate);
+    UserContactDetails saved = userContactDetailsRepository.save(toUpdate);
+
+    if (null != newEmailDetails) {
+      trySendVerificationEmail(newEmailDetails, saved);
+    }
+
+    return saved;
+  }
+
+  private EmailDetails checkIfEmailAddressHasBeenChanged(UserContactDetails toUpdate) {
+    UserContactDetails existing = userContactDetailsRepository.findOne(toUpdate.getId());
     EmailDetails newEmailDetails = null;
 
-    UserContactDetails existing = userContactDetailsRepository.findOne(toUpdate.getId());
+    boolean hasEmailAddress = toUpdate.hasEmailAddress();
+    boolean emailAddressChanged = hasEmailAddress
+        && !toUpdate.getEmailAddress().equals(existing.getEmailAddress());
 
-    if (toUpdate.hasEmailAddress()
-        && !toUpdate.getEmailAddress().equals(existing.getEmailAddress())) {
+    if (emailAddressChanged) {
       newEmailDetails = toUpdate.getEmailDetails();
       toUpdate.setEmailDetails(new EmailDetails(
           existing.getEmailAddress(), existing.isEmailAddressVerified()
       ));
     }
 
-    UserContactDetails saved = userContactDetailsRepository.save(toUpdate);
+    return newEmailDetails;
+  }
 
-    if (null != newEmailDetails) {
-      EmailVerificationToken token = emailVerificationTokenRepository
-          .findOneByUserContactDetails(saved);
+  private void trySendVerificationEmail(EmailDetails newEmailDetails, UserContactDetails saved) {
+    EmailVerificationToken token = emailVerificationTokenRepository
+        .findOneByUserContactDetails(saved);
 
-      if (null == token || !token.getEmailAddress().equals(newEmailDetails.getEmail())) {
-        emailVerificationNotifier.sendNotification(saved, newEmailDetails.getEmail());
-      }
+    boolean tokenNotExists = null == token;
+    boolean emailAddressChanged = !tokenNotExists
+        && !token.getEmailAddress().equals(newEmailDetails.getEmail());
+
+    if (tokenNotExists || emailAddressChanged) {
+      sendVerificationEmail(saved, newEmailDetails.getEmail());
     }
+  }
 
-    return saved;
+  private void sendVerificationEmail(UserContactDetails contactDetails, String emailAddress) {
+    emailVerificationNotifier.sendNotification(contactDetails, emailAddress);
   }
 
 }
