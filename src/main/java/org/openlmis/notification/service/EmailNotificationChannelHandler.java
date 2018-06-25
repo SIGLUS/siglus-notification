@@ -29,7 +29,7 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
 
 @Component
-public class EmailMessageHandler implements MessageHandler {
+public class EmailNotificationChannelHandler implements NotificationChannelHandler {
 
   @Autowired
   private JavaMailSender mailSender;
@@ -41,8 +41,8 @@ public class EmailMessageHandler implements MessageHandler {
   private String from;
 
   @Override
-  public MessageType getMessageType() {
-    return MessageType.EMAIL;
+  public NotificationChannel getNotificationChannel() {
+    return NotificationChannel.EMAIL;
   }
 
   @Override

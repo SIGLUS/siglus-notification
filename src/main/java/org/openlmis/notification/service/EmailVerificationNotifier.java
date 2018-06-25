@@ -44,7 +44,7 @@ public class EmailVerificationNotifier {
   private ExposedMessageSource messageSource;
 
   @Autowired
-  private EmailMessageHandler emailMessageHandler;
+  private EmailNotificationChannelHandler emailNotificationChannelHandler;
 
   @Autowired
   private UserReferenceDataService userReferenceDataService;
@@ -106,7 +106,7 @@ public class EmailVerificationNotifier {
     String body = messageSource
         .getMessage(EMAIL_VERIFICATION_EMAIL_BODY, bodyMsgArgs, locale);
 
-    emailMessageHandler.handle(email, new MessageDto(subject, body));
+    emailNotificationChannelHandler.handle(email, new MessageDto(subject, body));
   }
 
   private String getVerificationPath(UserContactDetails contactDetails,

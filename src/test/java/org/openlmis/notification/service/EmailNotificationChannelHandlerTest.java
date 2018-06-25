@@ -47,7 +47,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.util.ReflectionTestUtils;
 
 @RunWith(MockitoJUnitRunner.class)
-public class EmailMessageHandlerTest {
+public class EmailNotificationChannelHandlerTest {
   private static final UUID USER_ID = UUID.randomUUID();
 
   @Mock
@@ -57,7 +57,7 @@ public class EmailMessageHandlerTest {
   private UserReferenceDataService userReferenceDataService;
 
   @InjectMocks
-  private EmailMessageHandler handler = new EmailMessageHandler();
+  private EmailNotificationChannelHandler handler = new EmailNotificationChannelHandler();
 
   @Captor
   private ArgumentCaptor<MimeMessage> mimeMessageCaptor;

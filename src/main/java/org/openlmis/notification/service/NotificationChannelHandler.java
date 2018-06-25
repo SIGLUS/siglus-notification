@@ -15,23 +15,13 @@
 
 package org.openlmis.notification.service;
 
-import java.util.Arrays;
-import org.apache.commons.lang3.StringUtils;
+import org.openlmis.notification.domain.UserContactDetails;
+import org.openlmis.notification.web.notification.MessageDto;
 
-public enum MessageType {
-  EMAIL;
+public interface NotificationChannelHandler {
 
-  /**
-   * Tries to convert the given string value to one of available {@link MessageType}.
-   *
-   * @param value a string representation of one of {@link MessageType}.
-   * @return related {@link MessageType} or null.
-   */
-  public static MessageType fromString(String value) {
-    return Arrays
-        .stream(values())
-        .filter(candidate -> StringUtils.equalsIgnoreCase(candidate.name(), value))
-        .findFirst()
-        .orElse(null);
-  }
+  NotificationChannel getNotificationChannel();
+
+  void handle(UserContactDetails contactDetails, MessageDto message);
+
 }

@@ -32,17 +32,17 @@ import org.springframework.transaction.annotation.Transactional;
 @ActiveProfiles("test")
 @SpringBootTest
 @Transactional
-public class MessageHandlerIntegrationTest {
+public class NotificationChannelHandlerIntegrationTest {
 
   @Autowired
-  private List<MessageHandler> messageHandlers;
+  private List<NotificationChannelHandler> notificationChannelHandlers;
 
   @Test
   public void messageTypeShouldHaveHandler() {
-    for (MessageType type : MessageType.values()) {
-      MessageHandler handler = messageHandlers
+    for (NotificationChannel type : NotificationChannel.values()) {
+      NotificationChannelHandler handler = notificationChannelHandlers
           .stream()
-          .filter(item -> type.equals(item.getMessageType()))
+          .filter(item -> type.equals(item.getNotificationChannel()))
           .findFirst()
           .orElse(null);
 

@@ -32,8 +32,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.notification.domain.UserContactDetails;
 import org.openlmis.notification.repository.UserContactDetailsRepository;
-import org.openlmis.notification.service.EmailMessageHandler;
-import org.openlmis.notification.service.MessageType;
+import org.openlmis.notification.service.EmailNotificationChannelHandler;
+import org.openlmis.notification.service.NotificationChannel;
 import org.openlmis.notification.service.referencedata.UserDto;
 import org.openlmis.notification.service.referencedata.UserReferenceDataService;
 import org.openlmis.notification.testutils.UserDataBuilder;
@@ -50,7 +50,7 @@ public class NotificationControllerIntegrationTest extends BaseWebIntegrationTes
   private static final String CONTENT = "content";
 
   @MockBean
-  private EmailMessageHandler emailMessageHandler;
+  private EmailNotificationChannelHandler emailNotificationChannelHandler;
 
   @MockBean
   private UserContactDetailsRepository userContactDetailsRepository;
@@ -67,7 +67,8 @@ public class NotificationControllerIntegrationTest extends BaseWebIntegrationTes
   public void setUp() {
     given(userContactDetailsRepository.findOne(USER_ID)).willReturn(contactDetails);
     given(userReferenceDataService.findOne(USER_ID)).willReturn(user);
-    given(emailMessageHandler.getMessageType()).willReturn(MessageType.EMAIL);
+    given(emailNotificationChannelHandler.getNotificationChannel())
+        .willReturn(NotificationChannel.EMAIL);
   }
 
   @Test
@@ -77,7 +78,8 @@ public class NotificationControllerIntegrationTest extends BaseWebIntegrationTes
         .statusCode(200);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-    verify(emailMessageHandler).handle(contactDetails, new MessageDto(SUBJECT, CONTENT));
+    verify(emailNotificationChannelHandler)
+        .handle(contactDetails, new MessageDto(SUBJECT, CONTENT));
   }
 
   @Test
@@ -89,7 +91,7 @@ public class NotificationControllerIntegrationTest extends BaseWebIntegrationTes
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.validates());
 
-    verifyZeroInteractions(emailMessageHandler);
+    verifyZeroInteractions(emailNotificationChannelHandler);
   }
 
   @Test
@@ -100,7 +102,7 @@ public class NotificationControllerIntegrationTest extends BaseWebIntegrationTes
         .body(MESSAGE_KEY, is(PERMISSION_MISSING_GENERIC));
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.validates());
-    verifyZeroInteractions(emailMessageHandler);
+    verifyZeroInteractions(emailNotificationChannelHandler);
   }
 
   @Test
@@ -110,7 +112,7 @@ public class NotificationControllerIntegrationTest extends BaseWebIntegrationTes
         .statusCode(401);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.validates());
-    verifyZeroInteractions(emailMessageHandler);
+    verifyZeroInteractions(emailNotificationChannelHandler);
   }
 
   private Response send(String content, String token) {

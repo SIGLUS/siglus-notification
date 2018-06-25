@@ -51,7 +51,7 @@ public class EmailVerificationNotifierTest {
   private UserReferenceDataService userReferenceDataService;
 
   @Mock
-  private EmailMessageHandler emailMessageHandler;
+  private EmailNotificationChannelHandler emailNotificationChannelHandler;
 
   @Mock
   private ExposedMessageSource messageSource;
@@ -108,7 +108,7 @@ public class EmailVerificationNotifierTest {
 
     // then
     verify(emailVerificationTokenRepository).save(tokenCaptor.capture());
-    verify(emailMessageHandler).handle(
+    verify(emailNotificationChannelHandler).handle(
         email,
         new MessageDto(EMAIL_VERIFICATION_EMAIL_SUBJECT, EMAIL_VERIFICATION_EMAIL_BODY)
     );

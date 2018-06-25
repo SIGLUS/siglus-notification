@@ -15,7 +15,7 @@
 
 package org.openlmis.notification.service;
 
-import static org.openlmis.notification.i18n.MessageKeys.ERROR_UNSUPPORTED_MESSAGE_TYPE;
+import static org.openlmis.notification.i18n.MessageKeys.ERROR_UNSUPPORTED_NOTIFICATION_CHANNEL;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_USER_CONTACT_DETAILS_NOT_FOUND;
 
 import java.util.List;
@@ -37,7 +37,7 @@ public class NotificationHandler {
   private UserContactDetailsRepository userContactDetailsRepository;
 
   @Autowired
-  private List<MessageHandler> handlers;
+  private List<NotificationChannelHandler> handlers;
 
   /**
    * Handles the given notification.
@@ -51,19 +51,19 @@ public class NotificationHandler {
     }
 
     for (Entry<String, MessageDto> entry : notification.getMessages().entrySet()) {
-      MessageType messageType = getMessageType(entry.getKey());
+      NotificationChannel notificationChannel = getNotificationChannel(entry.getKey());
       handlers
           .stream()
-          .filter(item -> messageType.equals(item.getMessageType()))
+          .filter(item -> notificationChannel.equals(item.getNotificationChannel()))
           .findFirst()
           .ifPresent(item -> item.handle(contactDetails, entry.getValue()));
     }
   }
 
-  private MessageType getMessageType(String value) {
+  private NotificationChannel getNotificationChannel(String value) {
     return Optional
-        .ofNullable(MessageType.fromString(value))
-        .orElseThrow(() -> new ValidationException(ERROR_UNSUPPORTED_MESSAGE_TYPE, value));
+        .ofNullable(NotificationChannel.fromString(value))
+        .orElseThrow(() -> new ValidationException(ERROR_UNSUPPORTED_NOTIFICATION_CHANNEL, value));
   }
 
 }

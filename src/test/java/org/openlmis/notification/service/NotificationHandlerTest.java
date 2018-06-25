@@ -42,7 +42,7 @@ public class NotificationHandlerTest {
   private UserContactDetailsRepository userContactDetailsRepository;
 
   @Mock
-  private MessageHandler messageHandler;
+  private NotificationChannelHandler notificationChannelHandler;
 
   @InjectMocks
   private NotificationHandler notificationHandler;
@@ -58,18 +58,18 @@ public class NotificationHandlerTest {
   public void setUp() throws Exception {
     when(userContactDetailsRepository.findOne(notification.getUserId()))
         .thenReturn(contactDetails);
-    when(messageHandler.getMessageType()).thenReturn(MessageType.EMAIL);
+    when(notificationChannelHandler.getNotificationChannel()).thenReturn(NotificationChannel.EMAIL);
 
     ReflectionTestUtils
-        .setField(notificationHandler, "handlers", Lists.newArrayList(messageHandler));
+        .setField(notificationHandler, "handlers", Lists.newArrayList(notificationChannelHandler));
   }
 
   @Test
   public void shouldHandleNotification() {
     notificationHandler.handle(notification);
     verify(userContactDetailsRepository).findOne(notification.getUserId());
-    verify(messageHandler).getMessageType();
-    verify(messageHandler).handle(contactDetails, message);
+    verify(notificationChannelHandler).getNotificationChannel();
+    verify(notificationChannelHandler).handle(contactDetails, message);
   }
 
   @Test(expected = NotFoundException.class)

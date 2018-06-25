@@ -27,7 +27,7 @@ public abstract class MessageKeys {
   private static final String TOKEN = "token";
   private static final String EMAIL = "email";
   private static final String MESSAGES = "messages";
-  private static final String MESSAGE_TYPE = "messageType";
+  private static final String NOTIFICATION_CHANNEL = "notificationChannel";
 
   private static final String AUTHENTICATION = "authentication";
   private static final String USER = "user";
@@ -51,8 +51,8 @@ public abstract class MessageKeys {
       join(NOTIFICATION_REQUEST, MESSAGES, "empty");
 
 
-  public static final String ERROR_UNSUPPORTED_MESSAGE_TYPE =
-      join(NOTIFICATION_REQUEST, MESSAGE_TYPE, UNSUPPORTED);
+  public static final String ERROR_UNSUPPORTED_NOTIFICATION_CHANNEL =
+      join(NOTIFICATION_REQUEST, NOTIFICATION_CHANNEL, UNSUPPORTED);
 
   public static final String ERROR_EMAIL_INVALID =
       ERROR_PREFIX + ".userContactDetails.email.invalid";
