@@ -20,14 +20,16 @@ import static org.openlmis.notification.i18n.MessageKeys.ERROR_ID_MISMATCH;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_TOKEN_EXPIRED;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_TOKEN_INVALID;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_USER_CONTACT_DETAILS_NOT_FOUND;
-import static org.openlmis.notification.i18n.MessageKeys.ERROR_VERIFICATION_EMAIL_VERIFIED;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_USER_HAS_NO_EMAIL;
+import static org.openlmis.notification.i18n.MessageKeys.ERROR_VERIFICATION_EMAIL_VERIFIED;
 
 import java.util.UUID;
 import org.openlmis.notification.domain.EmailDetails;
 import org.openlmis.notification.domain.EmailVerificationToken;
 import org.openlmis.notification.domain.UserContactDetails;
-import org.openlmis.notification.i18n.ExposedMessageSource;
+import org.openlmis.notification.i18n.Message;
+import org.openlmis.notification.i18n.Message.LocalizedMessage;
+import org.openlmis.notification.i18n.MessageService;
 import org.openlmis.notification.repository.EmailVerificationTokenRepository;
 import org.openlmis.notification.repository.UserContactDetailsRepository;
 import org.openlmis.notification.service.EmailVerificationNotifier;
@@ -36,7 +38,6 @@ import org.openlmis.notification.service.UserContactDetailsService;
 import org.openlmis.notification.web.NotFoundException;
 import org.openlmis.notification.web.ValidationException;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -69,7 +70,7 @@ public class UserContactDetailsController {
   private UserContactDetailsDtoValidator validator;
 
   @Autowired
-  private ExposedMessageSource messageSource;
+  private MessageService messageService;
 
   @Autowired
   private UserContactDetailsService userContactDetailsService;
@@ -178,7 +179,7 @@ public class UserContactDetailsController {
   @GetMapping(value = "/userContactDetails/{id}/verifications/{token}")
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
-  public String verifyContactDetail(@PathVariable("id") UUID userId,
+  public LocalizedMessage verifyContactDetail(@PathVariable("id") UUID userId,
       @PathVariable("token") UUID token) {
     EmailVerificationToken verificationToken = emailVerificationTokenRepository.findOne(token);
 
@@ -200,11 +201,8 @@ public class UserContactDetailsController {
     userContactDetailsRepository.save(userContactDetails);
     emailVerificationTokenRepository.delete(token);
 
-    return messageSource.getMessage(
-        EMAIL_VERIFICATION_SUCCESS,
-        new Object[]{verificationToken.getEmailAddress()},
-        LocaleContextHolder.getLocale()
-    );
+    return messageService
+        .localize(new Message(EMAIL_VERIFICATION_SUCCESS, verificationToken.getEmailAddress()));
   }
 
   private UserContactDetailsDto toDto(UserContactDetails userContactDetails) {

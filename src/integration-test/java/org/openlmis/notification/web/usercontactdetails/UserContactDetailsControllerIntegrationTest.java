@@ -38,8 +38,8 @@ import static org.openlmis.notification.i18n.MessageKeys.ERROR_ID_MISMATCH;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_TOKEN_EXPIRED;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_TOKEN_INVALID;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_USER_CONTACT_DETAILS_NOT_FOUND;
-import static org.openlmis.notification.i18n.MessageKeys.ERROR_VERIFICATION_EMAIL_VERIFIED;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_USER_HAS_NO_EMAIL;
+import static org.openlmis.notification.i18n.MessageKeys.ERROR_VERIFICATION_EMAIL_VERIFIED;
 import static org.openlmis.notification.i18n.MessageKeys.PERMISSION_MISSING;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
@@ -52,7 +52,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.notification.domain.EmailVerificationToken;
 import org.openlmis.notification.domain.UserContactDetails;
-import org.openlmis.notification.i18n.ExposedMessageSource;
 import org.openlmis.notification.repository.EmailVerificationTokenRepository;
 import org.openlmis.notification.repository.UserContactDetailsRepository;
 import org.openlmis.notification.service.EmailVerificationNotifier;
@@ -62,9 +61,7 @@ import org.openlmis.notification.util.EmailDetailsDataBuilder;
 import org.openlmis.notification.util.UserContactDetailsDataBuilder;
 import org.openlmis.notification.web.BaseWebIntegrationTest;
 import org.openlmis.notification.web.MissingPermissionException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 
@@ -91,9 +88,6 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
 
   @MockBean
   private EmailVerificationNotifier emailVerificationNotifier;
-
-  @Autowired
-  private ExposedMessageSource messageSource;
 
   private UserContactDetails userContactDetails;
 
@@ -288,22 +282,14 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
     given(emailVerificationTokenRepository.findOne(token.getId()))
         .willReturn(token);
 
-    String expectedResponse = messageSource.getMessage(
-        EMAIL_VERIFICATION_SUCCESS,
-        new Object[]{token.getEmailAddress()},
-        LocaleContextHolder.getLocale());
-
-    String response = startUserRequest()
+    startUserRequest()
         .pathParam(ID, userContactDetails.getId())
         .pathParam(TOKEN, token.getId())
         .given()
         .get(TOKEN_URL)
         .then()
         .statusCode(HttpStatus.OK.value())
-        .extract()
-        .asString();
-
-    assertThat(response, is(expectedResponse));
+        .body(MESSAGE_KEY, is(EMAIL_VERIFICATION_SUCCESS));
 
     assertThat(userContactDetails.getEmailAddress(), is(token.getEmailAddress()));
     assertThat(userContactDetails.isEmailAddressVerified(), is(true));

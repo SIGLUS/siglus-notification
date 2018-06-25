@@ -8,7 +8,7 @@ schemas:
     - notification: !include schemas/notification.json
     - userContactDetails: !include schemas/userContactDetails.json
     - emailVerificationToken: !include schemas/emailVerificationToken.json
-    - errorResponse: !include schemas/errorResponse.json
+    - localizedMessage: !include schemas/localizedMessage.json
 
 traits:
     - secured:
@@ -45,12 +45,12 @@ traits:
                   description: The request is invalid.
                   body:
                       application/json:
-                          schema: errorResponse
+                          schema: localizedMessage
               400:
                   description: The request body is incorrect
                   body:
                       application/json:
-                          schema: errorResponse
+                          schema: localizedMessage
   /userContactDetails:
       displayName: User Contact Details
       /{id}:
@@ -71,11 +71,11 @@ traits:
                   404:
                       body:
                           application/json:
-                              schema: errorResponse
+                              schema: localizedMessage
                   403:
                       body:
                           application/json:
-                              schema: errorResponse
+                              schema: localizedMessage
           put:
               is: [ secured ]
               description: Update user contact details.
@@ -90,11 +90,11 @@ traits:
                   400:
                       body:
                           application/json:
-                              schema: errorResponse
+                              schema: localizedMessage
                   403:
                       body:
                           application/json:
-                              schema: errorResponse
+                              schema: localizedMessage
           /verifications:
               get:
                   is: [ secured ]
@@ -109,12 +109,12 @@ traits:
                           description: User contact details with the given id does not exist.
                           body:
                               application/json:
-                                  schema: errorResponse
+                                  schema: localizedMessage
                       403:
                           description: The current logged user has no permission to perform action.
                           body:
                               application/json:
-                                  schema: errorResponse
+                                  schema: localizedMessage
               post:
                   is: [ secured ]
                   description: Resend verification for the current user.
@@ -125,17 +125,17 @@ traits:
                           description: There were issues with sending verification.
                           body:
                               application/json:
-                                  schema: errorResponse
+                                  schema: localizedMessage
                       404:
                           description: User contact details with the given id does not exist.
                           body:
                               application/json:
-                                  schema: errorResponse
+                                  schema: localizedMessage
                       403:
                           description: The current logged user has no permission to perform action.
                           body:
                               application/json:
-                                  schema: errorResponse
+                                  schema: localizedMessage
               /{token}:
                   get:
                       description: Verifies the given email address
@@ -143,9 +143,10 @@ traits:
                          200:
                              description: Email verified successfully
                              body:
-                                 text/plain;charset=UTF-8:
+                                 application/json:
+                                    schema: localizedMessage
                          400:
                              description: There were issues with email verification.
                              body:
                                  application/json:
-                                    schema: errorResponse
+                                    schema: localizedMessage
