@@ -16,6 +16,7 @@
 package org.openlmis.notification.web.usercontactdetails;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonSetter;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -47,6 +48,11 @@ public final class UserContactDetailsDto
 
   @Getter
   private EmailDetailsDto emailDetails;
+
+  @JsonSetter("emailDetails")
+  public void setEmailDetails(EmailDetailsDto emailDetails) {
+    this.emailDetails = emailDetails;
+  }
 
   @Override
   @JsonIgnore

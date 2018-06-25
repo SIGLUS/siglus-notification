@@ -61,21 +61,26 @@ public class UserContactDetailsDtoValidator implements BaseValidator {
   @Override
   public void validate(Object target, Errors errors) {
     UserContactDetailsDto dto = (UserContactDetailsDto) target;
+    boolean hasEmailDetails = null != dto.getEmailDetails();
+
+    if (hasEmailDetails) {
+      verifyEmail(dto.getEmailDetails().getEmail(), errors);
+    }
 
     UserContactDetails userContactDetails = repository.findOne(dto.getReferenceDataUserId());
-
-    verifyEmail(dto.getEmailDetails().getEmail(), errors);
 
     if (null == userContactDetails) {
       return;
     }
 
-    rejectIfInvariantWasChanged(
-        errors,
-        EMAIL_VERIFIED,
-        userContactDetails.getEmailDetails().getEmailVerified(),
-        dto.getEmailDetails().getEmailVerified()
-    );
+    if (hasEmailDetails) {
+      rejectIfInvariantWasChanged(
+          errors,
+          EMAIL_VERIFIED,
+          userContactDetails.getEmailDetails().getEmailVerified(),
+          dto.getEmailDetails().getEmailVerified()
+      );
+    }
   }
 
   private void verifyEmail(String email, Errors errors) {
