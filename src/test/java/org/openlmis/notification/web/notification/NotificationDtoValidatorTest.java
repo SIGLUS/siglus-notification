@@ -22,10 +22,11 @@ import static org.openlmis.notification.i18n.MessageKeys.ERROR_NOTIFICATION_REQU
 import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.notification.util.NotificationDataBuilder;
+import org.openlmis.notification.web.BaseValidatorTest;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
 
-public class NotificationDtoValidatorTest {
+public class NotificationDtoValidatorTest extends BaseValidatorTest {
   private NotificationDtoValidator validator = new NotificationDtoValidator();
   private NotificationDto request = new NotificationDataBuilder()
       .withMessage("email", "subject", "body")
@@ -69,13 +70,4 @@ public class NotificationDtoValidatorTest {
     assertErrorMessage(errors, "messages", ERROR_NOTIFICATION_REQUEST_FIELD_REQUIRED);
   }
 
-  private void assertErrorMessage(Errors errors, String field, String expectedMessage) {
-    assertThat(errors.hasFieldErrors(field)).as("There is no errors for field: " + field).isTrue();
-
-    boolean match = errors.getFieldErrors(field)
-        .stream()
-        .anyMatch(e -> field.equals(e.getField()) && expectedMessage.equals(e.getDefaultMessage()));
-
-    assertThat(match).as("There is no error with default message: " + expectedMessage).isTrue();
-  }
 }
