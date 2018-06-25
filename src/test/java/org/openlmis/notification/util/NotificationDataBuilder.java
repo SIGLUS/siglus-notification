@@ -25,10 +25,6 @@ public class NotificationDataBuilder {
   private UUID userId = UUID.randomUUID();
   private Map<String, MessageDto> messages = Maps.newHashMap();
 
-  public NotificationDataBuilder() {
-    this.messages.put("email", new MessageDto("subject", "body"));
-  }
-
   public NotificationDataBuilder withUserId(UUID userId) {
     this.userId = userId;
     return this;
@@ -36,6 +32,15 @@ public class NotificationDataBuilder {
 
   public NotificationDataBuilder withMessage(String messageType, MessageDto message) {
     this.messages.put(messageType, message);
+    return this;
+  }
+
+  public NotificationDataBuilder withMessage(String messageType, String subject, String body) {
+    return withMessage(messageType, new MessageDto(subject, body));
+  }
+
+  public NotificationDataBuilder withEmptyMessage(String messageType) {
+    this.messages.put(messageType, new MessageDto());
     return this;
   }
 

@@ -27,7 +27,9 @@ import org.springframework.validation.Errors;
 
 public class NotificationDtoValidatorTest {
   private NotificationDtoValidator validator = new NotificationDtoValidator();
-  private NotificationDto request = new NotificationDataBuilder().build();
+  private NotificationDto request = new NotificationDataBuilder()
+      .withMessage("email", "subject", "body")
+      .build();
   private Errors errors;
 
   @Before
@@ -51,7 +53,7 @@ public class NotificationDtoValidatorTest {
 
   @Test
   public void shouldRejectIfMessagesAreNotSet() {
-    request.setMessages(null);
+    request = new NotificationDataBuilder().build();
 
     validator.validate(request, errors);
     assertErrorMessage(errors, "messages", ERROR_NOTIFICATION_REQUEST_MESSAGES_EMPTY);
@@ -60,7 +62,7 @@ public class NotificationDtoValidatorTest {
   @Test
   public void shouldRejectIfMessageBodyIsEmpty() {
     request = new NotificationDataBuilder()
-        .withMessage("email", new MessageDto())
+        .withEmptyMessage("sms")
         .build();
 
     validator.validate(request, errors);
