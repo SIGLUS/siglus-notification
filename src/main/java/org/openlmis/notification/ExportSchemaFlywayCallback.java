@@ -43,7 +43,7 @@ public class ExportSchemaFlywayCallback extends BaseFlywayCallback {
 
     int exitCode = 0;
     try {
-      schemaName = Optional.ofNullable(schemaName).orElse("stockmanagement");
+      schemaName = Optional.ofNullable(schemaName).orElse("notification");
       
       Process proc = Runtime.getRuntime().exec("/app/export_schema.sh " + schemaName);
 
