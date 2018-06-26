@@ -36,7 +36,7 @@ public class NotificationDataBuilder {
   }
 
   public NotificationDataBuilder withMessage(String messageType, String subject, String body) {
-    return withMessage(messageType, new MessageDto(subject, body));
+    return withMessage(messageType, new MessageDto(subject, body, false));
   }
 
   public NotificationDataBuilder withEmptyMessage(String messageType) {

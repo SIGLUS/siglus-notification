@@ -110,7 +110,7 @@ public class EmailVerificationNotifierTest {
     verify(emailVerificationTokenRepository).save(tokenCaptor.capture());
     verify(emailNotificationChannelHandler).handle(
         email,
-        new MessageDto(EMAIL_VERIFICATION_EMAIL_SUBJECT, EMAIL_VERIFICATION_EMAIL_BODY)
+        new MessageDto(EMAIL_VERIFICATION_EMAIL_SUBJECT, EMAIL_VERIFICATION_EMAIL_BODY, true)
     );
 
     EmailVerificationToken token = tokenCaptor.getValue();

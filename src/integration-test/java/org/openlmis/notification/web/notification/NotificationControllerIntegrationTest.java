@@ -79,7 +79,7 @@ public class NotificationControllerIntegrationTest extends BaseWebIntegrationTes
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
     verify(emailNotificationChannelHandler)
-        .handle(contactDetails, new MessageDto(SUBJECT, CONTENT));
+        .handle(contactDetails, new MessageDto(SUBJECT, CONTENT, false));
   }
 
   @Test
@@ -118,7 +118,7 @@ public class NotificationControllerIntegrationTest extends BaseWebIntegrationTes
   private Response send(String content, String token) {
     NotificationDto body = new NotificationDataBuilder()
         .withUserId(USER_ID)
-        .withMessage("email", new MessageDto(SUBJECT, content))
+        .withMessage("email", new MessageDto(SUBJECT, content, false))
         .build();
 
     return startRequest(token)

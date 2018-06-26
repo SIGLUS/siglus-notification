@@ -66,7 +66,7 @@ public class EmailNotificationChannelHandlerTest {
       .withReferenceDataUserId(USER_ID)
       .build();
   private UserDto user = new UserDataBuilder().build();
-  private MessageDto message = new MessageDto("subject", "body");
+  private MessageDto message = new MessageDto("subject", "body", false);
   private String from = "noreply@test.org";
 
 
@@ -128,5 +128,42 @@ public class EmailNotificationChannelHandlerTest {
   public void shouldThrowExceptionIfMailCanNotBeSend() {
     doThrow(new MailSendException("test")).when(mailSender).send(any(MimeMessage.class));
     handler.handle(contactDetails, message);
+  }
+
+  @Test
+  public void shouldSentImportantMessageIfUserHasUnsetAllowNotifyFlag()
+      throws MessagingException, IOException {
+    contactDetails.setAllowNotify(false);
+    message.setImportant(true);
+
+    handler.handle(contactDetails, message);
+
+    verify(mailSender).send(mimeMessageCaptor.capture());
+
+    MimeMessage value = mimeMessageCaptor.getValue();
+    assertThat(value.getFrom()[0].toString(), is(from));
+    assertThat(value.getAllRecipients()[0].toString(), is(contactDetails.getEmailAddress()));
+    assertThat(value.getSubject(), is(message.getSubject()));
+    assertThat(value.getContent().toString(), is(message.getBody()));
+  }
+
+  @Test
+  public void shouldNotSentImportantMessageIfUserIsNotActive() {
+    user.setActive(false);
+    message.setImportant(true);
+
+    handler.handle(contactDetails, message);
+
+    verifyZeroInteractions(mailSender);
+  }
+
+  @Test
+  public void shouldNotSentImportantMessageIfUsersEmailIsNotVerified() {
+    contactDetails.getEmailDetails().setEmailVerified(false);
+    message.setImportant(true);
+
+    handler.handle(contactDetails, message);
+
+    verifyZeroInteractions(mailSender);
   }
 }

@@ -48,7 +48,7 @@ public class NotificationHandlerTest {
   private NotificationHandler notificationHandler;
 
   private UserContactDetails contactDetails = new UserContactDetailsDataBuilder().build();
-  private MessageDto message = new MessageDto("subject", "body");
+  private MessageDto message = new MessageDto("subject", "body", false);
   private NotificationDto notification = new NotificationDataBuilder()
       .withUserId(contactDetails.getId())
       .withMessage("email", message)
