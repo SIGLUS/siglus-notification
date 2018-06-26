@@ -14,6 +14,7 @@ New functionality added in a backwards-compatible manner:
   * the verification email will be sent for a new created users with email address
   * the verification email can be resent if there is a need
   * added new endpoint to get details about pending email verification
+* [OLMIS-4923](https://openlmis.atlassian.net/browse/OLMIS-4923): Store and allow retrieval of notifications.
 
 Improvements:
 * [OLMIS-4645](https://openlmis.atlassian.net/browse/OLMIS-4645): Added Jenkinsfile

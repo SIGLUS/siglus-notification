@@ -15,6 +15,8 @@
 
 package org.openlmis.notification.web.notification;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -28,6 +30,7 @@ import lombok.ToString;
 @AllArgsConstructor
 @EqualsAndHashCode
 @ToString
+@JsonInclude(Include.NON_NULL)
 public final class MessageDto {
   private String subject;
   private String body;

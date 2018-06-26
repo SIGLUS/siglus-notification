@@ -27,7 +27,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.notification.domain.UserContactDetails;
 import org.openlmis.notification.repository.UserContactDetailsRepository;
-import org.openlmis.notification.util.NotificationDataBuilder;
+import org.openlmis.notification.util.NotificationDtoDataBuilder;
 import org.openlmis.notification.util.UserContactDetailsDataBuilder;
 import org.openlmis.notification.web.NotFoundException;
 import org.openlmis.notification.web.ValidationException;
@@ -49,7 +49,7 @@ public class NotificationHandlerTest {
 
   private UserContactDetails contactDetails = new UserContactDetailsDataBuilder().build();
   private MessageDto message = new MessageDto("subject", "body", false);
-  private NotificationDto notification = new NotificationDataBuilder()
+  private NotificationDto notification = new NotificationDtoDataBuilder()
       .withUserId(contactDetails.getId())
       .withMessage("email", message)
       .build();
@@ -81,7 +81,7 @@ public class NotificationHandlerTest {
 
   @Test(expected = ValidationException.class)
   public void shouldThrowExceptionIfMessageTypeDoesNotExist() {
-    notification = new NotificationDataBuilder()
+    notification = new NotificationDtoDataBuilder()
         .withUserId(contactDetails.getId())
         .withMessage("sms", new MessageDto())
         .build();

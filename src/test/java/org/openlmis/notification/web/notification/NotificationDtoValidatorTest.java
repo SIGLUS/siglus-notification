@@ -21,14 +21,14 @@ import static org.openlmis.notification.i18n.MessageKeys.ERROR_NOTIFICATION_REQU
 
 import org.junit.Before;
 import org.junit.Test;
-import org.openlmis.notification.util.NotificationDataBuilder;
+import org.openlmis.notification.util.NotificationDtoDataBuilder;
 import org.openlmis.notification.web.BaseValidatorTest;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
 
 public class NotificationDtoValidatorTest extends BaseValidatorTest {
   private NotificationDtoValidator validator = new NotificationDtoValidator();
-  private NotificationDto request = new NotificationDataBuilder()
+  private NotificationDto request = new NotificationDtoDataBuilder()
       .withMessage("email", "subject", "body")
       .build();
   private Errors errors;
@@ -54,7 +54,7 @@ public class NotificationDtoValidatorTest extends BaseValidatorTest {
 
   @Test
   public void shouldRejectIfMessagesAreNotSet() {
-    request = new NotificationDataBuilder().build();
+    request = new NotificationDtoDataBuilder().build();
 
     validator.validate(request, errors);
     assertErrorMessage(errors, "messages", ERROR_NOTIFICATION_REQUEST_MESSAGES_EMPTY);
@@ -62,7 +62,7 @@ public class NotificationDtoValidatorTest extends BaseValidatorTest {
 
   @Test
   public void shouldRejectIfMessageBodyIsEmpty() {
-    request = new NotificationDataBuilder()
+    request = new NotificationDtoDataBuilder()
         .withEmptyMessage("sms")
         .build();
 

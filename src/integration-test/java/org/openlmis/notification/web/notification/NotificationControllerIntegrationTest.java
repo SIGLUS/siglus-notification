@@ -15,9 +15,12 @@
 
 package org.openlmis.notification.web.notification;
 
+import static java.util.Collections.singletonList;
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_NOTIFICATION_REQUEST_FIELD_REQUIRED;
@@ -30,17 +33,24 @@ import guru.nidi.ramltester.junit.RamlMatchers;
 import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
+import org.openlmis.notification.domain.Notification;
 import org.openlmis.notification.domain.UserContactDetails;
+import org.openlmis.notification.repository.NotificationRepository;
 import org.openlmis.notification.repository.UserContactDetailsRepository;
 import org.openlmis.notification.service.EmailNotificationChannelHandler;
 import org.openlmis.notification.service.NotificationChannel;
+import org.openlmis.notification.service.PageDto;
 import org.openlmis.notification.service.referencedata.UserDto;
 import org.openlmis.notification.service.referencedata.UserReferenceDataService;
 import org.openlmis.notification.testutils.UserDataBuilder;
 import org.openlmis.notification.util.NotificationDataBuilder;
+import org.openlmis.notification.util.NotificationDtoDataBuilder;
+import org.openlmis.notification.util.Pagination;
 import org.openlmis.notification.util.UserContactDetailsDataBuilder;
 import org.openlmis.notification.web.BaseWebIntegrationTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class NotificationControllerIntegrationTest extends BaseWebIntegrationTest {
@@ -54,6 +64,9 @@ public class NotificationControllerIntegrationTest extends BaseWebIntegrationTes
 
   @MockBean
   private UserContactDetailsRepository userContactDetailsRepository;
+  
+  @MockBean
+  private NotificationRepository notificationRepository;
 
   @MockBean
   private UserReferenceDataService userReferenceDataService;
@@ -62,6 +75,9 @@ public class NotificationControllerIntegrationTest extends BaseWebIntegrationTes
       .withReferenceDataUserId(USER_ID)
       .build();
   private UserDto user = new UserDataBuilder().build();
+
+  private Pageable pageRequest = new PageRequest(
+      Pagination.DEFAULT_PAGE_NUMBER, Pagination.NO_PAGINATION);
 
   @Before
   public void setUp() {
@@ -114,9 +130,28 @@ public class NotificationControllerIntegrationTest extends BaseWebIntegrationTes
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.validates());
     verifyZeroInteractions(emailNotificationChannelHandler);
   }
+  
+  @Test
+  public void getCollectionShouldGetPageOfNotifications() {
+    Notification notification = new NotificationDataBuilder()
+        .withEmptyMessage(NotificationChannel.EMAIL).build();
+    given(notificationRepository.findAll(any(Pageable.class)))
+        .willReturn(Pagination.getPage(singletonList(notification), pageRequest));
+
+    PageDto notificationPage = startRequest(USER_ACCESS_TOKEN_HEADER)
+        .when()
+        .get(RESOURCE_URL)
+        .then()
+        .statusCode(200)
+        .extract()
+        .as(PageDto.class);
+
+    assertEquals(1, notificationPage.getContent().size());
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
 
   private Response send(String content, String token) {
-    NotificationDto body = new NotificationDataBuilder()
+    NotificationDto body = new NotificationDtoDataBuilder()
         .withUserId(USER_ID)
         .withMessage("email", new MessageDto(SUBJECT, content, false))
         .build();
