@@ -15,8 +15,8 @@
 
 package org.openlmis.notification.util;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 import org.openlmis.notification.domain.Notification;
 import org.openlmis.notification.domain.NotificationMessage;
@@ -25,11 +25,11 @@ import org.openlmis.notification.service.NotificationChannel;
 public class NotificationDataBuilder {
 
   private UUID userId;
-  private Set<NotificationMessage> messages;
+  private List<NotificationMessage> messages;
 
   public NotificationDataBuilder() {
     userId = UUID.randomUUID();
-    messages = new HashSet<>();
+    messages = new ArrayList<>();
   }
 
   public NotificationDataBuilder withUserId(UUID userId) {

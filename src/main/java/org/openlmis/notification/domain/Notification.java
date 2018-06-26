@@ -15,7 +15,7 @@
 
 package org.openlmis.notification.domain;
 
-import java.util.Set;
+import java.util.List;
 import java.util.UUID;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -23,19 +23,21 @@ import javax.persistence.Entity;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "notifications")
 @NoArgsConstructor
 @AllArgsConstructor
+@EqualsAndHashCode(callSuper = true)
 public class Notification extends BaseEntity {
 
   @Column(nullable = false)
   private UUID userId;
 
   @OneToMany(cascade = CascadeType.ALL, mappedBy = "notification", orphanRemoval = true)
-  private Set<NotificationMessage> messages;
+  private List<NotificationMessage> messages;
 
   /**
    * Export this object to the specified exporter (DTO).
@@ -51,6 +53,6 @@ public class Notification extends BaseEntity {
 
     void setUserId(UUID userId);
 
-    void setMessages(Set<NotificationMessage> messages);
+    void setMessages(List<NotificationMessage> messages);
   }
 }

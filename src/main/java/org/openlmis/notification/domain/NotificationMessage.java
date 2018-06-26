@@ -23,6 +23,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -35,6 +36,7 @@ import org.openlmis.notification.service.NotificationChannel;
     columnNames = { "notificationId", "channel" }))
 @NoArgsConstructor
 @Getter
+@EqualsAndHashCode(callSuper = true)
 public class NotificationMessage extends BaseEntity {
 
   @ManyToOne

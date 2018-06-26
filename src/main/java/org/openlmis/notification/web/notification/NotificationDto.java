@@ -16,8 +16,8 @@
 package org.openlmis.notification.web.notification;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -36,11 +36,10 @@ import org.openlmis.notification.domain.NotificationMessage;
 @ToString
 public final class NotificationDto implements Notification.Exporter {
   private UUID userId;
-  private Map<String, MessageDto> messages;
+  private Map<String, MessageDto> messages = new HashMap<>();
 
   @Override
-  public void setMessages(Set<NotificationMessage> messages) {
-    this.messages = new HashMap<>();
+  public void setMessages(List<NotificationMessage> messages) {
     for (NotificationMessage message : messages) {
       MessageDto messageDto = new MessageDto(message.getSubject(), message.getBody(), false);
       this.messages.put(message.getChannel().toString().toLowerCase(), messageDto);
