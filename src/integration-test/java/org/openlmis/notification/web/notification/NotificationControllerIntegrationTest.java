@@ -134,7 +134,7 @@ public class NotificationControllerIntegrationTest extends BaseWebIntegrationTes
   @Test
   public void getCollectionShouldGetPageOfNotifications() {
     Notification notification = new NotificationDataBuilder()
-        .withEmptyMessage(NotificationChannel.EMAIL).build();
+        .withMessage(NotificationChannel.EMAIL, SUBJECT, "Body").build();
     given(notificationRepository.findAll(any(Pageable.class)))
         .willReturn(Pagination.getPage(singletonList(notification), pageRequest));
 
