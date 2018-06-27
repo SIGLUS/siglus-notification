@@ -38,14 +38,24 @@ public class TestDataInitializer implements CommandLineRunner {
 
   // table names
   private static final String USER_CONTACT_DETAILS = "user_contact_details";
+  private static final String NOTIFICATIONS = "notifications";
+  private static final String NOTIFICATION_MESSAGES = "notification_messages";
 
   // database path
   private static final String DB_SCHEMA = "notification.";
   static final String USER_CONTACT_DETAILS_TABLE = DB_SCHEMA + USER_CONTACT_DETAILS;
+  static final String NOTIFICATIONS_TABLE = DB_SCHEMA + NOTIFICATIONS;
+  static final String NOTIFICATION_MESSAGES_TABLE = DB_SCHEMA + NOTIFICATION_MESSAGES;
 
 
   @Value(value = DEMO_DATA_PATH + DB_SCHEMA + USER_CONTACT_DETAILS + FILE_EXTENSION)
   private Resource userContactDetailsResource;
+
+  @Value(value = DEMO_DATA_PATH + DB_SCHEMA + NOTIFICATIONS + FILE_EXTENSION)
+  private Resource notificationsResource;
+
+  @Value(value = DEMO_DATA_PATH + DB_SCHEMA + NOTIFICATION_MESSAGES + FILE_EXTENSION)
+  private Resource notificationMessagesResource;
 
   private Resource2Db loader;
 
@@ -66,6 +76,9 @@ public class TestDataInitializer implements CommandLineRunner {
     XLOGGER.entry();
 
     loader.insertToDbFromCsv(USER_CONTACT_DETAILS_TABLE, userContactDetailsResource);
+    
+    loader.insertToDbFromCsv(NOTIFICATIONS_TABLE, notificationsResource);
+    loader.insertToDbFromCsv(NOTIFICATION_MESSAGES_TABLE, notificationMessagesResource);
 
     XLOGGER.exit();
   }
