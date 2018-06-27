@@ -48,7 +48,7 @@ public class NotificationHandlerTest {
   private NotificationHandler notificationHandler;
 
   private UserContactDetails contactDetails = new UserContactDetailsDataBuilder().build();
-  private MessageDto message = new MessageDto("subject", "body", false);
+  private MessageDto message = new MessageDto("subject", "body");
   private NotificationDto notification = new NotificationDtoDataBuilder()
       .withUserId(contactDetails.getId())
       .withMessage("email", message)
@@ -69,7 +69,7 @@ public class NotificationHandlerTest {
     notificationHandler.handle(notification);
     verify(userContactDetailsRepository).findOne(notification.getUserId());
     verify(notificationChannelHandler).getNotificationChannel();
-    verify(notificationChannelHandler).handle(contactDetails, message);
+    verify(notificationChannelHandler).handle(notification.getImportant(), message, contactDetails);
   }
 
   @Test(expected = NotFoundException.class)

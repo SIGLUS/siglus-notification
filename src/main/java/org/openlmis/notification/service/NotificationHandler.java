@@ -56,7 +56,8 @@ public class NotificationHandler {
           .stream()
           .filter(item -> notificationChannel.equals(item.getNotificationChannel()))
           .findFirst()
-          .ifPresent(item -> item.handle(contactDetails, entry.getValue()));
+          .ifPresent(item -> item
+              .handle(notification.getImportant(), entry.getValue(), contactDetails));
     }
   }
 

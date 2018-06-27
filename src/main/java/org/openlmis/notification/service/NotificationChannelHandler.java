@@ -22,6 +22,6 @@ public interface NotificationChannelHandler {
 
   NotificationChannel getNotificationChannel();
 
-  void handle(UserContactDetails contactDetails, MessageDto message);
+  void handle(Boolean important, MessageDto message, UserContactDetails contactDetails);
 
 }

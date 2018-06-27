@@ -47,8 +47,8 @@ public class EmailNotificationChannelHandler implements NotificationChannelHandl
   }
 
   @Override
-  public void handle(UserContactDetails contactDetails, MessageDto message) {
-    if (shouldSentMessage(contactDetails, message)) {
+  public void handle(Boolean important, MessageDto message, UserContactDetails contactDetails) {
+    if (shouldSentMessage(contactDetails, important)) {
       trySendEmail(contactDetails.getEmailAddress(), message);
     }
   }
@@ -77,7 +77,7 @@ public class EmailNotificationChannelHandler implements NotificationChannelHandl
     mailSender.send(mailMessage);
   }
 
-  private boolean shouldSentMessage(UserContactDetails contactDetails, MessageDto message) {
+  private boolean shouldSentMessage(UserContactDetails contactDetails, Boolean important) {
     if (null == contactDetails || !contactDetails.isEmailAddressVerified()) {
       return false;
     }
@@ -90,7 +90,7 @@ public class EmailNotificationChannelHandler implements NotificationChannelHandl
       return false;
     }
 
-    return contactDetails.isAllowNotify() || isTrue(message.getImportant());
+    return contactDetails.isAllowNotify() || isTrue(important);
   }
 
 }

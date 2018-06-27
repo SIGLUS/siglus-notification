@@ -66,7 +66,7 @@ public class EmailNotificationChannelHandlerTest {
       .withReferenceDataUserId(USER_ID)
       .build();
   private UserDto user = new UserDataBuilder().build();
-  private MessageDto message = new MessageDto("subject", "body", false);
+  private MessageDto message = new MessageDto("subject", "body");
   private String from = "noreply@test.org";
 
 
@@ -80,7 +80,7 @@ public class EmailNotificationChannelHandlerTest {
 
   @Test
   public void shouldSendMessage() throws MessagingException, IOException {
-    handler.handle(contactDetails, message);
+    handler.handle(false, message, contactDetails);
     verify(mailSender).send(mimeMessageCaptor.capture());
 
     MimeMessage value = mimeMessageCaptor.getValue();
@@ -106,37 +106,36 @@ public class EmailNotificationChannelHandlerTest {
   @Test
   public void shouldNotSendMessageIfUserEmailIsNotVerified() {
     contactDetails.getEmailDetails().setEmailVerified(false);
-    handler.handle(contactDetails, message);
+    handler.handle(false, message, contactDetails);
     verifyZeroInteractions(mailSender);
   }
 
   @Test
   public void shouldNotSendMessageIfUserHasUnsetAllowNotifyFlag() {
     contactDetails.getEmailDetails().setEmailVerified(false);
-    handler.handle(contactDetails, message);
+    handler.handle(false, message, contactDetails);
     verifyZeroInteractions(mailSender);
   }
 
   @Test
   public void shouldNotSendMessageIfUserIsNotActive() {
     user.setActive(false);
-    handler.handle(contactDetails, message);
+    handler.handle(false, message, contactDetails);
     verifyZeroInteractions(mailSender);
   }
 
   @Test(expected = ServerException.class)
   public void shouldThrowExceptionIfMailCanNotBeSend() {
     doThrow(new MailSendException("test")).when(mailSender).send(any(MimeMessage.class));
-    handler.handle(contactDetails, message);
+    handler.handle(false, message, contactDetails);
   }
 
   @Test
   public void shouldSentImportantMessageIfUserHasUnsetAllowNotifyFlag()
       throws MessagingException, IOException {
     contactDetails.setAllowNotify(false);
-    message.setImportant(true);
 
-    handler.handle(contactDetails, message);
+    handler.handle(true, message, contactDetails);
 
     verify(mailSender).send(mimeMessageCaptor.capture());
 
@@ -150,9 +149,8 @@ public class EmailNotificationChannelHandlerTest {
   @Test
   public void shouldNotSentImportantMessageIfUserIsNotActive() {
     user.setActive(false);
-    message.setImportant(true);
 
-    handler.handle(contactDetails, message);
+    handler.handle(true, message, contactDetails);
 
     verifyZeroInteractions(mailSender);
   }
@@ -160,9 +158,8 @@ public class EmailNotificationChannelHandlerTest {
   @Test
   public void shouldNotSentImportantMessageIfUsersEmailIsNotVerified() {
     contactDetails.getEmailDetails().setEmailVerified(false);
-    message.setImportant(true);
 
-    handler.handle(contactDetails, message);
+    handler.handle(true, message, contactDetails);
 
     verifyZeroInteractions(mailSender);
   }

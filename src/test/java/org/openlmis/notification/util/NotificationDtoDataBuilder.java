@@ -24,6 +24,7 @@ import org.openlmis.notification.web.notification.NotificationDto;
 public class NotificationDtoDataBuilder {
   private UUID userId = UUID.randomUUID();
   private Map<String, MessageDto> messages = Maps.newHashMap();
+  private Boolean important = false;
 
   public NotificationDtoDataBuilder withUserId(UUID userId) {
     this.userId = userId;
@@ -36,7 +37,7 @@ public class NotificationDtoDataBuilder {
   }
 
   public NotificationDtoDataBuilder withMessage(String messageType, String subject, String body) {
-    return withMessage(messageType, new MessageDto(subject, body, false));
+    return withMessage(messageType, new MessageDto(subject, body));
   }
 
   public NotificationDtoDataBuilder withEmptyMessage(String messageType) {
@@ -45,6 +46,6 @@ public class NotificationDtoDataBuilder {
   }
 
   public NotificationDto build() {
-    return new NotificationDto(userId, messages);
+    return new NotificationDto(userId, messages, important);
   }
 }

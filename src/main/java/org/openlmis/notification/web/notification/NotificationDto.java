@@ -37,11 +37,12 @@ import org.openlmis.notification.domain.NotificationMessage;
 public final class NotificationDto implements Notification.Exporter {
   private UUID userId;
   private Map<String, MessageDto> messages = new HashMap<>();
+  private Boolean important;
 
   @Override
   public void setMessages(List<NotificationMessage> messages) {
     for (NotificationMessage message : messages) {
-      MessageDto messageDto = new MessageDto(message.getSubject(), message.getBody(), false);
+      MessageDto messageDto = new MessageDto(message.getSubject(), message.getBody());
       this.messages.put(message.getChannel().toString().toLowerCase(), messageDto);
     }
   }

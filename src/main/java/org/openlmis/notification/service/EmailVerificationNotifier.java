@@ -115,7 +115,7 @@ public class EmailVerificationNotifier {
     String body = messageSource
         .getMessage(EMAIL_VERIFICATION_EMAIL_BODY, bodyMsgArgs, locale);
 
-    emailNotificationChannelHandler.handle(email, new MessageDto(subject, body, true));
+    emailNotificationChannelHandler.handle(email, new MessageDto(subject, body));
   }
 
   private String getVerificationPath(UserContactDetails contactDetails,
