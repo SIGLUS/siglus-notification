@@ -16,6 +16,7 @@
 package org.openlmis.notification.util;
 
 import com.google.common.collect.Maps;
+import java.time.ZonedDateTime;
 import java.util.Map;
 import java.util.UUID;
 import org.openlmis.notification.web.notification.MessageDto;
@@ -25,6 +26,7 @@ public class NotificationDtoDataBuilder {
   private UUID userId = UUID.randomUUID();
   private Map<String, MessageDto> messages = Maps.newHashMap();
   private Boolean important = false;
+  private ZonedDateTime createdDate = ZonedDateTime.now();
 
   public NotificationDtoDataBuilder withUserId(UUID userId) {
     this.userId = userId;
@@ -46,6 +48,6 @@ public class NotificationDtoDataBuilder {
   }
 
   public NotificationDto build() {
-    return new NotificationDto(userId, messages, important);
+    return new NotificationDto(userId, messages, important, createdDate);
   }
 }

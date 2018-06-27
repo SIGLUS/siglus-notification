@@ -15,6 +15,7 @@
 
 package org.openlmis.notification.domain;
 
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.UUID;
 import javax.persistence.CascadeType;
@@ -23,14 +24,12 @@ import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "notifications")
 @NoArgsConstructor
-@AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 public class Notification extends BaseEntity {
 
@@ -42,7 +41,24 @@ public class Notification extends BaseEntity {
   private List<NotificationMessage> messages;
   
   private Boolean important;
+  
+  @Column(columnDefinition = "timestamp with time zone", nullable = false)
+  private ZonedDateTime createdDate;
 
+  /**
+   * Default constructor.
+   * 
+   * @param userId user id
+   * @param messages messages list
+   * @param important important flag
+   */
+  public Notification(UUID userId, List<NotificationMessage> messages, Boolean important) {
+    this.userId = userId;
+    this.messages = messages;
+    this.important = important;
+    this.createdDate = ZonedDateTime.now();
+  }
+  
   /**
    * Export this object to the specified exporter (DTO).
    *
@@ -52,6 +68,7 @@ public class Notification extends BaseEntity {
     exporter.setUserId(userId);
     exporter.setMessages(messages);
     exporter.setImportant(important);
+    exporter.setCreatedDate(createdDate);
   }
 
   public interface Exporter {
@@ -61,5 +78,7 @@ public class Notification extends BaseEntity {
     void setMessages(List<NotificationMessage> messages);
     
     void setImportant(Boolean important);
+    
+    void setCreatedDate(ZonedDateTime createdDate);
   }
 }

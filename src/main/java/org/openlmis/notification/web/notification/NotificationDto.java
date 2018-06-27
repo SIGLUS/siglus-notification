@@ -15,6 +15,7 @@
 
 package org.openlmis.notification.web.notification;
 
+import java.time.ZonedDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +39,7 @@ public final class NotificationDto implements Notification.Exporter {
   private UUID userId;
   private Map<String, MessageDto> messages = new HashMap<>();
   private Boolean important;
+  private ZonedDateTime createdDate;
 
   @Override
   public void setMessages(List<NotificationMessage> messages) {
