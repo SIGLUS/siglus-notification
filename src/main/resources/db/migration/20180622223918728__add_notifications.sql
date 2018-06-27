@@ -1,6 +1,7 @@
 CREATE TABLE notifications (
     id uuid NOT NULL PRIMARY KEY,
-    userid uuid NOT NULL
+    userid uuid NOT NULL,
+    important bool DEFAULT false
 );
 
 CREATE INDEX ON notification.notifications (userid);

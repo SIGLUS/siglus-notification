@@ -26,10 +26,15 @@ public class NotificationDataBuilder {
 
   private UUID userId;
   private List<NotificationMessage> messages;
+  private Boolean important;
 
+  /**
+   * Default constructor.
+   */
   public NotificationDataBuilder() {
     userId = UUID.randomUUID();
     messages = new ArrayList<>();
+    important = false;
   }
 
   public NotificationDataBuilder withUserId(UUID userId) {
@@ -54,6 +59,11 @@ public class NotificationDataBuilder {
   public NotificationDataBuilder withEmptyMessage(NotificationChannel channel) {
     return withMessage(channel, "");
   }
+  
+  public NotificationDataBuilder withImportant(boolean important) {
+    this.important = important;
+    return this;
+  }
 
   /**
    * Build notification from settings.
@@ -61,7 +71,7 @@ public class NotificationDataBuilder {
    * @return new notification
    */
   public Notification build() {
-    Notification newNotification = new Notification(userId, messages);
+    Notification newNotification = new Notification(userId, messages, important);
     for (NotificationMessage message : messages) {
       message.setNotification(newNotification);
     }

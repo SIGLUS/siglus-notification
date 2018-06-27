@@ -15,10 +15,9 @@
 
 package org.openlmis.notification.domain;
 
-import java.util.Collections;
-import java.util.UUID;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import org.junit.Test;
+import org.openlmis.notification.util.NotificationDataBuilder;
 
 public class NotificationMessageTest {
 
@@ -27,8 +26,8 @@ public class NotificationMessageTest {
     EqualsVerifier
         .forClass(NotificationMessage.class)
         .withPrefabValues(Notification.class,
-            new Notification(UUID.randomUUID(), Collections.emptyList()),
-            new Notification(UUID.randomUUID(), Collections.emptyList()))
+            new NotificationDataBuilder().build(),
+            new NotificationDataBuilder().build())
         .withRedefinedSuperclass()
         .verify();
   }

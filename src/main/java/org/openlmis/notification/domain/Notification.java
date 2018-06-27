@@ -20,6 +20,7 @@ import java.util.UUID;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -36,8 +37,11 @@ public class Notification extends BaseEntity {
   @Column(nullable = false)
   private UUID userId;
 
-  @OneToMany(cascade = CascadeType.ALL, mappedBy = "notification", orphanRemoval = true)
+  @OneToMany(cascade = CascadeType.ALL, mappedBy = "notification", orphanRemoval = true,
+      fetch = FetchType.EAGER)
   private List<NotificationMessage> messages;
+  
+  private Boolean important;
 
   /**
    * Export this object to the specified exporter (DTO).
@@ -47,6 +51,7 @@ public class Notification extends BaseEntity {
   public void export(Exporter exporter) {
     exporter.setUserId(userId);
     exporter.setMessages(messages);
+    exporter.setImportant(important);
   }
 
   public interface Exporter {
@@ -54,5 +59,7 @@ public class Notification extends BaseEntity {
     void setUserId(UUID userId);
 
     void setMessages(List<NotificationMessage> messages);
+    
+    void setImportant(Boolean important);
   }
 }

@@ -17,6 +17,10 @@
           "$ref": "message.json"
         }
       }
+    },
+    "important": {
+      "type": "boolean",
+      "title": "important"
     }
   },
   "required": [
