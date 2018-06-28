@@ -33,6 +33,7 @@ public abstract class MessageKeys {
   private static final String USER = "user";
   private static final String NOT_FOUND = "notFound";
   private static final String UNSUPPORTED = "unsupported";
+  private static final String DUPLICATED = "duplicated";
 
   private static final String SERVICE_PREFIX = "notification";
   private static final String ERROR_PREFIX = SERVICE_PREFIX + ".error";
@@ -53,6 +54,9 @@ public abstract class MessageKeys {
 
   public static final String ERROR_UNSUPPORTED_NOTIFICATION_CHANNEL =
       join(NOTIFICATION_REQUEST, NOTIFICATION_CHANNEL, UNSUPPORTED);
+
+  public static final String ERROR_NOTIFICATION_CHANNEL_DUPLICATED =
+      join(NOTIFICATION_REQUEST, NOTIFICATION_CHANNEL, DUPLICATED);
 
   public static final String ERROR_EMAIL_INVALID =
       ERROR_PREFIX + ".userContactDetails.email.invalid";
