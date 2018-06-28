@@ -44,7 +44,6 @@ import org.openlmis.notification.service.referencedata.UserDto;
 import org.openlmis.notification.service.referencedata.UserReferenceDataService;
 import org.openlmis.notification.testutils.UserDataBuilder;
 import org.openlmis.notification.util.NotificationDataBuilder;
-import org.openlmis.notification.util.NotificationDtoDataBuilder;
 import org.openlmis.notification.util.Pagination;
 import org.openlmis.notification.util.UserContactDetailsDataBuilder;
 import org.openlmis.notification.web.BaseWebIntegrationTest;
@@ -151,10 +150,13 @@ public class NotificationControllerIntegrationTest extends BaseWebIntegrationTes
   }
 
   private Response send(String content, String token) {
-    NotificationDto body = new NotificationDtoDataBuilder()
+    Notification notification = new NotificationDataBuilder()
         .withUserId(USER_ID)
-        .withMessage("email", new MessageDto(SUBJECT, content))
+        .withMessage(NotificationChannel.EMAIL, content, SUBJECT)
         .build();
+    
+    NotificationDto body = new NotificationDto();
+    notification.export(body);
 
     return startRequest(token)
         .header(CONTENT_TYPE, APPLICATION_JSON_VALUE)

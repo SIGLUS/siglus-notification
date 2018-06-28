@@ -25,9 +25,10 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.openlmis.notification.domain.Notification;
 import org.openlmis.notification.domain.UserContactDetails;
 import org.openlmis.notification.repository.UserContactDetailsRepository;
-import org.openlmis.notification.util.NotificationDtoDataBuilder;
+import org.openlmis.notification.util.NotificationDataBuilder;
 import org.openlmis.notification.util.UserContactDetailsDataBuilder;
 import org.openlmis.notification.web.NotFoundException;
 import org.openlmis.notification.web.ValidationException;
@@ -49,13 +50,16 @@ public class NotificationHandlerTest {
 
   private UserContactDetails contactDetails = new UserContactDetailsDataBuilder().build();
   private MessageDto message = new MessageDto("subject", "body");
-  private NotificationDto notification = new NotificationDtoDataBuilder()
-      .withUserId(contactDetails.getId())
-      .withMessage("email", message)
-      .build();
+  private NotificationDto notification = new NotificationDto();
 
   @Before
-  public void setUp() throws Exception {
+  public void setUp() {
+    Notification notificationObj = new NotificationDataBuilder()
+        .withUserId(contactDetails.getId())
+        .withMessage(NotificationChannel.EMAIL, "body", "subject")
+        .build();
+    notificationObj.export(notification);
+    
     when(userContactDetailsRepository.findOne(notification.getUserId()))
         .thenReturn(contactDetails);
     when(notificationChannelHandler.getNotificationChannel()).thenReturn(NotificationChannel.EMAIL);
@@ -81,10 +85,9 @@ public class NotificationHandlerTest {
 
   @Test(expected = ValidationException.class)
   public void shouldThrowExceptionIfMessageTypeDoesNotExist() {
-    notification = new NotificationDtoDataBuilder()
-        .withUserId(contactDetails.getId())
-        .withMessage("sms", new MessageDto())
-        .build();
+    notification = new NotificationDto();
+    notification.setUserId(contactDetails.getId());
+    notification.addMessage("sms", new MessageDto());
     notificationHandler.handle(notification);
   }
 

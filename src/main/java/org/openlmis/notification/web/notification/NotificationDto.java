@@ -40,9 +40,14 @@ public final class NotificationDto implements Notification.Exporter {
   private Map<String, MessageDto> messages = new HashMap<>();
   private Boolean important;
   private ZonedDateTime createdDate;
+  
+  public void addMessage(String key, MessageDto message) {
+    messages.put(key, message);
+  }
 
   @Override
   public void setMessages(List<NotificationMessage> messages) {
+    this.messages = new HashMap<>();
     for (NotificationMessage message : messages) {
       MessageDto messageDto = new MessageDto(message.getSubject(), message.getBody());
       this.messages.put(message.getChannel().toString().toLowerCase(), messageDto);

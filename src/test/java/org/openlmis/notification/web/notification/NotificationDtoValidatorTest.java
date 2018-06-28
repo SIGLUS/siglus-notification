@@ -19,22 +19,29 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_NOTIFICATION_REQUEST_FIELD_REQUIRED;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_NOTIFICATION_REQUEST_MESSAGES_EMPTY;
 
+import java.util.Collections;
 import org.junit.Before;
 import org.junit.Test;
-import org.openlmis.notification.util.NotificationDtoDataBuilder;
+import org.openlmis.notification.domain.Notification;
+import org.openlmis.notification.domain.NotificationMessage;
+import org.openlmis.notification.service.NotificationChannel;
+import org.openlmis.notification.util.NotificationDataBuilder;
 import org.openlmis.notification.web.BaseValidatorTest;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
 
 public class NotificationDtoValidatorTest extends BaseValidatorTest {
   private NotificationDtoValidator validator = new NotificationDtoValidator();
-  private NotificationDto request = new NotificationDtoDataBuilder()
-      .withMessage("email", "subject", "body")
-      .build();
+  private NotificationDto request = new NotificationDto();
   private Errors errors;
 
   @Before
   public void setUp() {
+    Notification notification = new NotificationDataBuilder()
+        .withMessage(NotificationChannel.EMAIL, "body", "subject")
+        .build();
+    notification.export(request);
+
     errors = new BeanPropertyBindingResult(request, "request");
   }
 
@@ -54,7 +61,7 @@ public class NotificationDtoValidatorTest extends BaseValidatorTest {
 
   @Test
   public void shouldRejectIfMessagesAreNotSet() {
-    request = new NotificationDtoDataBuilder().build();
+    request.setMessages(Collections.emptyList());
 
     validator.validate(request, errors);
     assertErrorMessage(errors, "messages", ERROR_NOTIFICATION_REQUEST_MESSAGES_EMPTY);
@@ -62,9 +69,8 @@ public class NotificationDtoValidatorTest extends BaseValidatorTest {
 
   @Test
   public void shouldRejectIfMessageBodyIsEmpty() {
-    request = new NotificationDtoDataBuilder()
-        .withEmptyMessage("sms")
-        .build();
+    request.setMessages(Collections.singletonList(
+        new NotificationMessage(NotificationChannel.EMAIL, "")));
 
     validator.validate(request, errors);
     assertErrorMessage(errors, "messages", ERROR_NOTIFICATION_REQUEST_FIELD_REQUIRED);
