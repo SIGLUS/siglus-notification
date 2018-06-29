@@ -31,6 +31,8 @@ import org.springframework.validation.Errors;
 @Component
 public class NotificationDtoValidator implements BaseValidator {
 
+  private static final String FIELD_NAME_MESSAGES = "messages";
+  
   @Override
   public boolean supports(Class<?> clazz) {
     return NotificationDto.class.equals(clazz);
@@ -45,7 +47,7 @@ public class NotificationDtoValidator implements BaseValidator {
       NotificationDto dto = (NotificationDto) target;
 
       if (CollectionUtils.isEmpty(dto.getMessageMap())) {
-        rejectValue(errors, "messages", ERROR_NOTIFICATION_REQUEST_MESSAGES_EMPTY);
+        rejectValue(errors, FIELD_NAME_MESSAGES, ERROR_NOTIFICATION_REQUEST_MESSAGES_EMPTY);
       } else {
         validateMessages(errors, dto);
       }
@@ -57,11 +59,11 @@ public class NotificationDtoValidator implements BaseValidator {
       String key = entry.getKey();
       MessageDto message = entry.getValue();
       if (null == NotificationChannel.fromString(key)) {
-        errors.rejectValue("messages", ERROR_UNSUPPORTED_NOTIFICATION_CHANNEL,
+        errors.rejectValue(FIELD_NAME_MESSAGES, ERROR_UNSUPPORTED_NOTIFICATION_CHANNEL,
             new String[]{key}, ERROR_UNSUPPORTED_NOTIFICATION_CHANNEL);
       }
       if (isBlank(message.getBody())) {
-        rejectValue(errors, "messages", ERROR_NOTIFICATION_REQUEST_FIELD_REQUIRED);
+        rejectValue(errors, FIELD_NAME_MESSAGES, ERROR_NOTIFICATION_REQUEST_FIELD_REQUIRED);
       }
     }
   }
