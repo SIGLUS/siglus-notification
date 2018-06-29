@@ -28,11 +28,13 @@ import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.autoconfigure.flyway.FlywayMigrationStrategy;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Profile;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 
 @SpringBootApplication(scanBasePackages = "org.openlmis.notification")
 @EntityScan(basePackageClasses = {Identifiable.class})
+@EnableAsync
 public class Application {
   private static final Logger LOGGER = LoggerFactory.getLogger(Application.class);
 
