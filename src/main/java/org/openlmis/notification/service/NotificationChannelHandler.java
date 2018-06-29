@@ -15,13 +15,13 @@
 
 package org.openlmis.notification.service;
 
+import org.openlmis.notification.domain.NotificationMessage;
 import org.openlmis.notification.domain.UserContactDetails;
-import org.openlmis.notification.web.notification.MessageDto;
 
 public interface NotificationChannelHandler {
 
   NotificationChannel getNotificationChannel();
 
-  void handle(Boolean important, MessageDto message, UserContactDetails contactDetails);
+  void handle(Boolean important, NotificationMessage message, UserContactDetails contactDetails);
 
 }

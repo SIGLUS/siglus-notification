@@ -34,6 +34,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.notification.domain.EmailVerificationToken;
+import org.openlmis.notification.domain.NotificationMessage;
 import org.openlmis.notification.domain.UserContactDetails;
 import org.openlmis.notification.i18n.ExposedMessageSource;
 import org.openlmis.notification.repository.EmailVerificationTokenRepository;
@@ -42,7 +43,6 @@ import org.openlmis.notification.service.referencedata.UserReferenceDataService;
 import org.openlmis.notification.testutils.SaveAnswer;
 import org.openlmis.notification.testutils.UserDataBuilder;
 import org.openlmis.notification.util.UserContactDetailsDataBuilder;
-import org.openlmis.notification.web.notification.MessageDto;
 
 @RunWith(MockitoJUnitRunner.class)
 public class EmailVerificationNotifierTest {
@@ -110,7 +110,8 @@ public class EmailVerificationNotifierTest {
     verify(emailVerificationTokenRepository).save(tokenCaptor.capture());
     verify(emailNotificationChannelHandler).handle(
         email,
-        new MessageDto(EMAIL_VERIFICATION_EMAIL_SUBJECT, EMAIL_VERIFICATION_EMAIL_BODY)
+        new NotificationMessage(NotificationChannel.EMAIL, EMAIL_VERIFICATION_EMAIL_BODY,
+            EMAIL_VERIFICATION_EMAIL_SUBJECT)
     );
 
     EmailVerificationToken token = tokenCaptor.getValue();

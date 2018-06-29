@@ -22,12 +22,12 @@ import static org.openlmis.notification.i18n.MessageKeys.EMAIL_VERIFICATION_EMAI
 import java.time.ZonedDateTime;
 import java.util.Locale;
 import org.openlmis.notification.domain.EmailVerificationToken;
+import org.openlmis.notification.domain.NotificationMessage;
 import org.openlmis.notification.domain.UserContactDetails;
 import org.openlmis.notification.i18n.ExposedMessageSource;
 import org.openlmis.notification.repository.EmailVerificationTokenRepository;
 import org.openlmis.notification.service.referencedata.UserDto;
 import org.openlmis.notification.service.referencedata.UserReferenceDataService;
-import org.openlmis.notification.web.notification.MessageDto;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -115,7 +115,8 @@ public class EmailVerificationNotifier {
     String body = messageSource
         .getMessage(EMAIL_VERIFICATION_EMAIL_BODY, bodyMsgArgs, locale);
 
-    emailNotificationChannelHandler.handle(email, new MessageDto(subject, body));
+    emailNotificationChannelHandler.handle(email, new NotificationMessage(
+        NotificationChannel.EMAIL, body, subject));
   }
 
   private String getVerificationPath(UserContactDetails contactDetails,

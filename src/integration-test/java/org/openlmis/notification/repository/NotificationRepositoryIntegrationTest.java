@@ -21,6 +21,7 @@ import org.openlmis.notification.domain.Notification;
 import org.openlmis.notification.service.NotificationChannel;
 import org.openlmis.notification.util.NotificationDataBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.repository.CrudRepository;
 
 public class NotificationRepositoryIntegrationTest 
@@ -39,12 +40,12 @@ public class NotificationRepositoryIntegrationTest
     return new NotificationDataBuilder().withEmptyMessage(NotificationChannel.EMAIL).build();
   }
 
-  @Test//(expected = DataIntegrityViolationException.class)
+  @Test(expected = DataIntegrityViolationException.class)
   public void shouldNotAllowDuplicateChannelsForNotification() {
-    //Notification notification = new NotificationDataBuilder()
-    //    .withMessage(NotificationChannel.EMAIL, "Body", "Subject")
-    //    .withMessage(NotificationChannel.EMAIL, "Body", "Subject")
-    //    .build();
-    //repository.saveAndFlush(notification);
+    Notification notification = new NotificationDataBuilder()
+        .withMessage(NotificationChannel.EMAIL, "Body", "Subject")
+        .withMessage(NotificationChannel.EMAIL, "Body", "Subject")
+        .build();
+    repository.saveAndFlush(notification);
   }
 }

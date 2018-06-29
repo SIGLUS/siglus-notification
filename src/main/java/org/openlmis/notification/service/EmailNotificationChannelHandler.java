@@ -20,9 +20,8 @@ import static org.openlmis.notification.i18n.MessageKeys.ERROR_SEND_MAIL_FAILURE
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
+import org.openlmis.notification.domain.NotificationMessage;
 import org.openlmis.notification.domain.UserContactDetails;
-import org.openlmis.notification.service.referencedata.UserReferenceDataService;
-import org.openlmis.notification.web.notification.MessageDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -35,9 +34,6 @@ public class EmailNotificationChannelHandler implements NotificationChannelHandl
   @Autowired
   private JavaMailSender mailSender;
 
-  @Autowired
-  private UserReferenceDataService userReferenceDataService;
-
   @Value("${email.noreply}")
   private String from;
 
@@ -47,17 +43,18 @@ public class EmailNotificationChannelHandler implements NotificationChannelHandl
   }
 
   @Override
-  public void handle(Boolean important, MessageDto message, UserContactDetails contactDetails) {
-    if (shouldSentMessage(contactDetails, important)) {
+  public void handle(Boolean important, NotificationMessage message,
+      UserContactDetails contactDetails) {
+    if (shouldSendMessage(contactDetails, important)) {
       trySendEmail(contactDetails.getEmailAddress(), message);
     }
   }
 
-  void handle(String email, MessageDto message) {
+  void handle(String email, NotificationMessage message) {
     trySendEmail(email, message);
   }
 
-  private void trySendEmail(String email, MessageDto message) {
+  private void trySendEmail(String email, NotificationMessage message) {
     try {
       sendMail(email, message);
     } catch (Exception exp) {
@@ -65,7 +62,7 @@ public class EmailNotificationChannelHandler implements NotificationChannelHandl
     }
   }
 
-  private void sendMail(String to, MessageDto message) throws MessagingException {
+  private void sendMail(String to, NotificationMessage message) throws MessagingException {
     MimeMessage mailMessage = mailSender.createMimeMessage();
 
     MimeMessageHelper helper = new MimeMessageHelper(mailMessage, false);
@@ -77,20 +74,10 @@ public class EmailNotificationChannelHandler implements NotificationChannelHandl
     mailSender.send(mailMessage);
   }
 
-  private boolean shouldSentMessage(UserContactDetails contactDetails, Boolean important) {
-    if (null == contactDetails || !contactDetails.isEmailAddressVerified()) {
-      return false;
-    }
-
-    boolean isActive = isTrue(userReferenceDataService
-        .findOne(contactDetails.getReferenceDataUserId())
-        .isActive());
-
-    if (!isActive) {
-      return false;
-    }
-
-    return contactDetails.isAllowNotify() || isTrue(important);
+  private boolean shouldSendMessage(UserContactDetails contactDetails, Boolean important) {
+    return (null != contactDetails 
+        && contactDetails.isEmailAddressVerified()
+        && (contactDetails.isAllowNotify() || isTrue(important)));
   }
 
 }

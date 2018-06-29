@@ -36,12 +36,9 @@ import org.mockito.Captor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.openlmis.notification.domain.NotificationMessage;
 import org.openlmis.notification.domain.UserContactDetails;
-import org.openlmis.notification.service.referencedata.UserDto;
-import org.openlmis.notification.service.referencedata.UserReferenceDataService;
-import org.openlmis.notification.testutils.UserDataBuilder;
 import org.openlmis.notification.util.UserContactDetailsDataBuilder;
-import org.openlmis.notification.web.notification.MessageDto;
 import org.springframework.mail.MailSendException;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.test.util.ReflectionTestUtils;
@@ -53,9 +50,6 @@ public class EmailNotificationChannelHandlerTest {
   @Mock
   private JavaMailSender mailSender;
 
-  @Mock
-  private UserReferenceDataService userReferenceDataService;
-
   @InjectMocks
   private EmailNotificationChannelHandler handler = new EmailNotificationChannelHandler();
 
@@ -65,8 +59,8 @@ public class EmailNotificationChannelHandlerTest {
   private UserContactDetails contactDetails = new UserContactDetailsDataBuilder()
       .withReferenceDataUserId(USER_ID)
       .build();
-  private UserDto user = new UserDataBuilder().build();
-  private MessageDto message = new MessageDto("subject", "body");
+  private NotificationMessage message = new NotificationMessage(NotificationChannel.EMAIL, "body",
+      "subject");
   private String from = "noreply@test.org";
 
 
@@ -74,7 +68,6 @@ public class EmailNotificationChannelHandlerTest {
   public void setUp() {
     ReflectionTestUtils.setField(handler, "from", from);
 
-    when(userReferenceDataService.findOne(USER_ID)).thenReturn(user);
     when(mailSender.createMimeMessage()).thenReturn(new MimeMessage((Session) null));
   }
 
@@ -117,13 +110,6 @@ public class EmailNotificationChannelHandlerTest {
     verifyZeroInteractions(mailSender);
   }
 
-  @Test
-  public void shouldNotSendMessageIfUserIsNotActive() {
-    user.setActive(false);
-    handler.handle(false, message, contactDetails);
-    verifyZeroInteractions(mailSender);
-  }
-
   @Test(expected = ServerException.class)
   public void shouldThrowExceptionIfMailCanNotBeSend() {
     doThrow(new MailSendException("test")).when(mailSender).send(any(MimeMessage.class));
@@ -144,15 +130,6 @@ public class EmailNotificationChannelHandlerTest {
     assertThat(value.getAllRecipients()[0].toString(), is(contactDetails.getEmailAddress()));
     assertThat(value.getSubject(), is(message.getSubject()));
     assertThat(value.getContent().toString(), is(message.getBody()));
-  }
-
-  @Test
-  public void shouldNotSentImportantMessageIfUserIsNotActive() {
-    user.setActive(false);
-
-    handler.handle(true, message, contactDetails);
-
-    verifyZeroInteractions(mailSender);
   }
 
   @Test

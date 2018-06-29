@@ -68,11 +68,11 @@ public class NotificationController {
   /**
    * Send an email notification.
    *
-   * @param notification details of the message
+   * @param notificationDto details of the message
    */
   @PostMapping("/notifications")
   @ResponseStatus(HttpStatus.OK)
-  public void sendNotification(@RequestBody @Validated NotificationDto notification,
+  public void sendNotification(@RequestBody @Validated NotificationDto notificationDto,
       BindingResult bindingResult) {
     permissionService.canSendNotification();
 
@@ -81,6 +81,8 @@ public class NotificationController {
       throw new ValidationException(fieldError.getDefaultMessage(), fieldError.getField());
     }
 
+    Notification notification = Notification.newInstance(notificationDto);
+    notification = notificationRepository.save(notification);
     notificationHandler.handle(notification);
   }
 

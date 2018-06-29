@@ -15,18 +15,18 @@
 
 package org.openlmis.notification.service;
 
-import static org.openlmis.notification.i18n.MessageKeys.ERROR_UNSUPPORTED_NOTIFICATION_CHANNEL;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_USER_CONTACT_DETAILS_NOT_FOUND;
+import static org.openlmis.notification.i18n.MessageKeys.ERROR_USER_NOT_ACTIVE_OR_NOT_FOUND;
 
 import java.util.List;
-import java.util.Map.Entry;
-import java.util.Optional;
+import org.openlmis.notification.domain.Notification;
+import org.openlmis.notification.domain.NotificationMessage;
 import org.openlmis.notification.domain.UserContactDetails;
 import org.openlmis.notification.repository.UserContactDetailsRepository;
+import org.openlmis.notification.service.referencedata.UserDto;
+import org.openlmis.notification.service.referencedata.UserReferenceDataService;
 import org.openlmis.notification.web.NotFoundException;
 import org.openlmis.notification.web.ValidationException;
-import org.openlmis.notification.web.notification.MessageDto;
-import org.openlmis.notification.web.notification.NotificationDto;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
@@ -37,12 +37,15 @@ public class NotificationHandler {
   private UserContactDetailsRepository userContactDetailsRepository;
 
   @Autowired
+  private UserReferenceDataService userReferenceDataService;
+
+  @Autowired
   private List<NotificationChannelHandler> handlers;
 
   /**
    * Handles the given notification.
    */
-  public void handle(NotificationDto notification) {
+  public void handle(Notification notification) {
     UserContactDetails contactDetails = userContactDetailsRepository
         .findOne(notification.getUserId());
 
@@ -50,21 +53,19 @@ public class NotificationHandler {
       throw new NotFoundException(ERROR_USER_CONTACT_DETAILS_NOT_FOUND);
     }
 
-    for (Entry<String, MessageDto> entry : notification.getMessages().entrySet()) {
-      NotificationChannel notificationChannel = getNotificationChannel(entry.getKey());
+    UserDto user = userReferenceDataService.findOne(contactDetails.getReferenceDataUserId());
+    if (null == user || !user.isActive()) {
+      throw new ValidationException(ERROR_USER_NOT_ACTIVE_OR_NOT_FOUND);
+    }
+
+    for (NotificationMessage message : notification.getMessages()) {
+      NotificationChannel notificationChannel = message.getChannel();
       handlers
           .stream()
           .filter(item -> notificationChannel.equals(item.getNotificationChannel()))
           .findFirst()
           .ifPresent(item -> item
-              .handle(notification.getImportant(), entry.getValue(), contactDetails));
+              .handle(notification.getImportant(), message, contactDetails));
     }
   }
-
-  private NotificationChannel getNotificationChannel(String value) {
-    return Optional
-        .ofNullable(NotificationChannel.fromString(value))
-        .orElseThrow(() -> new ValidationException(ERROR_UNSUPPORTED_NOTIFICATION_CHANNEL, value));
-  }
-
 }

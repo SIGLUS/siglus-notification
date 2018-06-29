@@ -37,8 +37,8 @@ import org.openlmis.notification.domain.Notification;
 import org.openlmis.notification.domain.UserContactDetails;
 import org.openlmis.notification.repository.NotificationRepository;
 import org.openlmis.notification.repository.UserContactDetailsRepository;
-import org.openlmis.notification.service.EmailNotificationChannelHandler;
 import org.openlmis.notification.service.NotificationChannel;
+import org.openlmis.notification.service.NotificationHandler;
 import org.openlmis.notification.service.PageDto;
 import org.openlmis.notification.service.referencedata.UserDto;
 import org.openlmis.notification.service.referencedata.UserReferenceDataService;
@@ -59,7 +59,7 @@ public class NotificationControllerIntegrationTest extends BaseWebIntegrationTes
   private static final String CONTENT = "content";
 
   @MockBean
-  private EmailNotificationChannelHandler emailNotificationChannelHandler;
+  private NotificationHandler notificationHandler;
 
   @MockBean
   private UserContactDetailsRepository userContactDetailsRepository;
@@ -74,66 +74,74 @@ public class NotificationControllerIntegrationTest extends BaseWebIntegrationTes
       .withReferenceDataUserId(USER_ID)
       .build();
   private UserDto user = new UserDataBuilder().build();
+  private Notification notification;
 
   private Pageable pageRequest = new PageRequest(
       Pagination.DEFAULT_PAGE_NUMBER, Pagination.NO_PAGINATION);
 
   @Before
   public void setUp() {
+    notification = new NotificationDataBuilder()
+        .withUserId(USER_ID)
+        .withMessage(NotificationChannel.EMAIL, CONTENT, SUBJECT)
+        .build();
+    
     given(userContactDetailsRepository.findOne(USER_ID)).willReturn(contactDetails);
     given(userReferenceDataService.findOne(USER_ID)).willReturn(user);
-    given(emailNotificationChannelHandler.getNotificationChannel())
-        .willReturn(NotificationChannel.EMAIL);
   }
 
   @Test
   public void shouldSendMessageForValidNotification() {
-    send(CONTENT, SERVICE_ACCESS_TOKEN_HEADER)
+    given(notificationRepository.save(any(Notification.class))).willReturn(notification);
+    
+    send(SERVICE_ACCESS_TOKEN_HEADER)
         .then()
         .statusCode(200);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-    verify(emailNotificationChannelHandler)
-        .handle(false, new MessageDto(SUBJECT, CONTENT), contactDetails);
+    verify(notificationHandler).handle(notification);
   }
 
   @Test
   public void shouldNotSendMessageForInvalidNotification() {
-    send(null, SERVICE_ACCESS_TOKEN_HEADER)
+    notification = new NotificationDataBuilder()
+        .withUserId(USER_ID)
+        .withMessage(NotificationChannel.EMAIL, null, SUBJECT)
+        .build();
+
+    send(SERVICE_ACCESS_TOKEN_HEADER)
         .then()
         .statusCode(400)
         .body(MESSAGE_KEY, is(ERROR_NOTIFICATION_REQUEST_FIELD_REQUIRED));
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.validates());
 
-    verifyZeroInteractions(emailNotificationChannelHandler);
+    verifyZeroInteractions(notificationHandler);
   }
 
   @Test
   public void shouldNotSendMessageForUserRequest() {
-    send(CONTENT, USER_ACCESS_TOKEN_HEADER)
+    send(USER_ACCESS_TOKEN_HEADER)
         .then()
         .statusCode(403)
         .body(MESSAGE_KEY, is(PERMISSION_MISSING_GENERIC));
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.validates());
-    verifyZeroInteractions(emailNotificationChannelHandler);
+    verifyZeroInteractions(notificationHandler);
   }
 
   @Test
   public void shouldNotSendMessageIfRequestTokenIsInvalid() {
-    send(CONTENT, null)
+    send(null)
         .then()
         .statusCode(401);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.validates());
-    verifyZeroInteractions(emailNotificationChannelHandler);
+    verifyZeroInteractions(notificationHandler);
   }
   
   @Test
   public void getCollectionShouldGetPageOfNotifications() {
-    Notification notification = new NotificationDataBuilder()
-        .withMessage(NotificationChannel.EMAIL, SUBJECT, "Body").build();
     given(notificationRepository.findAll(any(Pageable.class)))
         .willReturn(Pagination.getPage(singletonList(notification), pageRequest));
 
@@ -149,12 +157,7 @@ public class NotificationControllerIntegrationTest extends BaseWebIntegrationTes
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
-  private Response send(String content, String token) {
-    Notification notification = new NotificationDataBuilder()
-        .withUserId(USER_ID)
-        .withMessage(NotificationChannel.EMAIL, content, SUBJECT)
-        .build();
-    
+  private Response send(String token) {
     NotificationDto body = new NotificationDto();
     notification.export(body);
 

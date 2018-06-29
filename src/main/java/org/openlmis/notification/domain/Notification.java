@@ -25,6 +25,7 @@ import javax.persistence.FetchType;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import lombok.EqualsAndHashCode;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
@@ -34,12 +35,15 @@ import lombok.NoArgsConstructor;
 public class Notification extends BaseEntity {
 
   @Column(nullable = false)
+  @Getter
   private UUID userId;
 
   @OneToMany(cascade = CascadeType.ALL, mappedBy = "notification", orphanRemoval = true,
       fetch = FetchType.EAGER)
+  @Getter
   private List<NotificationMessage> messages;
-  
+
+  @Getter
   private Boolean important;
   
   @Column(columnDefinition = "timestamp with time zone", nullable = false)
@@ -55,10 +59,21 @@ public class Notification extends BaseEntity {
   public Notification(UUID userId, List<NotificationMessage> messages, Boolean important) {
     this.userId = userId;
     this.messages = messages;
+    this.messages.forEach(notificationMessage -> notificationMessage.setNotification(this));
     this.important = important;
     this.createdDate = ZonedDateTime.now();
   }
-  
+
+  /**
+   * Construct new notification based on an importer (DTO).
+   *
+   * @param importer importer (DTO) to use
+   * @return new notification
+   */
+  public static Notification newInstance(Importer importer) {
+    return new Notification(importer.getUserId(), importer.getMessages(), importer.getImportant());
+  }
+
   /**
    * Export this object to the specified exporter (DTO).
    *
@@ -69,6 +84,15 @@ public class Notification extends BaseEntity {
     exporter.setMessages(messages);
     exporter.setImportant(important);
     exporter.setCreatedDate(createdDate);
+  }
+  
+  public interface Importer {
+    
+    UUID getUserId();
+    
+    List<NotificationMessage> getMessages();
+    
+    Boolean getImportant();
   }
 
   public interface Exporter {

@@ -71,10 +71,6 @@ public class NotificationDataBuilder {
    * @return new notification
    */
   public Notification build() {
-    Notification newNotification = new Notification(userId, messages, important);
-    for (NotificationMessage message : messages) {
-      message.setNotification(newNotification);
-    }
-    return newNotification;
+    return new Notification(userId, messages, important);
   }
 }

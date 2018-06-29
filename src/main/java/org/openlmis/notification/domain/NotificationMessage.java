@@ -74,8 +74,7 @@ public class NotificationMessage extends BaseEntity {
    * @param subject subject
    */
   public NotificationMessage(NotificationChannel channel, String body, String subject) {
-    this.channel = channel;
-    this.body = body;
+    this(channel, body);
     this.subject = subject;
   }
 }

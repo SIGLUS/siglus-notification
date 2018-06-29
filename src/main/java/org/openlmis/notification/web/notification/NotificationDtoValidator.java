@@ -19,7 +19,10 @@ import static org.apache.commons.lang3.StringUtils.isBlank;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_NOTIFICATION_REQUEST_FIELD_REQUIRED;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_NOTIFICATION_REQUEST_MESSAGES_EMPTY;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_NOTIFICATION_REQUEST_NULL;
+import static org.openlmis.notification.i18n.MessageKeys.ERROR_UNSUPPORTED_NOTIFICATION_CHANNEL;
 
+import java.util.Map;
+import org.openlmis.notification.service.NotificationChannel;
 import org.openlmis.notification.web.BaseValidator;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
@@ -41,7 +44,7 @@ public class NotificationDtoValidator implements BaseValidator {
     if (!errors.hasErrors()) {
       NotificationDto dto = (NotificationDto) target;
 
-      if (CollectionUtils.isEmpty(dto.getMessages())) {
+      if (CollectionUtils.isEmpty(dto.getMessageMap())) {
         rejectValue(errors, "messages", ERROR_NOTIFICATION_REQUEST_MESSAGES_EMPTY);
       } else {
         validateMessages(errors, dto);
@@ -50,7 +53,13 @@ public class NotificationDtoValidator implements BaseValidator {
   }
 
   private void validateMessages(Errors errors, NotificationDto dto) {
-    for (MessageDto message : dto.getMessages().values()) {
+    for (Map.Entry<String, MessageDto> entry : dto.getMessageMap().entrySet()) {
+      String key = entry.getKey();
+      MessageDto message = entry.getValue();
+      if (null == NotificationChannel.fromString(key)) {
+        errors.rejectValue("messages", ERROR_UNSUPPORTED_NOTIFICATION_CHANNEL,
+            new String[]{key}, ERROR_UNSUPPORTED_NOTIFICATION_CHANNEL);
+      }
       if (isBlank(message.getBody())) {
         rejectValue(errors, "messages", ERROR_NOTIFICATION_REQUEST_FIELD_REQUIRED);
       }

@@ -26,14 +26,16 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.notification.domain.Notification;
+import org.openlmis.notification.domain.NotificationMessage;
 import org.openlmis.notification.domain.UserContactDetails;
 import org.openlmis.notification.repository.UserContactDetailsRepository;
+import org.openlmis.notification.service.referencedata.UserDto;
+import org.openlmis.notification.service.referencedata.UserReferenceDataService;
+import org.openlmis.notification.testutils.UserDataBuilder;
 import org.openlmis.notification.util.NotificationDataBuilder;
 import org.openlmis.notification.util.UserContactDetailsDataBuilder;
 import org.openlmis.notification.web.NotFoundException;
 import org.openlmis.notification.web.ValidationException;
-import org.openlmis.notification.web.notification.MessageDto;
-import org.openlmis.notification.web.notification.NotificationDto;
 import org.springframework.test.util.ReflectionTestUtils;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -44,24 +46,28 @@ public class NotificationHandlerTest {
 
   @Mock
   private NotificationChannelHandler notificationChannelHandler;
+  
+  @Mock
+  private UserReferenceDataService userReferenceDataService;
 
   @InjectMocks
   private NotificationHandler notificationHandler;
 
   private UserContactDetails contactDetails = new UserContactDetailsDataBuilder().build();
-  private MessageDto message = new MessageDto("subject", "body");
-  private NotificationDto notification = new NotificationDto();
+  private NotificationMessage message = new NotificationMessage(NotificationChannel.EMAIL,
+      "body", "subject");
+  private Notification notification = new NotificationDataBuilder()
+      .withUserId(contactDetails.getId())
+      .withMessage(message)
+      .build();
+  private UserDto user = new UserDataBuilder().build();
 
   @Before
   public void setUp() {
-    Notification notificationObj = new NotificationDataBuilder()
-        .withUserId(contactDetails.getId())
-        .withMessage(NotificationChannel.EMAIL, "body", "subject")
-        .build();
-    notificationObj.export(notification);
-    
     when(userContactDetailsRepository.findOne(notification.getUserId()))
         .thenReturn(contactDetails);
+    when(userReferenceDataService.findOne(contactDetails.getReferenceDataUserId()))
+        .thenReturn(user);
     when(notificationChannelHandler.getNotificationChannel()).thenReturn(NotificationChannel.EMAIL);
 
     ReflectionTestUtils
@@ -72,7 +78,7 @@ public class NotificationHandlerTest {
   public void shouldHandleNotification() {
     notificationHandler.handle(notification);
     verify(userContactDetailsRepository).findOne(notification.getUserId());
-    verify(notificationChannelHandler).getNotificationChannel();
+    verify(userReferenceDataService).findOne(contactDetails.getReferenceDataUserId());
     verify(notificationChannelHandler).handle(notification.getImportant(), message, contactDetails);
   }
 
@@ -84,11 +90,15 @@ public class NotificationHandlerTest {
   }
 
   @Test(expected = ValidationException.class)
-  public void shouldThrowExceptionIfMessageTypeDoesNotExist() {
-    notification = new NotificationDto();
-    notification.setUserId(contactDetails.getId());
-    notification.addMessage("sms", new MessageDto());
+  public void shouldThrowExceptionIfUserDoesNotExist() {
+    when(userReferenceDataService.findOne(contactDetails.getReferenceDataUserId()))
+        .thenReturn(null);
     notificationHandler.handle(notification);
   }
 
+  @Test(expected = ValidationException.class)
+  public void shouldThrowExceptionIfUserIsNotActive() {
+    user.setActive(false);
+    notificationHandler.handle(notification);
+  }
 }

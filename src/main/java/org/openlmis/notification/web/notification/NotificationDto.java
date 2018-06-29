@@ -15,7 +15,10 @@
 
 package org.openlmis.notification.web.notification;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,6 +31,7 @@ import lombok.Setter;
 import lombok.ToString;
 import org.openlmis.notification.domain.Notification;
 import org.openlmis.notification.domain.NotificationMessage;
+import org.openlmis.notification.service.NotificationChannel;
 
 @Getter
 @Setter
@@ -35,22 +39,40 @@ import org.openlmis.notification.domain.NotificationMessage;
 @AllArgsConstructor
 @EqualsAndHashCode
 @ToString
-public final class NotificationDto implements Notification.Exporter {
+public final class NotificationDto implements Notification.Exporter, Notification.Importer {
+
   private UUID userId;
-  private Map<String, MessageDto> messages = new HashMap<>();
+
+  @JsonProperty("messages")
+  private Map<String, MessageDto> messageMap = new HashMap<>();
+
   private Boolean important;
+
   private ZonedDateTime createdDate;
   
   public void addMessage(String key, MessageDto message) {
-    messages.put(key, message);
+    messageMap.put(key, message);
   }
 
   @Override
   public void setMessages(List<NotificationMessage> messages) {
-    this.messages = new HashMap<>();
+    this.messageMap = new HashMap<>();
     for (NotificationMessage message : messages) {
       MessageDto messageDto = new MessageDto(message.getSubject(), message.getBody());
-      this.messages.put(message.getChannel().toString().toLowerCase(), messageDto);
+      this.messageMap.put(message.getChannel().toString().toLowerCase(), messageDto);
     }
+  }
+  
+  @JsonIgnore
+  @Override
+  public List<NotificationMessage> getMessages() {
+    List<NotificationMessage> messageList = new ArrayList<>();
+    for (Map.Entry<String, MessageDto> entry : messageMap.entrySet()) {
+      String key = entry.getKey();
+      MessageDto messageDto = entry.getValue();
+      messageList.add(new NotificationMessage(NotificationChannel.fromString(key),
+          messageDto.getBody(), messageDto.getSubject()));
+    }
+    return messageList;
   }
 }

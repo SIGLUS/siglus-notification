@@ -18,6 +18,7 @@ package org.openlmis.notification.web.notification;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_NOTIFICATION_REQUEST_FIELD_REQUIRED;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_NOTIFICATION_REQUEST_MESSAGES_EMPTY;
+import static org.openlmis.notification.i18n.MessageKeys.ERROR_UNSUPPORTED_NOTIFICATION_CHANNEL;
 
 import java.util.Collections;
 import org.junit.Before;
@@ -76,4 +77,11 @@ public class NotificationDtoValidatorTest extends BaseValidatorTest {
     assertErrorMessage(errors, "messages", ERROR_NOTIFICATION_REQUEST_FIELD_REQUIRED);
   }
 
+  @Test
+  public void shouldRejectIfChannelIsNotSupported() {
+    request.setMessageMap(Collections.singletonMap("sms", new MessageDto()));
+
+    validator.validate(request, errors);
+    assertErrorMessage(errors, "messages", ERROR_UNSUPPORTED_NOTIFICATION_CHANNEL);
+  }
 }
