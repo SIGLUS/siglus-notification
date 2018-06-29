@@ -87,7 +87,8 @@ public class ResourceServerSecurityConfiguration implements ResourceServerConfig
             "/notification",
             "/webjars/**",
             "/notification/webjars/**",
-            "/notification/docs/**"
+            "/notification/docs/**",
+            "/api/userContactDetails/*/verifications/*"
         ).permitAll()
         .antMatchers("/**").fullyAuthenticated();
   }

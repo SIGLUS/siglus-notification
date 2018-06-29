@@ -282,7 +282,7 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
     given(emailVerificationTokenRepository.findOne(token.getId()))
         .willReturn(token);
 
-    startUserRequest()
+    startRequest()
         .pathParam(ID, userContactDetails.getId())
         .pathParam(TOKEN, token.getId())
         .given()
