@@ -140,9 +140,15 @@ public class UserContactDetailsController {
 
     EmailVerificationToken token = emailVerificationTokenRepository
         .findOneByUserContactDetails(contactDetails);
-    return null == token
-        ? null
-        : new EmailVerificationTokenDto(token.getEmailAddress(), token.getExpiryDate());
+
+    if (null == token) {
+      return null;
+    }
+
+    EmailVerificationTokenDto dto = new EmailVerificationTokenDto();
+    token.export(dto);
+
+    return dto;
   }
 
   /**

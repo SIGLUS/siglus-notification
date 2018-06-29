@@ -16,6 +16,7 @@
 package org.openlmis.notification.domain;
 
 import java.time.ZonedDateTime;
+import java.util.UUID;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
@@ -47,6 +48,27 @@ public class EmailVerificationToken extends BaseEntity {
 
   public boolean isExpired() {
     return expiryDate.isBefore(ZonedDateTime.now());
+  }
+
+  /**
+   * Export this object to the specified exporter (DTO).
+   *
+   * @param exporter exporter to export to
+   */
+  public void export(Exporter exporter) {
+    exporter.setToken(getId());
+    exporter.setEmailAddress(emailAddress);
+    exporter.setExpiryDate(expiryDate);
+  }
+
+  public interface Exporter {
+
+    void setToken(UUID token);
+
+    void setExpiryDate(ZonedDateTime expiryDate);
+
+    void setEmailAddress(String emailAddress);
+
   }
 
 }

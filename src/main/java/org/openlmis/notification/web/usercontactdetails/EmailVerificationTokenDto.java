@@ -16,12 +16,14 @@
 package org.openlmis.notification.web.usercontactdetails;
 
 import java.time.ZonedDateTime;
+import java.util.UUID;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.openlmis.notification.domain.EmailVerificationToken;
 
 @Getter
 @Setter
@@ -29,7 +31,8 @@ import lombok.ToString;
 @AllArgsConstructor
 @EqualsAndHashCode
 @ToString
-public final class EmailVerificationTokenDto {
+public final class EmailVerificationTokenDto implements EmailVerificationToken.Exporter {
+  private UUID token;
   private String emailAddress;
   private ZonedDateTime expiryDate;
 }
