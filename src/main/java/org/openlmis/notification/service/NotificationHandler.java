@@ -27,11 +27,16 @@ import org.openlmis.notification.service.referencedata.UserDto;
 import org.openlmis.notification.service.referencedata.UserReferenceDataService;
 import org.openlmis.notification.web.NotFoundException;
 import org.openlmis.notification.web.ValidationException;
+import org.slf4j.ext.XLogger;
+import org.slf4j.ext.XLoggerFactory;
+import org.slf4j.profiler.Profiler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 @Component
 public class NotificationHandler {
+
+  private static final XLogger XLOGGER = XLoggerFactory.getXLogger(NotificationHandler.class);
 
   @Autowired
   private UserContactDetailsRepository userContactDetailsRepository;
@@ -46,6 +51,12 @@ public class NotificationHandler {
    * Handles the given notification.
    */
   public void handle(Notification notification) {
+
+    XLOGGER.entry(notification);
+    Profiler profiler = new Profiler("HANDLE_NOTIFICATION");
+    profiler.setLogger(XLOGGER);
+
+    profiler.start("FIND_USER_CONTACT_DETAILS_BY_ID");
     UserContactDetails contactDetails = userContactDetailsRepository
         .findOne(notification.getUserId());
 
@@ -53,11 +64,13 @@ public class NotificationHandler {
       throw new NotFoundException(ERROR_USER_CONTACT_DETAILS_NOT_FOUND);
     }
 
+    profiler.start("FIND_USER_BY_ID");
     UserDto user = userReferenceDataService.findOne(contactDetails.getReferenceDataUserId());
     if (null == user || !user.isActive()) {
       throw new ValidationException(ERROR_USER_NOT_ACTIVE_OR_NOT_FOUND);
     }
 
+    profiler.start("HANDLE_MESSAGES");
     for (NotificationMessage message : notification.getMessages()) {
       NotificationChannel notificationChannel = message.getChannel();
       handlers
@@ -67,5 +80,7 @@ public class NotificationHandler {
           .ifPresent(item -> item
               .handle(notification.getImportant(), message, contactDetails));
     }
+
+    profiler.stop().log();
   }
 }

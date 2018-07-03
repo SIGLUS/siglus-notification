@@ -1,0 +1,30 @@
+modules:
+  jmeter:
+    properties:
+      base-uri: http://localhost
+      service-auth: trusted-client:secret
+    xml-jtl-flags:
+      responseData: true
+reporting:
+  - module: final-stats
+  - module: passfail
+    criteria:
+    - failures>0%, stop as failed
+# the following scenarios are common for all performance tests
+# scenarios related with one of available resources should be
+# put in separate file in `tests` directory
+scenarios:
+  get-service-token:
+    requests:
+      - if: '${__javaScript(vars.get("access_token") == null)}'
+        then:
+          - url: ${__P(base-uri)}/api/oauth/token
+            method: POST
+            label: GetServiceToken
+            headers:
+              Authorization: Basic ${__base64Encode(${__P(service-auth)})}
+            body:
+              grant_type: client_credentials
+            extract-jsonpath:
+              access_token:
+                jsonpath: $.access_token

@@ -1,0 +1,41 @@
+execution:
+  - concurrency: 1
+    hold-for: 1m
+    scenario: send-notification
+
+scenarios:
+  send-notification:
+    variables:
+      # srmanager4, has valid email address
+      user_id: c54df462-66d8-4a02-bee9-b786fe2f30ee
+    requests:
+      - include-scenario: get-service-token
+      - url: ${__P(base-uri)}/api/notifications
+        method: POST
+        label: SendNotification
+        headers:
+          Authorization: Bearer ${access_token}
+          Content-Type: application/json
+        jsr223:
+          execute: before
+          script-text: |
+            import groovy.json.JsonOutput
+
+            def notification = [
+              userId: vars.get("user_id"),
+              messages: [
+                email: [
+                  subject: "Test subject",
+                  body: "Test body"
+                ]
+              ],
+              important: "false"
+            ]
+
+            vars.put("notification", JsonOutput.toJson(notification))
+        body: ${notification}
+
+reporting:
+    - module: passfail
+      criteria:
+        Send notification too slow: p90 of SendNotification>500ms

@@ -74,6 +74,11 @@ public class NotificationController {
   @ResponseStatus(HttpStatus.OK)
   public void sendNotification(@RequestBody @Validated NotificationDto notificationDto,
       BindingResult bindingResult) {
+    XLOGGER.entry(notificationDto);
+    Profiler profiler = new Profiler("SEND_NOTIFICATION");
+    profiler.setLogger(XLOGGER);
+
+    profiler.start("CHECK_PERMISSION");
     permissionService.canSendNotification();
 
     if (bindingResult.getErrorCount() > 0) {
@@ -81,9 +86,17 @@ public class NotificationController {
       throw new ValidationException(fieldError.getDefaultMessage(), fieldError.getField());
     }
 
+    profiler.start("IMPORT_FROM_DTO");
     Notification notification = Notification.newInstance(notificationDto);
+
+    profiler.start("SAVE_NOTIFICATION");
     notification = notificationRepository.save(notification);
+
+    profiler.start("HANDLE_NOTIFICATION");
     notificationHandler.handle(notification);
+
+    profiler.stop().log();
+    XLOGGER.exit();
   }
 
   /**

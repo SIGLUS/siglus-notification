@@ -22,6 +22,9 @@ import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import org.openlmis.notification.domain.NotificationMessage;
 import org.openlmis.notification.domain.UserContactDetails;
+import org.slf4j.ext.XLogger;
+import org.slf4j.ext.XLoggerFactory;
+import org.slf4j.profiler.Profiler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -30,6 +33,9 @@ import org.springframework.stereotype.Component;
 
 @Component
 public class EmailNotificationChannelHandler implements NotificationChannelHandler {
+
+  private static final XLogger XLOGGER = XLoggerFactory.getXLogger(
+      EmailNotificationChannelHandler.class);
 
   @Autowired
   private JavaMailSender mailSender;
@@ -63,15 +69,26 @@ public class EmailNotificationChannelHandler implements NotificationChannelHandl
   }
 
   private void sendMail(String to, NotificationMessage message) throws MessagingException {
+
+    XLOGGER.entry(to, message);
+    Profiler profiler = new Profiler("SEND_MAIL");
+    profiler.setLogger(XLOGGER);
+
+    profiler.start("CREATE_MAIL_MESSAGE");
     MimeMessage mailMessage = mailSender.createMimeMessage();
 
+    profiler.start("CREATE_MESSAGE_HELPER");
     MimeMessageHelper helper = new MimeMessageHelper(mailMessage, false);
     helper.setFrom(from);
     helper.setTo(to);
     helper.setSubject(message.getSubject());
     helper.setText(message.getBody());
 
+    profiler.start("SEND_MESSAGE");
     mailSender.send(mailMessage);
+
+    profiler.stop().log();
+    XLOGGER.exit();
   }
 
   private boolean shouldSendMessage(UserContactDetails contactDetails, Boolean important) {
