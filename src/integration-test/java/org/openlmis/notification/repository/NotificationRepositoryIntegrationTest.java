@@ -16,7 +16,9 @@
 package org.openlmis.notification.repository;
 
 import java.util.UUID;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.openlmis.notification.domain.Notification;
 import org.openlmis.notification.service.NotificationChannel;
 import org.openlmis.notification.util.NotificationDataBuilder;
@@ -26,6 +28,9 @@ import org.springframework.data.repository.CrudRepository;
 
 public class NotificationRepositoryIntegrationTest 
     extends BaseCrudRepositoryIntegrationTest<Notification> {
+
+  @Rule
+  public ExpectedException expectedException = ExpectedException.none();
 
   @Autowired
   private NotificationRepository repository;
@@ -40,8 +45,11 @@ public class NotificationRepositoryIntegrationTest
     return new NotificationDataBuilder().withEmptyMessage(NotificationChannel.EMAIL).build();
   }
 
-  @Test(expected = DataIntegrityViolationException.class)
+  @Test
   public void shouldNotAllowDuplicateChannelsForNotification() {
+    expectedException.expect(DataIntegrityViolationException.class);
+    expectedException.expectMessage("unq_notification_messages_notificationid_channel");
+
     Notification notification = new NotificationDataBuilder()
         .withMessage(NotificationChannel.EMAIL, "Body", "Subject")
         .withMessage(NotificationChannel.EMAIL, "Body", "Subject")
