@@ -38,4 +38,4 @@ scenarios:
 reporting:
     - module: passfail
       criteria:
-        Send notification too slow: p90 of SendNotification>500ms
+        Send notification too slow: p90 of SendNotification>10000ms
