@@ -25,8 +25,8 @@ scenarios:
               userId: vars.get("user_id"),
               messages: [
                 email: [
-                  subject: "Test subject",
-                  body: "Test body"
+                  subject: "Send notification performance test subject",
+                  body: "Send notification performance test body"
                 ]
               ],
               important: "false"
@@ -38,4 +38,4 @@ scenarios:
 reporting:
     - module: passfail
       criteria:
-        Send notification too slow: p90 of SendNotification>10000ms
+        Send notification too slow: p90 of SendNotification>500ms
