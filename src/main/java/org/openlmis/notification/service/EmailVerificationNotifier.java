@@ -28,8 +28,6 @@ import org.openlmis.notification.i18n.ExposedMessageSource;
 import org.openlmis.notification.repository.EmailVerificationTokenRepository;
 import org.openlmis.notification.service.referencedata.UserDto;
 import org.openlmis.notification.service.referencedata.UserReferenceDataService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.scheduling.annotation.Async;
@@ -37,7 +35,6 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class EmailVerificationNotifier {
-  private static final Logger LOGGER = LoggerFactory.getLogger(EmailVerificationNotifier.class);
   private static final long TOKEN_VALIDITY_HOURS = 12;
 
   @Autowired
@@ -95,12 +92,6 @@ public class EmailVerificationNotifier {
       EmailVerificationToken token) {
     UserDto referenceDataUser = userReferenceDataService
         .findOne(contactDetails.getReferenceDataUserId());
-
-    if (null == referenceDataUser) {
-      // temporary solution, it will be removed in OLMIS-4984
-      LOGGER.warn("Can't send notification for user {}", contactDetails.getReferenceDataUserId());
-      return;
-    }
 
     String[] bodyMsgArgs = {
         referenceDataUser.getFirstName(),

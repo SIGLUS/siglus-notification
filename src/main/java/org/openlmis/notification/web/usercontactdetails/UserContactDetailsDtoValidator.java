@@ -19,6 +19,8 @@ import org.apache.commons.validator.routines.EmailValidator;
 import org.openlmis.notification.domain.UserContactDetails;
 import org.openlmis.notification.i18n.MessageKeys;
 import org.openlmis.notification.repository.UserContactDetailsRepository;
+import org.openlmis.notification.service.referencedata.UserDto;
+import org.openlmis.notification.service.referencedata.UserReferenceDataService;
 import org.openlmis.notification.web.BaseValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
@@ -35,6 +37,10 @@ public class UserContactDetailsDtoValidator implements BaseValidator {
   @Autowired
   private UserContactDetailsRepository repository;
 
+  @Autowired
+  private UserReferenceDataService userReferenceDataService;
+
+  static final String REFERENCE_DATA_USER_ID = "referenceDataUserId";
   static final String EMAIL = "emailDetails.email";
   static final String EMAIL_VERIFIED = "emailDetails.emailVerified";
 
@@ -61,31 +67,44 @@ public class UserContactDetailsDtoValidator implements BaseValidator {
   @Override
   public void validate(Object target, Errors errors) {
     UserContactDetailsDto dto = (UserContactDetailsDto) target;
-    boolean hasEmailDetails = null != dto.getEmailDetails();
 
-    if (hasEmailDetails) {
-      verifyEmail(dto.getEmailDetails().getEmail(), errors);
-    }
+    verifyEmail(dto.getEmailDetails(), errors);
+    verifyReferenceDataUserId(dto, errors);
+    verifyInvariants(dto, errors);
+  }
 
-    UserContactDetails userContactDetails = repository.findOne(dto.getReferenceDataUserId());
-
-    if (null == userContactDetails) {
+  private void verifyEmail(EmailDetailsDto emailDetails, Errors errors) {
+    if (null == emailDetails) {
       return;
     }
 
-    if (hasEmailDetails) {
-      rejectIfInvariantWasChanged(
-          errors,
-          EMAIL_VERIFIED,
-          userContactDetails.getEmailDetails().getEmailVerified(),
-          dto.getEmailDetails().getEmailVerified()
-      );
+    if (!EmailValidator.getInstance().isValid(emailDetails.getEmail())) {
+      rejectValue(errors, EMAIL, MessageKeys.ERROR_EMAIL_INVALID);
     }
   }
 
-  private void verifyEmail(String email, Errors errors) {
-    if (!EmailValidator.getInstance().isValid(email)) {
-      rejectValue(errors, EMAIL, MessageKeys.ERROR_EMAIL_INVALID);
+  private void verifyReferenceDataUserId(UserContactDetailsDto contactDetails, Errors errors) {
+    UserDto referenceDataUser = userReferenceDataService
+        .findOne(contactDetails.getReferenceDataUserId());
+
+    if (null == referenceDataUser) {
+      rejectValue(errors, REFERENCE_DATA_USER_ID, MessageKeys.ERROR_USER_NOT_FOUND);
+    }
+  }
+
+  private void verifyInvariants(UserContactDetailsDto contactDetails, Errors errors) {
+    UserContactDetails existing = repository.findOne(contactDetails.getReferenceDataUserId());
+
+    if (null == existing) {
+      return;
+    }
+
+    if (null != contactDetails.getEmailDetails()) {
+      rejectIfInvariantWasChanged(
+          errors, EMAIL_VERIFIED,
+          existing.getEmailDetails().getEmailVerified(),
+          contactDetails.getEmailDetails().getEmailVerified()
+      );
     }
   }
 

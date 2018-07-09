@@ -16,19 +16,21 @@
 package org.openlmis.notification.web.usercontactdetails;
 
 import static org.openlmis.notification.i18n.MessageKeys.EMAIL_VERIFICATION_SUCCESS;
-import static org.openlmis.notification.i18n.MessageKeys.ERROR_ID_MISMATCH;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_TOKEN_EXPIRED;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_TOKEN_INVALID;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_USER_CONTACT_DETAILS_NOT_FOUND;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_USER_HAS_NO_EMAIL;
+import static org.openlmis.notification.i18n.MessageKeys.ERROR_VERIFICATIONS_ID_MISMATCH;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_VERIFICATION_EMAIL_VERIFIED;
 
+import java.util.Objects;
 import java.util.UUID;
 import org.openlmis.notification.domain.EmailDetails;
 import org.openlmis.notification.domain.EmailVerificationToken;
 import org.openlmis.notification.domain.UserContactDetails;
 import org.openlmis.notification.i18n.Message;
 import org.openlmis.notification.i18n.Message.LocalizedMessage;
+import org.openlmis.notification.i18n.MessageKeys;
 import org.openlmis.notification.i18n.MessageService;
 import org.openlmis.notification.repository.EmailVerificationTokenRepository;
 import org.openlmis.notification.repository.UserContactDetailsRepository;
@@ -112,6 +114,11 @@ public class UserContactDetailsController {
       @PathVariable("id") UUID referenceDataUserId,
       @RequestBody UserContactDetailsDto userContactDetailsDto,
       BindingResult bindingResult) {
+
+    if (!Objects.equals(userContactDetailsDto.getReferenceDataUserId(), referenceDataUserId)) {
+      throw new ValidationException(MessageKeys.ERROR_USER_CONTACT_DETAILS_ID_MISMATCH);
+    }
+
     permissionService.canManageUserContactDetails(referenceDataUserId);
 
     validator.validate(userContactDetailsDto, bindingResult);
@@ -194,7 +201,7 @@ public class UserContactDetailsController {
     }
 
     if (!userId.equals(verificationToken.getUserContactDetails().getReferenceDataUserId())) {
-      throw new ValidationException(ERROR_ID_MISMATCH);
+      throw new ValidationException(ERROR_VERIFICATIONS_ID_MISMATCH);
     }
 
     if (verificationToken.isExpired()) {

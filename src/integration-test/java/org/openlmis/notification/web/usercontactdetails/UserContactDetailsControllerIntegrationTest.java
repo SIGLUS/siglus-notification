@@ -21,26 +21,29 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willAnswer;
 import static org.mockito.BDDMockito.willDoNothing;
 import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.openlmis.notification.i18n.MessageKeys.EMAIL_VERIFICATION_SUCCESS;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_EMAIL_DUPLICATED;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_EMAIL_INVALID;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_FIELD_IS_INVARIANT;
-import static org.openlmis.notification.i18n.MessageKeys.ERROR_ID_MISMATCH;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_TOKEN_EXPIRED;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_TOKEN_INVALID;
+import static org.openlmis.notification.i18n.MessageKeys.ERROR_USER_CONTACT_DETAILS_ID_MISMATCH;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_USER_CONTACT_DETAILS_NOT_FOUND;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_USER_HAS_NO_EMAIL;
+import static org.openlmis.notification.i18n.MessageKeys.ERROR_VERIFICATIONS_ID_MISMATCH;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_VERIFICATION_EMAIL_VERIFIED;
 import static org.openlmis.notification.i18n.MessageKeys.PERMISSION_MISSING;
+import static org.openlmis.notification.web.usercontactdetails.UserContactDetailsDtoValidator.EMAIL;
+import static org.openlmis.notification.web.usercontactdetails.UserContactDetailsDtoValidator.EMAIL_VERIFIED;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
@@ -64,6 +67,7 @@ import org.openlmis.notification.web.MissingPermissionException;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.validation.Errors;
 
 @SuppressWarnings({"PMD.TooManyMethods"})
 public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrationTest {
@@ -88,6 +92,9 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
 
   @MockBean
   private EmailVerificationNotifier emailVerificationNotifier;
+
+  @MockBean
+  private UserContactDetailsDtoValidator validator;
 
   private UserContactDetails userContactDetails;
 
@@ -158,7 +165,7 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
     given(repository.exists(any(UUID.class))).willReturn(false);
     given(repository.save(any(UserContactDetails.class))).willReturn(userContactDetails);
 
-    UserContactDetailsDto response = put(request)
+    UserContactDetailsDto response = put(request, request.getReferenceDataUserId())
         .then()
         .statusCode(200)
         .extract()
@@ -182,7 +189,7 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
     given(repository.save(any(UserContactDetails.class))).willReturn(userContactDetails);
 
     UserContactDetailsDto request = toDto(userContactDetails);
-    UserContactDetailsDto response = put(request)
+    UserContactDetailsDto response = put(request, request.getReferenceDataUserId())
         .then()
         .statusCode(200)
         .extract()
@@ -192,7 +199,7 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
     assertEquals(request, response);
 
     verify(repository).save(userContactDetails);
-    verify(repository, times(2)).findOne(userContactDetails.getReferenceDataUserId());
+    verify(repository).findOne(userContactDetails.getReferenceDataUserId());
   }
 
   @Test
@@ -201,7 +208,8 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
         .given(permissionService)
         .canManageUserContactDetails(userContactDetails.getReferenceDataUserId());
 
-    put(toDto(userContactDetails))
+    UserContactDetailsDto request = toDto(userContactDetails);
+    put(request, request.getReferenceDataUserId())
         .then()
         .statusCode(403);
 
@@ -217,11 +225,12 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
     given(repository.exists(any(UUID.class))).willReturn(true);
     given(repository.findOne(userContactDetails.getReferenceDataUserId()))
         .willReturn(userContactDetails);
+    markDtoAsInvalid(EMAIL_VERIFIED, ERROR_FIELD_IS_INVARIANT);
 
     UserContactDetailsDto request = toDto(userContactDetails);
     request.getEmailDetails().setEmailVerified(!userContactDetails.isEmailAddressVerified());
 
-    String response = put(request)
+    String response = put(request, request.getReferenceDataUserId())
         .then()
         .statusCode(400)
         .extract()
@@ -241,7 +250,8 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
         new ConstraintViolationException("", null, "unq_contact_details_email"))
     ).given(repository).save(userContactDetails);
 
-    String response = put(toDto(userContactDetails))
+    UserContactDetailsDto request = toDto(userContactDetails);
+    String response = put(request, request.getReferenceDataUserId())
         .then()
         .statusCode(400)
         .extract()
@@ -256,10 +266,11 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
   }
 
   @Test
-  public void shouldReturnBardRequestWhenTryingToSaveUserContactDetailsWithInvalidEmail() {
-    userContactDetails.getEmailDetails().setEmail("someDefinitelyInvalidEmail");
+  public void shouldReturnBadRequestWhenTryingToSaveUserContactDetailsWithInvalidEmail() {
+    markDtoAsInvalid(EMAIL, ERROR_EMAIL_INVALID);
 
-    String response = put(toDto(userContactDetails))
+    UserContactDetailsDto request = toDto(userContactDetails);
+    String response = put(request, request.getReferenceDataUserId())
         .then()
         .statusCode(400)
         .extract()
@@ -271,6 +282,16 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
     verify(repository, never()).save(any(UserContactDetails.class));
     verify(permissionService)
         .canManageUserContactDetails(userContactDetails.getReferenceDataUserId());
+  }
+
+  @Test
+  public void shouldReturnBadRequestWhenTryingToSaveUserContactDetailsWithIdMismatch() {
+    put(toDto(userContactDetails), UUID.randomUUID())
+        .then()
+        .statusCode(400)
+        .body(MESSAGE_KEY, containsString(ERROR_USER_CONTACT_DETAILS_ID_MISMATCH));
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
@@ -355,7 +376,7 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
         .get(TOKEN_URL)
         .then()
         .statusCode(HttpStatus.BAD_REQUEST.value())
-        .body(MESSAGE_KEY, equalTo(ERROR_ID_MISMATCH));
+        .body(MESSAGE_KEY, equalTo(ERROR_VERIFICATIONS_ID_MISMATCH));
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
@@ -482,12 +503,12 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
     verifyZeroInteractions(emailVerificationNotifier);
   }
 
-  private Response put(UserContactDetailsDto dto) {
+  private Response put(UserContactDetailsDto dto, UUID referenceDataUserId) {
     return startUserRequest()
         .header(CONTENT_TYPE, APPLICATION_JSON_VALUE)
         .body(dto)
         .given()
-        .pathParam(ID, dto.getReferenceDataUserId())
+        .pathParam(ID, referenceDataUserId)
         .put(ID_RESOURCE_URL);
   }
 
@@ -503,6 +524,17 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
     UserContactDetailsDto dto = new UserContactDetailsDto();
     userContactDetails.export(dto);
     return dto;
+  }
+
+  private void markDtoAsInvalid(String field, String message) {
+    willAnswer(invocation -> {
+      Errors errors = invocation.getArgumentAt(1, Errors.class);
+      errors.rejectValue(field, message, message);
+
+      return null;
+    })
+        .given(validator)
+        .validate(any(UserContactDetailsDto.class), any(Errors.class));
   }
 
 }

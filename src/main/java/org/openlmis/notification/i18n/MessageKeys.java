@@ -44,6 +44,7 @@ public abstract class MessageKeys {
 
   public static final String ERROR_USER_CONTACT_DETAILS_NOT_FOUND =
       ERROR_PREFIX + DELIMITER + USER_CONTACT_DETAILS + DELIMITER + NOT_FOUND;
+  public static final String ERROR_USER_NOT_FOUND = join(ERROR_PREFIX, USER, NOT_FOUND);
   public static final String ERROR_USER_NOT_ACTIVE_OR_NOT_FOUND =
       ERROR_PREFIX + DELIMITER + USER + DELIMITER + "notActiveOrNotFound";
 
@@ -75,7 +76,11 @@ public abstract class MessageKeys {
   public static final String USER_NOT_FOUND =
       join(ERROR_PREFIX, AUTHENTICATION, USER, NOT_FOUND);
 
-  public static final String ERROR_ID_MISMATCH = join(ERROR_PREFIX, VERIFICATIONS, "idMismatch");
+  public static final String ERROR_USER_CONTACT_DETAILS_ID_MISMATCH =
+      join(ERROR_PREFIX, USER_CONTACT_DETAILS, "idMismatch");
+
+  public static final String ERROR_VERIFICATIONS_ID_MISMATCH =
+      join(ERROR_PREFIX, VERIFICATIONS, "idMismatch");
 
   public static final String ERROR_TOKEN_INVALID =
       join(ERROR_PREFIX, VERIFICATIONS, TOKEN, "invalid");

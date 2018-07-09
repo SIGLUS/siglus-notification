@@ -16,12 +16,16 @@
 package org.openlmis.notification.web.usercontactdetails;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_EMAIL_INVALID;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_FIELD_IS_INVARIANT;
+import static org.openlmis.notification.i18n.MessageKeys.ERROR_USER_NOT_FOUND;
 import static org.openlmis.notification.web.usercontactdetails.UserContactDetailsDtoValidator.EMAIL;
 import static org.openlmis.notification.web.usercontactdetails.UserContactDetailsDtoValidator.EMAIL_VERIFIED;
+import static org.openlmis.notification.web.usercontactdetails.UserContactDetailsDtoValidator.REFERENCE_DATA_USER_ID;
 
+import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -30,6 +34,8 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.notification.domain.UserContactDetails;
 import org.openlmis.notification.repository.UserContactDetailsRepository;
+import org.openlmis.notification.service.referencedata.UserDto;
+import org.openlmis.notification.service.referencedata.UserReferenceDataService;
 import org.openlmis.notification.util.UserContactDetailsDataBuilder;
 import org.openlmis.notification.web.BaseValidatorTest;
 import org.springframework.validation.BeanPropertyBindingResult;
@@ -41,6 +47,9 @@ public class UserContactDetailsDtoValidatorTest extends BaseValidatorTest {
   @Mock
   private UserContactDetailsRepository repository;
 
+  @Mock
+  private UserReferenceDataService userReferenceDataService;
+
   @InjectMocks
   private UserContactDetailsDtoValidator validator;
 
@@ -51,6 +60,9 @@ public class UserContactDetailsDtoValidatorTest extends BaseValidatorTest {
 
   @Before
   public void setUp() throws Exception {
+    when(userReferenceDataService.findOne(any(UUID.class)))
+        .thenReturn(new UserDto());
+
     contactDetails.export(dto);
 
     errors = new BeanPropertyBindingResult(dto, "userContactDetails");
@@ -98,5 +110,15 @@ public class UserContactDetailsDtoValidatorTest extends BaseValidatorTest {
 
     validator.validate(dto, errors);
     assertErrorMessage(errors, EMAIL_VERIFIED, ERROR_FIELD_IS_INVARIANT);
+  }
+
+  @Test
+  public void shouldRejectIfReferenceDataUserDoesNotExist() {
+    when(userReferenceDataService.findOne(any(UUID.class)))
+        .thenReturn(null);
+
+    validator.validate(dto, errors);
+
+    assertErrorMessage(errors, REFERENCE_DATA_USER_ID, ERROR_USER_NOT_FOUND);
   }
 }
