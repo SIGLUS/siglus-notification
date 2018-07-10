@@ -89,7 +89,10 @@ traits:
             parameters, all user contact details are returned.
           queryParameters:
               email:
-                  description: Email address
+                  description: >
+                    This field represents an email address. It is possible to pass only some part
+                    of the email address for example @openlmis.org to find all users that have the
+                    email address in the openlmis.org domain.
                   type: string
                   required: false
           responses:

@@ -26,7 +26,7 @@ import org.springframework.data.repository.query.Param;
 public interface UserContactDetailsRepository
     extends JpaRepository<UserContactDetails, UUID> {
 
-  @Query("FROM UserContactDetails AS c JOIN c.emailDetails AS e WHERE e.email = :email")
+  @Query("FROM UserContactDetails AS c JOIN c.emailDetails AS e WHERE e.email LIKE %:email%")
   Page<UserContactDetails> findByEmail(@Param("email") String email, Pageable pageable);
 
 }

@@ -15,11 +15,11 @@
 
 package org.openlmis.notification.repository;
 
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.junit.Rule;
 import org.junit.Test;
@@ -50,14 +50,18 @@ public class UserContactDetailsRepositoryIntegrationTest
 
   @Override
   protected void assertBefore(UserContactDetails instance) {
-    assertThat(instance.getId(), is(notNullValue()));
+    assertThat(instance.getId()).isNotNull();
   }
 
   @Override
   UserContactDetails generateInstance() {
+    return generateInstance(getNextInstanceNumber());
+  }
+
+  private UserContactDetails generateInstance(int instanceNumber) {
     return new UserContactDetailsDataBuilder()
         .withEmailDetails(new EmailDetailsDataBuilder()
-            .withEmail("test" + getNextInstanceNumber() + "@integration.test.org")
+            .withEmail("test" + instanceNumber + "@integration.test.org")
             .build())
         .build();
   }
@@ -95,7 +99,50 @@ public class UserContactDetailsRepositoryIntegrationTest
         .forEach(idx -> repository.save(generateInstance()));
 
     Page<UserContactDetails> actual = repository.findByEmail(expected.getEmailAddress(), pageable);
-    assertThat(actual.getTotalElements(), is(1L));
-    assertThat(actual.getContent().get(0), is(expected));
+    assertThat(actual.getTotalElements()).isEqualTo(1L);
+    assertThat(actual.getContent()).contains(expected);
+  }
+
+  @Test
+  public void shouldFindByPartOfEmail() {
+    repository.deleteAllInBatch();
+
+    final List<UserContactDetails> contactDetails = IntStream
+        .range(0, 50)
+        .mapToObj(idx -> repository.save(generateInstance(idx)))
+        .collect(Collectors.toList());
+    Pageable pageable = new PageRequest(0, 1000);
+
+    // find test1, test10, test11, test12, etc.
+    Page<UserContactDetails> actual = repository.findByEmail("test1", pageable);
+    assertThat(actual.getTotalElements()).isEqualTo(11L);
+    assertThat(actual.getContent())
+        .extracting(UserContactDetails::getEmailAddress)
+        .contains("test1@integration.test.org", "test10@integration.test.org",
+            "test11@integration.test.org", "test12@integration.test.org",
+            "test13@integration.test.org", "test14@integration.test.org",
+            "test15@integration.test.org", "test16@integration.test.org",
+            "test17@integration.test.org", "test18@integration.test.org",
+            "test19@integration.test.org");
+
+    // find test3, test30, test31, test32, etc.
+    actual = repository.findByEmail("test3", pageable);
+    assertThat(actual.getTotalElements()).isEqualTo(11L);
+    assertThat(actual.getContent())
+        .extracting(UserContactDetails::getEmailAddress)
+        .contains("test3@integration.test.org", "test30@integration.test.org",
+            "test31@integration.test.org", "test32@integration.test.org",
+            "test33@integration.test.org", "test34@integration.test.org",
+            "test35@integration.test.org", "test36@integration.test.org",
+            "test37@integration.test.org", "test38@integration.test.org",
+            "test39@integration.test.org");
+
+    actual = repository.findByEmail("@integration", pageable);
+    assertThat(actual.getTotalElements()).isEqualTo(50L);
+    assertThat(actual.getContent()).containsAll(contactDetails);
+
+    actual = repository.findByEmail("test.org", pageable);
+    assertThat(actual.getTotalElements()).isEqualTo(50L);
+    assertThat(actual.getContent()).containsAll(contactDetails);
   }
 }
