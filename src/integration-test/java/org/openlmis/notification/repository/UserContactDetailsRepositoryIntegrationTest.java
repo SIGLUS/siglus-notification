@@ -20,6 +20,7 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
 
 import java.util.UUID;
+import java.util.stream.IntStream;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -28,6 +29,9 @@ import org.openlmis.notification.util.EmailDetailsDataBuilder;
 import org.openlmis.notification.util.UserContactDetailsDataBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.CrudRepository;
 
 public class UserContactDetailsRepositoryIntegrationTest
@@ -51,7 +55,11 @@ public class UserContactDetailsRepositoryIntegrationTest
 
   @Override
   UserContactDetails generateInstance() {
-    return new UserContactDetailsDataBuilder().build();
+    return new UserContactDetailsDataBuilder()
+        .withEmailDetails(new EmailDetailsDataBuilder()
+            .withEmail("test" + getNextInstanceNumber() + "@integration.test.org")
+            .build())
+        .build();
   }
 
   @Test(expected = DataIntegrityViolationException.class)
@@ -75,5 +83,19 @@ public class UserContactDetailsRepositoryIntegrationTest
             )
             .build()
     );
+  }
+
+  @Test
+  public void shouldFindByEmail() {
+    UserContactDetails expected = repository.save(generateInstance());
+    Pageable pageable = new PageRequest(0, 1000);
+
+    IntStream
+        .range(0, 20)
+        .forEach(idx -> repository.save(generateInstance()));
+
+    Page<UserContactDetails> actual = repository.findByEmail(expected.getEmailAddress(), pageable);
+    assertThat(actual.getTotalElements(), is(1L));
+    assertThat(actual.getContent().get(0), is(expected));
   }
 }

@@ -66,6 +66,10 @@ public class PermissionService {
   }
 
   private boolean isCurrentUser(UUID userId) {
+    if (null == userId) {
+      return false;
+    }
+
     UserDto user = authenticationHelper.getCurrentUser();
 
     if (user == null) {

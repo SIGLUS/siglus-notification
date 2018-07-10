@@ -38,6 +38,7 @@ import static org.openlmis.notification.i18n.MessageKeys.ERROR_TOKEN_EXPIRED;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_TOKEN_INVALID;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_USER_CONTACT_DETAILS_ID_MISMATCH;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_USER_CONTACT_DETAILS_NOT_FOUND;
+import static org.openlmis.notification.i18n.MessageKeys.ERROR_USER_CONTACT_DETAILS_SEARCH_INVALID_PARAMS;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_USER_HAS_NO_EMAIL;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_VERIFICATIONS_ID_MISMATCH;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_VERIFICATION_EMAIL_VERIFIED;
@@ -47,8 +48,14 @@ import static org.openlmis.notification.web.usercontactdetails.UserContactDetail
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
 import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.jayway.restassured.response.Response;
+import com.jayway.restassured.specification.RequestSpecification;
+import guru.nidi.ramltester.core.RamlReport;
 import guru.nidi.ramltester.junit.RamlMatchers;
+import java.util.Map;
+import java.util.Optional;
 import java.util.UUID;
 import org.hibernate.exception.ConstraintViolationException;
 import org.junit.Before;
@@ -66,6 +73,8 @@ import org.openlmis.notification.web.BaseWebIntegrationTest;
 import org.openlmis.notification.web.MissingPermissionException;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.Errors;
 
@@ -106,6 +115,72 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
 
     given(repository.findOne(userContactDetails.getId()))
         .willReturn(userContactDetails);
+  }
+
+  @Test
+  public void shouldGetAllUserContactDetails() {
+    willDoNothing()
+        .given(permissionService).canManageUserContactDetails(null);
+
+    given(repository.findAll(any(Pageable.class)))
+        .willReturn(new PageImpl<>(ImmutableList.of(userContactDetails)));
+
+    getAll(null)
+        .then()
+        .statusCode(200)
+        .body("numberOfElements", is(1))
+        .body(
+            "content[0].referenceDataUserId",
+            is(userContactDetails.getReferenceDataUserId().toString()));
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldGetUserContactDetailsByEmailAddress() {
+    willDoNothing()
+        .given(permissionService).canManageUserContactDetails(null);
+
+    given(repository.findByEmail(eq(userContactDetails.getEmailAddress()), any(Pageable.class)))
+        .willReturn(new PageImpl<>(ImmutableList.of(userContactDetails)));
+
+    getAll(ImmutableMap.of("email", userContactDetails.getEmailAddress()))
+        .then()
+        .statusCode(200)
+        .body("numberOfElements", is(1))
+        .body(
+            "content[0].referenceDataUserId",
+            is(userContactDetails.getReferenceDataUserId().toString()));
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldReturnBadRequestIfSearchParamIsInvalid() {
+    willDoNothing()
+        .given(permissionService).canManageUserContactDetails(null);
+
+    getAll(ImmutableMap.of("some-param", "some-value"))
+        .then()
+        .statusCode(400)
+        .body(MESSAGE_KEY, is(ERROR_USER_CONTACT_DETAILS_SEARCH_INVALID_PARAMS));
+
+    RamlReport lastReport = restAssured.getLastReport();
+    assertThat(RAML_ASSERT_MESSAGE, lastReport, RamlMatchers.validates());
+    assertThat(RAML_ASSERT_MESSAGE, lastReport, RamlMatchers.responseChecks());
+  }
+
+  @Test
+  public void shouldReturnForbiddenIfUserHasNoRightToGetAllUserContactDetails() {
+    willThrow(new MissingPermissionException("test"))
+        .given(permissionService).canManageUserContactDetails(null);
+
+    getAll(null)
+        .then()
+        .statusCode(403)
+        .body(MESSAGE_KEY, is(PERMISSION_MISSING));
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
@@ -510,6 +585,19 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
         .given()
         .pathParam(ID, referenceDataUserId)
         .put(ID_RESOURCE_URL);
+  }
+
+  private Response getAll(Map<String, String> queryParams) {
+    RequestSpecification specification = startUserRequest()
+        .contentType(APPLICATION_JSON_VALUE)
+        .given();
+
+    Optional
+        .ofNullable(queryParams)
+        .ifPresent(params -> params.forEach(specification::queryParam));
+
+    return specification
+        .get(RESOURCE_URL);
   }
 
   private Response get(UUID referenceDataUserId) {

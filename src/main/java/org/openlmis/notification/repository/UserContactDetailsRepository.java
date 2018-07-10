@@ -17,8 +17,16 @@ package org.openlmis.notification.repository;
 
 import java.util.UUID;
 import org.openlmis.notification.domain.UserContactDetails;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 public interface UserContactDetailsRepository
     extends JpaRepository<UserContactDetails, UUID> {
+
+  @Query("FROM UserContactDetails AS c JOIN c.emailDetails AS e WHERE e.email = :email")
+  Page<UserContactDetails> findByEmail(@Param("email") String email, Pageable pageable);
+
 }

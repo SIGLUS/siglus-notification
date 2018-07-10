@@ -8,6 +8,7 @@ schemas:
     - notification: !include schemas/notification.json
     - notificationPage: !include schemas/notificationPage.json
     - userContactDetails: !include schemas/userContactDetails.json
+    - userContactDetailsPage: !include schemas/userContactDetailsPage.json
     - emailVerificationToken: !include schemas/emailVerificationToken.json
     - localizedMessage: !include schemas/localizedMessage.json
 
@@ -81,6 +82,29 @@ traits:
                           schema: notificationPage
   /userContactDetails:
       displayName: User Contact Details
+      get:
+          is: [ secured, paginated, sorted ]
+          description: >
+            Get all user contact details that are matching given request parameters. If no
+            parameters, all user contact details are returned.
+          queryParameters:
+              email:
+                  description: Email address
+                  type: string
+                  required: false
+          responses:
+              200:
+                  body:
+                      application/json:
+                          schema: userContactDetailsPage
+              400:
+                  body:
+                      application/json:
+                          schema: localizedMessage
+              403:
+                  body:
+                      application/json:
+                          schema: localizedMessage
       /{id}:
           uriParameters:
               id:

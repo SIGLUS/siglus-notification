@@ -47,6 +47,8 @@ public abstract class MessageKeys {
   public static final String ERROR_USER_NOT_FOUND = join(ERROR_PREFIX, USER, NOT_FOUND);
   public static final String ERROR_USER_NOT_ACTIVE_OR_NOT_FOUND =
       ERROR_PREFIX + DELIMITER + USER + DELIMITER + "notActiveOrNotFound";
+  public static final String ERROR_USER_CONTACT_DETAILS_SEARCH_INVALID_PARAMS =
+      join(ERROR_PREFIX, USER_CONTACT_DETAILS, "search", "invalidParams");
 
   public static final String ERROR_NOTIFICATION_REQUEST_NULL = join(NOTIFICATION_REQUEST, "null");
   public static final String ERROR_NOTIFICATION_REQUEST_FIELD_REQUIRED =

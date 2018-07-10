@@ -23,8 +23,10 @@ import static org.openlmis.notification.i18n.MessageKeys.ERROR_USER_HAS_NO_EMAIL
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_VERIFICATIONS_ID_MISMATCH;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_VERIFICATION_EMAIL_VERIFIED;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.openlmis.notification.domain.EmailDetails;
 import org.openlmis.notification.domain.EmailVerificationToken;
 import org.openlmis.notification.domain.UserContactDetails;
@@ -40,7 +42,11 @@ import org.openlmis.notification.service.UserContactDetailsService;
 import org.openlmis.notification.web.NotFoundException;
 import org.openlmis.notification.web.ValidationException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.util.MultiValueMap;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -48,6 +54,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
@@ -76,6 +83,32 @@ public class UserContactDetailsController {
 
   @Autowired
   private UserContactDetailsService userContactDetailsService;
+
+  /**
+   * Returns all instances of the {@link UserContactDetailsDto} class matching all of the provided
+   * parameters. If no params provided, returns all.
+   */
+  @GetMapping("/userContactDetails")
+  @ResponseStatus(HttpStatus.OK)
+  @ResponseBody
+  public Page<UserContactDetailsDto> getAllUserContactDetails(
+      @RequestParam MultiValueMap<String, Object> queryParams, Pageable pageable) {
+    permissionService.canManageUserContactDetails(null);
+    UserContactDetailsSearchParams searchParams = new UserContactDetailsSearchParams(queryParams);
+
+    String email = searchParams.getEmail();
+    Page<UserContactDetails> page = null == email
+        ? userContactDetailsRepository.findAll(pageable)
+        : userContactDetailsRepository.findByEmail(searchParams.getEmail(), pageable);
+
+    List<UserContactDetails> content = page.getContent();
+    List<UserContactDetailsDto> contentDto = content
+        .stream()
+        .map(this::toDto)
+        .collect(Collectors.toList());
+
+    return new PageImpl<>(contentDto, pageable, page.getTotalElements());
+  }
 
   /**
    * Returns an instance of the {@link UserContactDetailsDto} class with the given reference data
