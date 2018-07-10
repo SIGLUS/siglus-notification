@@ -32,12 +32,12 @@ public final class SearchParams {
   private static final String SORT = "sort";
   private static final String ACCESS_TOKEN = "access_token";
 
-  private MultiValueMap<String, Object> params;
+  private MultiValueMap<String, String> params;
 
   /**
    * Constructs new SearchParams object from {@code MultiValueMap}.
    */
-  public SearchParams(MultiValueMap<String, Object> queryMap) {
+  public SearchParams(MultiValueMap<String, String> queryMap) {
     if (queryMap != null) {
       params = new LinkedMultiValueMap<>(queryMap);
       params.remove(PAGE);
@@ -54,11 +54,7 @@ public final class SearchParams {
   }
 
   public String getFirst(String key) {
-    return (String) params.getFirst(key);
-  }
-
-  public Collection<Object> get(String key) {
-    return params.get(key);
+    return params.getFirst(key);
   }
 
   public Collection<String> keySet() {

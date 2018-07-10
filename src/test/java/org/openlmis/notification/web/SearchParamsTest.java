@@ -35,7 +35,7 @@ public class SearchParamsTest {
   @Rule
   public ExpectedException exception = ExpectedException.none();
 
-  private MultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
+  private MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
 
   @Test
   public void containsKeyShouldReturnTrueIfKeyWasAdded() {
@@ -104,7 +104,7 @@ public class SearchParamsTest {
 
   @Test
   public void shouldImplementToString() {
-    MultiValueMap<String, Object> map = new LinkedMultiValueMap<>();
+    MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
     map.add("key", "value");
     SearchParams params = new SearchParams(map);
 

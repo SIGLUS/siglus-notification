@@ -32,7 +32,7 @@ public class UserContactDetailsSearchParamsTest {
   @Rule
   public ExpectedException exception = ExpectedException.none();
 
-  private LinkedMultiValueMap<String, Object> queryMap;
+  private LinkedMultiValueMap<String, String> queryMap;
 
   @Before
   public void setUp() {

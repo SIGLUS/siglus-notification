@@ -92,7 +92,7 @@ public class UserContactDetailsController {
   @ResponseStatus(HttpStatus.OK)
   @ResponseBody
   public Page<UserContactDetailsDto> getAllUserContactDetails(
-      @RequestParam MultiValueMap<String, Object> queryParams, Pageable pageable) {
+      @RequestParam MultiValueMap<String, String> queryParams, Pageable pageable) {
     permissionService.canManageUserContactDetails(null);
     UserContactDetailsSearchParams searchParams = new UserContactDetailsSearchParams(queryParams);
 

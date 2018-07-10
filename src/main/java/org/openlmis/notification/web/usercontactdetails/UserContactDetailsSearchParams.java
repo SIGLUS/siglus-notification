@@ -36,7 +36,7 @@ public final class UserContactDetailsSearchParams {
   /**
    * Wraps map of query params into an object.
    */
-  public UserContactDetailsSearchParams(MultiValueMap<String, Object> queryMap) {
+  public UserContactDetailsSearchParams(MultiValueMap<String, String> queryMap) {
     queryParams = new SearchParams(queryMap);
     validate();
   }
