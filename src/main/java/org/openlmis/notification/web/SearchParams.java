@@ -16,6 +16,7 @@
 package org.openlmis.notification.web;
 
 import java.util.Collection;
+import java.util.List;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
@@ -55,6 +56,10 @@ public final class SearchParams {
 
   public String getFirst(String key) {
     return params.getFirst(key);
+  }
+
+  public List<String> get(String key) {
+    return params.get(key);
   }
 
   public Collection<String> keySet() {

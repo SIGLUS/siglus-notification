@@ -18,7 +18,12 @@ package org.openlmis.notification.web.usercontactdetails;
 import static java.util.Arrays.asList;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_USER_CONTACT_DETAILS_SEARCH_INVALID_PARAMS;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.EqualsAndHashCode;
 import lombok.ToString;
 import org.openlmis.notification.web.SearchParams;
@@ -28,8 +33,9 @@ import org.springframework.util.MultiValueMap;
 @EqualsAndHashCode
 @ToString
 public final class UserContactDetailsSearchParams {
-  static final String EMAIL = "email";
-  private static final List<String> ALL_PARAMETERS = asList(EMAIL);
+  public static final String EMAIL = "email";
+  public static final String ID = "id";
+  private static final List<String> ALL_PARAMETERS = asList(EMAIL, ID);
 
   private SearchParams queryParams;
 
@@ -51,6 +57,18 @@ public final class UserContactDetailsSearchParams {
       return null;
     }
     return queryParams.getFirst(EMAIL);
+  }
+
+  /**
+   * Gets a set of string id list parsed to UUIDs.
+   */
+  public Set<UUID> getIds() {
+    return Optional
+        .ofNullable(queryParams.get(ID))
+        .orElse(Collections.emptyList())
+        .stream()
+        .map(UUID::fromString)
+        .collect(Collectors.toSet());
   }
 
   /**

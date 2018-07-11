@@ -142,11 +142,14 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
         .given(permissionService).canManageUserContactDetails(null);
 
     given(repository
-        .findByEmailDetailsEmailContaining(
-            eq(userContactDetails.getEmailAddress()), any(Pageable.class)))
+        .search(any(UserContactDetailsSearchParams.class), any(Pageable.class)))
         .willReturn(new PageImpl<>(ImmutableList.of(userContactDetails)));
 
-    getAll(ImmutableMap.of("email", userContactDetails.getEmailAddress()))
+    ImmutableMap<String, String> queryParams = ImmutableMap.of(
+        "id", userContactDetails.getId().toString(),
+        "email", userContactDetails.getEmailAddress());
+
+    getAll(queryParams)
         .then()
         .statusCode(200)
         .body("numberOfElements", is(1))

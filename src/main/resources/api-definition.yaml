@@ -88,6 +88,11 @@ traits:
             Get all user contact details that are matching given request parameters. If no
             parameters, all user contact details are returned.
           queryParameters:
+              id:
+                  description: This field represents a user id.
+                  type: string
+                  required: false
+                  repeat: true
               email:
                   description: >
                     This field represents an email address. It is possible to pass only some part
@@ -95,6 +100,7 @@ traits:
                     email address in the openlmis.org domain.
                   type: string
                   required: false
+                  repeat: false
           responses:
               200:
                   body:

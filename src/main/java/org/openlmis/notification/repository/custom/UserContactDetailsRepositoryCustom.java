@@ -13,15 +13,15 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org. 
  */
 
-package org.openlmis.notification.repository;
+package org.openlmis.notification.repository.custom;
 
-import java.util.UUID;
 import org.openlmis.notification.domain.UserContactDetails;
-import org.openlmis.notification.repository.custom.UserContactDetailsRepositoryCustom;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.openlmis.notification.web.usercontactdetails.UserContactDetailsSearchParams;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
-public interface UserContactDetailsRepository
-    extends JpaRepository<UserContactDetails, UUID>,
-    UserContactDetailsRepositoryCustom {
+public interface UserContactDetailsRepositoryCustom {
+
+  Page<UserContactDetails> search(UserContactDetailsSearchParams searchParams, Pageable pageable);
 
 }

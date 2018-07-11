@@ -16,40 +16,37 @@
 package org.openlmis.notification.web.usercontactdetails;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.hasItems;
 
+import java.util.UUID;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;
-import org.junit.Before;
+import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.openlmis.notification.i18n.MessageKeys;
 import org.openlmis.notification.testutils.ToStringTestUtils;
+import org.openlmis.notification.testutils.UserContactDetailsSearchParamsDataBuilder;
 import org.openlmis.notification.web.ValidationException;
-import org.springframework.util.LinkedMultiValueMap;
 
 public class UserContactDetailsSearchParamsTest {
   @Rule
   public ExpectedException exception = ExpectedException.none();
 
-  private LinkedMultiValueMap<String, String> queryMap;
-
-  @Before
-  public void setUp() {
-    queryMap = new LinkedMultiValueMap<>();
-  }
-
   @Test
   public void shouldGetEmailValueFromParameters() {
-    queryMap.add(UserContactDetailsSearchParams.EMAIL, "test@example.org");
-    UserContactDetailsSearchParams params = new UserContactDetailsSearchParams(queryMap);
+    UserContactDetailsSearchParams params = new UserContactDetailsSearchParamsDataBuilder()
+        .withEmail("test@example.org")
+        .build();
 
     assertThat(params.getEmail()).isEqualTo("test@example.org");
   }
 
   @Test
   public void shouldGetNullIfMapHasNoEmailProperty() {
-    UserContactDetailsSearchParams params = new UserContactDetailsSearchParams(queryMap);
+    UserContactDetailsSearchParams params = new UserContactDetailsSearchParamsDataBuilder()
+        .build();
     assertThat(params.getEmail()).isNull();
   }
 
@@ -58,8 +55,9 @@ public class UserContactDetailsSearchParamsTest {
     exception.expect(ValidationException.class);
     exception.expectMessage(MessageKeys.ERROR_USER_CONTACT_DETAILS_SEARCH_INVALID_PARAMS);
 
-    queryMap.add("some-param", "some-value");
-    new UserContactDetailsSearchParams(queryMap);
+    new UserContactDetailsSearchParamsDataBuilder()
+        .withInvalidParam()
+        .build();
   }
 
   @Test
@@ -72,10 +70,27 @@ public class UserContactDetailsSearchParamsTest {
 
   @Test
   public void shouldImplementToString() {
-    queryMap.add(UserContactDetailsSearchParams.EMAIL, "test@example.org");
-    UserContactDetailsSearchParams params = new UserContactDetailsSearchParams(queryMap);
+    UserContactDetailsSearchParams params = new UserContactDetailsSearchParamsDataBuilder()
+        .withEmail("test@example.org")
+        .withId(UUID.randomUUID())
+        .build();
 
     ToStringTestUtils.verify(UserContactDetailsSearchParams.class, params,
-        "EMAIL", "ALL_PARAMETERS");
+        "EMAIL", "ID", "ALL_PARAMETERS");
+  }
+
+  @Test
+  public void shouldReturnListOfIdsParsedToUuid() {
+    UUID id1 = UUID.randomUUID();
+    UUID id2 = UUID.randomUUID();
+    UUID id3 = UUID.randomUUID();
+
+    UserContactDetailsSearchParams params = new UserContactDetailsSearchParamsDataBuilder()
+        .withId(id1)
+        .withId(id2)
+        .withId(id3)
+        .build();
+
+    Assert.assertThat(params.getIds(), hasItems(id1, id2, id3));
   }
 }

@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
+import org.apache.commons.collections.MapUtils;
 import org.openlmis.notification.domain.EmailDetails;
 import org.openlmis.notification.domain.EmailVerificationToken;
 import org.openlmis.notification.domain.UserContactDetails;
@@ -94,13 +95,15 @@ public class UserContactDetailsController {
   public Page<UserContactDetailsDto> getAllUserContactDetails(
       @RequestParam MultiValueMap<String, String> queryParams, Pageable pageable) {
     permissionService.canManageUserContactDetails(null);
-    UserContactDetailsSearchParams searchParams = new UserContactDetailsSearchParams(queryParams);
 
-    String email = searchParams.getEmail();
-    Page<UserContactDetails> page = null == email
-        ? userContactDetailsRepository.findAll(pageable)
-        : userContactDetailsRepository
-            .findByEmailDetailsEmailContaining(searchParams.getEmail(), pageable);
+    Page<UserContactDetails> page;
+    if (MapUtils.isEmpty(queryParams)) {
+      page = userContactDetailsRepository.findAll(pageable);
+    } else {
+      UserContactDetailsSearchParams searchParams =
+          new UserContactDetailsSearchParams(queryParams);
+      page = userContactDetailsRepository.search(searchParams, pageable);
+    }
 
     List<UserContactDetails> content = page.getContent();
     List<UserContactDetailsDto> contentDto = content
