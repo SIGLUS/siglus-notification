@@ -43,14 +43,10 @@ public class EmailDetails {
   private Boolean emailVerified;
 
   private EmailDetails(Importer importer) {
-    if (null != importer) {
-      email = importer.getEmail();
-      if (importer.getEmailVerified() == null) {
-        emailVerified = Boolean.FALSE;
-      } else {
-        emailVerified = importer.getEmailVerified();
-      }
-    }
+    email = importer.getEmail();
+    emailVerified = null == importer.getEmailVerified()
+        ? Boolean.FALSE
+        : importer.getEmailVerified();
   }
 
 

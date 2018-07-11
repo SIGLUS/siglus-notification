@@ -64,13 +64,12 @@ public class UserContactDetails implements Identifiable {
   private UserContactDetails(Importer importer) {
     referenceDataUserId = importer.getReferenceDataUserId();
     phoneNumber = importer.getPhoneNumber();
-    emailDetails = EmailDetails.newEmailDetails(importer.getEmailDetails());
-
-    if (importer.getAllowNotify() == null) {
-      allowNotify = Boolean.TRUE;
-    } else {
-      allowNotify = importer.getAllowNotify();
-    }
+    emailDetails = null != importer.getEmailDetails()
+        ? EmailDetails.newEmailDetails(importer.getEmailDetails())
+        : new EmailDetails();
+    allowNotify = null != importer.getAllowNotify()
+        ? importer.getAllowNotify()
+        : Boolean.TRUE;
   }
 
   /**
@@ -92,9 +91,7 @@ public class UserContactDetails implements Identifiable {
     exporter.setReferenceDataUserId(referenceDataUserId);
     exporter.setAllowNotify(allowNotify);
     exporter.setPhoneNumber(phoneNumber);
-    if (this.getEmailDetails() != null) {
-      exporter.setEmailDetails(emailDetails);
-    }
+    exporter.setEmailDetails(emailDetails);
   }
 
   public String getEmailAddress() {

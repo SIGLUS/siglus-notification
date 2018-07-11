@@ -26,6 +26,7 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.openlmis.notification.domain.EmailDetails;
 import org.openlmis.notification.domain.UserContactDetails;
 import org.openlmis.notification.util.EmailDetailsDataBuilder;
 import org.openlmis.notification.util.UserContactDetailsDataBuilder;
@@ -95,6 +96,18 @@ public class UserContactDetailsRepositoryIntegrationTest
             )
             .build()
     );
+  }
+
+  @Test
+  public void shouldAllowCreatingMultipleUserContactDetailsWithNullEmail() {
+    repository.saveAndFlush(new UserContactDetailsDataBuilder().withEmailDetails(null).build());
+    repository.saveAndFlush(new UserContactDetailsDataBuilder().withEmailDetails(null).build());
+
+    EmailDetails emailDetails = new EmailDetailsDataBuilder().withEmail(null).build();
+    repository
+        .saveAndFlush(new UserContactDetailsDataBuilder().withEmailDetails(emailDetails).build());
+    repository
+        .saveAndFlush(new UserContactDetailsDataBuilder().withEmailDetails(emailDetails).build());
   }
 
   @Test
