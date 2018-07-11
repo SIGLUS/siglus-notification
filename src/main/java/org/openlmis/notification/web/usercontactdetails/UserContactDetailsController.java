@@ -99,7 +99,8 @@ public class UserContactDetailsController {
     String email = searchParams.getEmail();
     Page<UserContactDetails> page = null == email
         ? userContactDetailsRepository.findAll(pageable)
-        : userContactDetailsRepository.findByEmail(searchParams.getEmail(), pageable);
+        : userContactDetailsRepository
+            .findByEmailDetailsEmailContaining(searchParams.getEmail(), pageable);
 
     List<UserContactDetails> content = page.getContent();
     List<UserContactDetailsDto> contentDto = content

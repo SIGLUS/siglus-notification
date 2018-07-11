@@ -98,7 +98,8 @@ public class UserContactDetailsRepositoryIntegrationTest
         .range(0, 20)
         .forEach(idx -> repository.save(generateInstance()));
 
-    Page<UserContactDetails> actual = repository.findByEmail(expected.getEmailAddress(), pageable);
+    Page<UserContactDetails> actual = repository
+        .findByEmailDetailsEmailContaining(expected.getEmailAddress(), pageable);
     assertThat(actual.getTotalElements()).isEqualTo(1L);
     assertThat(actual.getContent()).contains(expected);
   }
@@ -114,7 +115,8 @@ public class UserContactDetailsRepositoryIntegrationTest
     Pageable pageable = new PageRequest(0, 1000);
 
     // find test1, test10, test11, test12, etc.
-    Page<UserContactDetails> actual = repository.findByEmail("test1", pageable);
+    Page<UserContactDetails> actual = repository
+        .findByEmailDetailsEmailContaining("test1", pageable);
     assertThat(actual.getTotalElements()).isEqualTo(11L);
     assertThat(actual.getContent())
         .extracting(UserContactDetails::getEmailAddress)
@@ -126,7 +128,7 @@ public class UserContactDetailsRepositoryIntegrationTest
             "test19@integration.test.org");
 
     // find test3, test30, test31, test32, etc.
-    actual = repository.findByEmail("test3", pageable);
+    actual = repository.findByEmailDetailsEmailContaining("test3", pageable);
     assertThat(actual.getTotalElements()).isEqualTo(11L);
     assertThat(actual.getContent())
         .extracting(UserContactDetails::getEmailAddress)
@@ -137,11 +139,11 @@ public class UserContactDetailsRepositoryIntegrationTest
             "test37@integration.test.org", "test38@integration.test.org",
             "test39@integration.test.org");
 
-    actual = repository.findByEmail("@integration", pageable);
+    actual = repository.findByEmailDetailsEmailContaining("@integration", pageable);
     assertThat(actual.getTotalElements()).isEqualTo(50L);
     assertThat(actual.getContent()).containsAll(contactDetails);
 
-    actual = repository.findByEmail("test.org", pageable);
+    actual = repository.findByEmailDetailsEmailContaining("test.org", pageable);
     assertThat(actual.getTotalElements()).isEqualTo(50L);
     assertThat(actual.getContent()).containsAll(contactDetails);
   }
