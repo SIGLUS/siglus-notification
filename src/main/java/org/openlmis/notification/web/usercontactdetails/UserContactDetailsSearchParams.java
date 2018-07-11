@@ -54,10 +54,16 @@ public final class UserContactDetailsSearchParams {
   }
 
   /**
-   * Checks if query params are valid. Returns false if any provided param is not on supported list.
+   * Checks if query params are valid. Throws exception if any provided param is not on supported
+   * list.
    */
   public void validate() {
-    if (!ALL_PARAMETERS.containsAll(queryParams.keySet())) {
+    boolean onlyValidParameters = queryParams
+        .keySet()
+        .stream()
+        .allMatch(ALL_PARAMETERS::contains);
+
+    if (!onlyValidParameters) {
       throw new ValidationException(ERROR_USER_CONTACT_DETAILS_SEARCH_INVALID_PARAMS);
     }
   }
