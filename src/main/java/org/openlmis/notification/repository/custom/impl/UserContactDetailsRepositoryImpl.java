@@ -19,6 +19,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
 import javax.persistence.criteria.CriteriaBuilder;
@@ -31,7 +33,6 @@ import javax.persistence.criteria.Root;
 import org.openlmis.notification.domain.UserContactDetails;
 import org.openlmis.notification.repository.custom.UserContactDetailsRepositoryCustom;
 import org.openlmis.notification.util.Pagination;
-import org.openlmis.notification.web.usercontactdetails.UserContactDetailsSearchParams;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -47,22 +48,18 @@ public class UserContactDetailsRepositoryImpl implements UserContactDetailsRepos
   /**
    * Method returns all matching user contact details. If all parameters are null, returns all user
    * contact details. For email: matches values that equal or contain the searched value. Case
-   * insensitive.
-   * Other fields: entered string value must equal to searched value.
+   * insensitive. Other fields: entered string value must equal to searched value.
    *
-   * @param searchParams    user contact details search params
-   * @param pageable        pagination parameters
    * @return Page of user contact details
    */
-  public Page<UserContactDetails> search(UserContactDetailsSearchParams searchParams,
-      Pageable pageable) {
+  public Page<UserContactDetails> search(String email, Set<UUID> ids, Pageable pageable) {
 
     CriteriaBuilder builder = entityManager.getCriteriaBuilder();
     CriteriaQuery<UserContactDetails> query = builder.createQuery(UserContactDetails.class);
     CriteriaQuery<Long> countQuery = builder.createQuery(Long.class);
 
-    query = prepareQuery(searchParams, query, false, pageable);
-    countQuery = prepareQuery(searchParams, countQuery, true, pageable);
+    query = prepareQuery(email, ids, query, false, pageable);
+    countQuery = prepareQuery(email, ids, countQuery, true, pageable);
 
     Long count = entityManager.createQuery(countQuery).getSingleResult();
 
@@ -74,8 +71,8 @@ public class UserContactDetailsRepositoryImpl implements UserContactDetailsRepos
     return Pagination.getPage(result, pageable, count);
   }
 
-  private <T> CriteriaQuery<T> prepareQuery(UserContactDetailsSearchParams searchParams,
-      CriteriaQuery<T> query, boolean count, Pageable pageable) {
+  private <T> CriteriaQuery<T> prepareQuery(String email, Set<UUID> ids, CriteriaQuery<T> query,
+      boolean count, Pageable pageable) {
 
     CriteriaBuilder builder = entityManager.getCriteriaBuilder();
     Root<UserContactDetails> root = query.from(UserContactDetails.class);
@@ -86,8 +83,8 @@ public class UserContactDetailsRepositoryImpl implements UserContactDetailsRepos
       query = (CriteriaQuery<T>) countQuery.select(builder.count(root));
     }
 
-    predicate = addLikeFilter(predicate, builder, getField(root, EMAIL), searchParams.getEmail());
-    predicate = addInFilter(predicate, builder, getField(root, ID), searchParams.getIds());
+    predicate = addLikeFilter(predicate, builder, getField(root, EMAIL), email);
+    predicate = addInFilter(predicate, builder, getField(root, ID), ids);
 
     query.where(predicate);
 

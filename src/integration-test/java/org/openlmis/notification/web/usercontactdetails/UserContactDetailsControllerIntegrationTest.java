@@ -25,6 +25,7 @@ import static org.mockito.BDDMockito.willAnswer;
 import static org.mockito.BDDMockito.willDoNothing;
 import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anySetOf;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.never;
@@ -142,7 +143,7 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
         .given(permissionService).canManageUserContactDetails(null);
 
     given(repository
-        .search(any(UserContactDetailsSearchParams.class), any(Pageable.class)))
+        .search(anyString(), anySetOf(UUID.class), any(Pageable.class)))
         .willReturn(new PageImpl<>(ImmutableList.of(userContactDetails)));
 
     ImmutableMap<String, String> queryParams = ImmutableMap.of(

@@ -17,6 +17,7 @@ package org.openlmis.notification.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
+import com.google.common.collect.Sets;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -26,10 +27,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.openlmis.notification.domain.UserContactDetails;
-import org.openlmis.notification.testutils.UserContactDetailsSearchParamsDataBuilder;
 import org.openlmis.notification.util.EmailDetailsDataBuilder;
 import org.openlmis.notification.util.UserContactDetailsDataBuilder;
-import org.openlmis.notification.web.usercontactdetails.UserContactDetailsSearchParams;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
@@ -107,10 +106,7 @@ public class UserContactDetailsRepositoryIntegrationTest
         .range(0, 20)
         .forEach(idx -> repository.save(generateInstance()));
 
-    UserContactDetailsSearchParams searchParams = new UserContactDetailsSearchParamsDataBuilder()
-        .withEmail(expected.getEmailAddress())
-        .build();
-    Page<UserContactDetails> actual = repository.search(searchParams, pageable);
+    Page<UserContactDetails> actual = repository.search(expected.getEmailAddress(), null, pageable);
     assertThat(actual.getTotalElements()).isEqualTo(1L);
     assertThat(actual.getContent()).contains(expected);
   }
@@ -124,10 +120,8 @@ public class UserContactDetailsRepositoryIntegrationTest
         .range(0, 20)
         .forEach(idx -> repository.save(generateInstance()));
 
-    UserContactDetailsSearchParams searchParams = new UserContactDetailsSearchParamsDataBuilder()
-        .withId(expected.getReferenceDataUserId())
-        .build();
-    Page<UserContactDetails> actual = repository.search(searchParams, pageable);
+    Page<UserContactDetails> actual = repository
+        .search(null, Sets.newHashSet(expected.getReferenceDataUserId()), pageable);
     assertThat(actual.getTotalElements()).isEqualTo(1L);
     assertThat(actual.getContent()).contains(expected);
   }
@@ -141,10 +135,7 @@ public class UserContactDetailsRepositoryIntegrationTest
     Pageable pageable = new PageRequest(0, 1000);
 
     // find test1, test10, test11, test12, etc.
-    UserContactDetailsSearchParams searchParams = new UserContactDetailsSearchParamsDataBuilder()
-        .withEmail("test1")
-        .build();
-    Page<UserContactDetails> actual = repository.search(searchParams, pageable);
+    Page<UserContactDetails> actual = repository.search("test1", null, pageable);
     assertThat(actual.getTotalElements()).isEqualTo(11L);
     assertThat(actual.getContent())
         .extracting(UserContactDetails::getEmailAddress)
@@ -156,10 +147,7 @@ public class UserContactDetailsRepositoryIntegrationTest
             "test19@integration.test.org");
 
     // find test3, test30, test31, test32, etc.
-    searchParams = new UserContactDetailsSearchParamsDataBuilder()
-        .withEmail("test3")
-        .build();
-    actual = repository.search(searchParams, pageable);
+    actual = repository.search("test3", null, pageable);
     assertThat(actual.getTotalElements()).isEqualTo(11L);
     assertThat(actual.getContent())
         .extracting(UserContactDetails::getEmailAddress)
@@ -170,17 +158,11 @@ public class UserContactDetailsRepositoryIntegrationTest
             "test37@integration.test.org", "test38@integration.test.org",
             "test39@integration.test.org");
 
-    searchParams = new UserContactDetailsSearchParamsDataBuilder()
-        .withEmail("@integration")
-        .build();
-    actual = repository.search(searchParams, pageable);
+    actual = repository.search("@integration", null, pageable);
     assertThat(actual.getTotalElements()).isEqualTo(50L);
     assertThat(actual.getContent()).containsAll(contactDetails);
 
-    searchParams = new UserContactDetailsSearchParamsDataBuilder()
-        .withEmail("test.org")
-        .build();
-    actual = repository.search(searchParams, pageable);
+    actual = repository.search("test.org", null, pageable);
     assertThat(actual.getTotalElements()).isEqualTo(50L);
     assertThat(actual.getContent()).containsAll(contactDetails);
   }
@@ -194,11 +176,11 @@ public class UserContactDetailsRepositoryIntegrationTest
     List<UserContactDetails> firstThirty = contactDetails.subList(0, 30);
     Pageable pageable = new PageRequest(0, 1000);
 
-    UserContactDetailsSearchParams searchParams = new UserContactDetailsSearchParamsDataBuilder()
-        .withIds(firstThirty.stream().map(UserContactDetails::getId).collect(Collectors.toSet()))
-        .withEmail("1@integration.test.org")
-        .build();
-    Page<UserContactDetails> actual = repository.search(searchParams, pageable);
+    Page<UserContactDetails> actual = repository.search(
+        "1@integration.test.org",
+        firstThirty.stream().map(UserContactDetails::getId).collect(Collectors.toSet()),
+        pageable
+    );
 
     assertThat(actual.getTotalElements()).isEqualTo(3L);
     assertThat(actual.getContent())
@@ -214,9 +196,7 @@ public class UserContactDetailsRepositoryIntegrationTest
         .forEach(idx -> repository.save(generateInstance(idx)));
 
     Pageable pageable = new PageRequest(0, 10, Direction.ASC, "emailDetails.email");
-    UserContactDetailsSearchParams searchParams = new UserContactDetailsSearchParamsDataBuilder()
-        .build();
-    Page<UserContactDetails> actual = repository.search(searchParams, pageable);
+    Page<UserContactDetails> actual = repository.search(null, null, pageable);
 
     assertThat(actual.getTotalElements()).isEqualTo(5L);
     assertThat(actual.getContent())
@@ -226,8 +206,7 @@ public class UserContactDetailsRepositoryIntegrationTest
             "test104@integration.test.org");
 
     pageable = new PageRequest(0, 10, Direction.DESC, "emailDetails.email");
-    searchParams = new UserContactDetailsSearchParamsDataBuilder().build();
-    actual = repository.search(searchParams, pageable);
+    actual = repository.search(null, null, pageable);
 
     assertThat(actual.getTotalElements()).isEqualTo(5L);
     assertThat(actual.getContent())

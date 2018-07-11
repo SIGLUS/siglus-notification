@@ -15,13 +15,14 @@
 
 package org.openlmis.notification.repository.custom;
 
+import java.util.Set;
+import java.util.UUID;
 import org.openlmis.notification.domain.UserContactDetails;
-import org.openlmis.notification.web.usercontactdetails.UserContactDetailsSearchParams;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 public interface UserContactDetailsRepositoryCustom {
 
-  Page<UserContactDetails> search(UserContactDetailsSearchParams searchParams, Pageable pageable);
+  Page<UserContactDetails> search(String email, Set<UUID> ids, Pageable pageable);
 
 }

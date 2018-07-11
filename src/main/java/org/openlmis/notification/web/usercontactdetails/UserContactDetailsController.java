@@ -102,7 +102,8 @@ public class UserContactDetailsController {
     } else {
       UserContactDetailsSearchParams searchParams =
           new UserContactDetailsSearchParams(queryParams);
-      page = userContactDetailsRepository.search(searchParams, pageable);
+      page = userContactDetailsRepository
+          .search(searchParams.getEmail(), searchParams.getIds(), pageable);
     }
 
     List<UserContactDetails> content = page.getContent();
