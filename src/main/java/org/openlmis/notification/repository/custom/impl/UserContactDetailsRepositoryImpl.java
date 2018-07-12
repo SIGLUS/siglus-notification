@@ -15,18 +15,12 @@
 
 package org.openlmis.notification.repository.custom.impl;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Iterator;
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Expression;
-import javax.persistence.criteria.Order;
-import javax.persistence.criteria.Path;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
 import org.openlmis.notification.domain.UserContactDetails;
@@ -34,15 +28,13 @@ import org.openlmis.notification.repository.custom.UserContactDetailsRepositoryC
 import org.openlmis.notification.util.Pagination;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 
-public class UserContactDetailsRepositoryImpl implements UserContactDetailsRepositoryCustom {
+public class UserContactDetailsRepositoryImpl
+    extends BaseCustomRepository<UserContactDetails>
+    implements UserContactDetailsRepositoryCustom {
 
   private static final String ID = "referenceDataUserId";
   private static final String EMAIL = "emailDetails.email";
-
-  @PersistenceContext
-  private EntityManager entityManager;
 
   /**
    * Method returns all matching user contact details. If all parameters are null, returns all user
@@ -52,98 +44,51 @@ public class UserContactDetailsRepositoryImpl implements UserContactDetailsRepos
    * @return Page of user contact details
    */
   public Page<UserContactDetails> search(String email, Collection<UUID> ids, Pageable pageable) {
+    CriteriaBuilder builder = getCriteriaBuilder();
 
-    CriteriaBuilder builder = entityManager.getCriteriaBuilder();
-    CriteriaQuery<UserContactDetails> query = builder.createQuery(UserContactDetails.class);
-    CriteriaQuery<Long> countQuery = builder.createQuery(Long.class);
+    CriteriaQuery<Long> countQuery = createQuery(builder, Long.class, email, ids, pageable);
+    Long count = countEntities(countQuery);
 
-    query = prepareQuery(email, ids, query, false, pageable);
-    countQuery = prepareQuery(email, ids, countQuery, true, pageable);
+    if (isZeroEntities(count)) {
+      return Pagination.getPage(Collections.emptyList(), pageable, count);
+    }
 
-    Long count = entityManager.createQuery(countQuery).getSingleResult();
+    CriteriaQuery<UserContactDetails> query = createQuery(builder, UserContactDetails.class, email,
+        ids, pageable);
+    List<UserContactDetails> entities = getEntities(query, pageable);
 
-    List<UserContactDetails> result = entityManager.createQuery(query)
-        .setMaxResults(pageable.getPageSize())
-        .setFirstResult(pageable.getPageNumber() * pageable.getPageSize())
-        .getResultList();
-
-    return Pagination.getPage(result, pageable, count);
+    return Pagination.getPage(entities, pageable, count);
   }
 
-  private <T> CriteriaQuery<T> prepareQuery(String email, Collection<UUID> ids,
-      CriteriaQuery<T> query, boolean count, Pageable pageable) {
+  private <T> CriteriaQuery<T> createQuery(CriteriaBuilder builder, Class<T> type, String email,
+      Collection<UUID> ids, Pageable pageable) {
 
-    CriteriaBuilder builder = entityManager.getCriteriaBuilder();
+    CriteriaQuery<T> query = builder.createQuery(type);
     Root<UserContactDetails> root = query.from(UserContactDetails.class);
-    Predicate predicate = builder.conjunction();
+    boolean count = Long.class.isAssignableFrom(type);
 
     if (count) {
       CriteriaQuery<Long> countQuery = (CriteriaQuery<Long>) query;
       query = (CriteriaQuery<T>) countQuery.select(builder.count(root));
     }
 
-    predicate = addLikeFilter(predicate, builder, getField(root, EMAIL), email);
-    predicate = addInFilter(predicate, builder, getField(root, ID), ids);
+    query.where(getFilters(builder, root, email, ids));
 
-    query.where(predicate);
-
-    if (!count && pageable.getSort() != null) {
-      query = addSortProperties(query, root, pageable);
+    if (!count) {
+      query.orderBy(getOrderBy(builder, root, pageable));
     }
 
     return query;
   }
 
-  private <T> CriteriaQuery<T> addSortProperties(CriteriaQuery<T> query,
-      Root<UserContactDetails> root, Pageable pageable) {
-    CriteriaBuilder builder = entityManager.getCriteriaBuilder();
-    List<Order> orders = new ArrayList<>();
-    Iterator<Sort.Order> iterator = pageable.getSort().iterator();
+  private Predicate getFilters(CriteriaBuilder builder, Root<UserContactDetails> root,
+      String email, Collection<UUID> ids) {
 
-    Sort.Order order;
-    while (iterator.hasNext()) {
-      order = iterator.next();
-      String property = order.getProperty();
-      Expression field = getField(root, property);
+    Predicate predicate = builder.conjunction();
+    predicate = addLikeFilter(predicate, builder, root, EMAIL, email);
+    predicate = addInFilter(predicate, builder, root, ID, ids);
 
-      if (order.isAscending()) {
-        orders.add(builder.asc(field));
-      } else {
-        orders.add(builder.desc(field));
-      }
-    }
-
-    return query.orderBy(orders);
-  }
-
-  private Predicate addLikeFilter(Predicate predicate, CriteriaBuilder builder,
-      Expression<String> field, String filterValue) {
-    return filterValue != null
-        ? builder.and(predicate, builder.like(
-            builder.upper(field), "%" + filterValue.toUpperCase() + "%"))
-        : predicate;
-  }
-
-  private Predicate addInFilter(Predicate predicate, CriteriaBuilder builder,
-      Expression<?> field, Collection values) {
-    return null == values || values.isEmpty()
-        ? predicate
-        : builder.and(predicate, field.in(values));
-  }
-
-  private <Y> Expression<Y> getField(Root<UserContactDetails> root, String field) {
-    String[] fields = field.split("\\.");
-
-    if (fields.length < 2) {
-      return root.get(field);
-    }
-
-    Path<Y> path = root.get(fields[0]);
-    for (int i = 1, length = fields.length; i < length; ++i) {
-      path = path.get(fields[i]);
-    }
-
-    return path;
+    return predicate;
   }
 
 }

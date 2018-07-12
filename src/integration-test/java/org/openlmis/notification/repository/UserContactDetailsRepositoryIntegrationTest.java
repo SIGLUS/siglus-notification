@@ -38,6 +38,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort.Direction;
 import org.springframework.data.repository.CrudRepository;
 
+@SuppressWarnings("PMD.TooManyMethods")
 public class UserContactDetailsRepositoryIntegrationTest
     extends BaseCrudRepositoryIntegrationTest<UserContactDetails> {
 
@@ -200,6 +201,20 @@ public class UserContactDetailsRepositoryIntegrationTest
         .extracting(UserContactDetails::getEmailAddress)
         .contains("test1@integration.test.org", "test11@integration.test.org",
             "test21@integration.test.org");
+  }
+
+  @Test
+  public void shouldReturnEmptyPageIfUserContactDetailsCanNotBeFound() {
+    IntStream
+        .range(0, 5)
+        .forEach(idx -> repository.save(generateInstance(idx)));
+    Pageable pageable = new PageRequest(0, 1000);
+
+    Page<UserContactDetails> actual = repository
+        .search("non.existing@email.address.org", null, pageable);
+
+    assertThat(actual.getTotalElements()).isEqualTo(0L);
+    assertThat(actual.getContent()).isEmpty();
   }
 
   @Test
