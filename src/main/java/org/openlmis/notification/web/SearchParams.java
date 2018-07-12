@@ -16,7 +16,12 @@
 package org.openlmis.notification.web;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
+import java.util.Set;
+import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
@@ -64,6 +69,21 @@ public final class SearchParams {
 
   public Collection<String> keySet() {
     return params.keySet();
+  }
+
+  /**
+   * Parses String value into {@link UUID} based on given key.
+   *
+   * @param key key for value be parsed into UUID
+   * @return parsed list of UUIDs
+   */
+  public Set<UUID> getUuids(String key) {
+    return Optional
+        .ofNullable(params.get(key))
+        .orElse(Collections.emptyList())
+        .stream()
+        .map(UUID::fromString)
+        .collect(Collectors.toSet());
   }
 
 }
