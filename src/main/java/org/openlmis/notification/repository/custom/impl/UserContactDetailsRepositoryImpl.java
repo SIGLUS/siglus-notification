@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
@@ -52,7 +51,7 @@ public class UserContactDetailsRepositoryImpl implements UserContactDetailsRepos
    *
    * @return Page of user contact details
    */
-  public Page<UserContactDetails> search(String email, Set<UUID> ids, Pageable pageable) {
+  public Page<UserContactDetails> search(String email, Collection<UUID> ids, Pageable pageable) {
 
     CriteriaBuilder builder = entityManager.getCriteriaBuilder();
     CriteriaQuery<UserContactDetails> query = builder.createQuery(UserContactDetails.class);
@@ -71,8 +70,8 @@ public class UserContactDetailsRepositoryImpl implements UserContactDetailsRepos
     return Pagination.getPage(result, pageable, count);
   }
 
-  private <T> CriteriaQuery<T> prepareQuery(String email, Set<UUID> ids, CriteriaQuery<T> query,
-      boolean count, Pageable pageable) {
+  private <T> CriteriaQuery<T> prepareQuery(String email, Collection<UUID> ids,
+      CriteriaQuery<T> query, boolean count, Pageable pageable) {
 
     CriteriaBuilder builder = entityManager.getCriteriaBuilder();
     Root<UserContactDetails> root = query.from(UserContactDetails.class);

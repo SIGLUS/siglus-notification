@@ -15,7 +15,7 @@
 
 package org.openlmis.notification.repository.custom;
 
-import java.util.Set;
+import java.util.Collection;
 import java.util.UUID;
 import org.openlmis.notification.domain.UserContactDetails;
 import org.springframework.data.domain.Page;
@@ -23,6 +23,6 @@ import org.springframework.data.domain.Pageable;
 
 public interface UserContactDetailsRepositoryCustom {
 
-  Page<UserContactDetails> search(String email, Set<UUID> ids, Pageable pageable);
+  Page<UserContactDetails> search(String email, Collection<UUID> ids, Pageable pageable);
 
 }
