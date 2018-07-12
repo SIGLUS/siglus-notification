@@ -395,6 +395,7 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
 
     assertThat(userContactDetails.getEmailAddress(), is(token.getEmailAddress()));
     assertThat(userContactDetails.isEmailAddressVerified(), is(true));
+    assertThat(userContactDetails.isAllowNotify(), is(true));
 
     verify(repository).save(userContactDetails);
     verify(emailVerificationTokenRepository).delete(token.getId());

@@ -248,6 +248,7 @@ public class UserContactDetailsController {
 
     UserContactDetails userContactDetails = userContactDetailsRepository.findOne(userId);
     userContactDetails.setEmailDetails(new EmailDetails(verificationToken.getEmailAddress(), true));
+    userContactDetails.setAllowNotify(true);
 
     userContactDetailsRepository.save(userContactDetails);
     emailVerificationTokenRepository.delete(token);
