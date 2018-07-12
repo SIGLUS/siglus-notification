@@ -83,6 +83,14 @@ public class UserContactDetailsDtoValidatorTest extends BaseValidatorTest {
   }
 
   @Test
+  public void shouldNotRejectIfEmailNotExists() {
+    dto.setEmailDetails(new EmailDetailsDto());
+
+    validator.validate(dto, errors);
+    assertThat(errors.hasErrors()).isFalse();
+  }
+
+  @Test
   public void shouldRejectIfEmailAddressIsIncorrect() {
     dto.getEmailDetails().setEmail("incorrect_email_address");
 

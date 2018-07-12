@@ -15,6 +15,8 @@
 
 package org.openlmis.notification.web.usercontactdetails;
 
+import static org.apache.commons.lang3.StringUtils.isBlank;
+
 import org.apache.commons.validator.routines.EmailValidator;
 import org.openlmis.notification.domain.UserContactDetails;
 import org.openlmis.notification.i18n.MessageKeys;
@@ -74,7 +76,7 @@ public class UserContactDetailsDtoValidator implements BaseValidator {
   }
 
   private void verifyEmail(EmailDetailsDto emailDetails, Errors errors) {
-    if (null == emailDetails) {
+    if (null == emailDetails || isBlank(emailDetails.getEmail())) {
       return;
     }
 
