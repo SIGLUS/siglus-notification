@@ -37,6 +37,11 @@ public class UserContactDetailsDataBuilder {
     return this;
   }
 
+  public UserContactDetailsDataBuilder withUnsetAllowNotifyFlag() {
+    this.allowNotify = false;
+    return this;
+  }
+
   /**
    * Builds instance of {@link UserContactDetails}.
    */

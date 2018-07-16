@@ -112,6 +112,7 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
   public void setUp() {
     userContactDetails = new UserContactDetailsDataBuilder()
         .withEmailDetails(new EmailDetailsDataBuilder().withUnverifiedFlag().build())
+        .withUnsetAllowNotifyFlag()
         .build();
 
     given(repository.findOne(userContactDetails.getId()))

@@ -67,9 +67,14 @@ public class UserContactDetails implements Identifiable {
     emailDetails = null != importer.getEmailDetails()
         ? EmailDetails.newEmailDetails(importer.getEmailDetails())
         : new EmailDetails();
-    allowNotify = null != importer.getAllowNotify()
-        ? importer.getAllowNotify()
-        : Boolean.TRUE;
+
+    if (isEmailAddressVerified()) {
+      allowNotify = null != importer.getAllowNotify()
+          ? importer.getAllowNotify()
+          : Boolean.TRUE;
+    } else {
+      allowNotify = false;
+    }
   }
 
   /**

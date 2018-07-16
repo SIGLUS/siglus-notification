@@ -58,6 +58,7 @@ public class UserContactDetailsService {
   private void unsetEmailVerifiedFlag(UserContactDetails toSave) {
     if (null != toSave.getEmailDetails()) {
       toSave.getEmailDetails().setEmailVerified(false);
+      toSave.setAllowNotify(false);
     }
   }
 

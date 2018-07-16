@@ -16,10 +16,10 @@
 package org.openlmis.notification.domain;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 
 import nl.jqno.equalsverifier.EqualsVerifier;
-import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.openlmis.notification.testutils.ToStringTestUtils;
 import org.openlmis.notification.web.usercontactdetails.EmailDetailsDto;
@@ -27,12 +27,21 @@ import org.openlmis.notification.web.usercontactdetails.EmailDetailsDto;
 public class EmailDetailsTest {
 
   @Test
-  public void shouldDefaultAllowNotifyToFalse() {
+  public void shouldDefaultAllowNotifyToNullIfEmailWasNotProvided() {
     EmailDetails details = EmailDetails.newEmailDetails(
         new EmailDetailsDto(null, null)
     );
 
-    assertThat(details.getEmailVerified(), Matchers.is(equalTo(Boolean.FALSE)));
+    assertThat(details.getEmailVerified(), is(nullValue()));
+  }
+
+  @Test
+  public void shouldDefaultAllowNotifyToFalseIfEmailWasProvidedButVerifiedFlagWasNotProvided() {
+    EmailDetails details = EmailDetails.newEmailDetails(
+        new EmailDetailsDto("test@openlmis.org", null)
+    );
+
+    assertThat(details.getEmailVerified(), is(Boolean.FALSE));
   }
 
   @Test

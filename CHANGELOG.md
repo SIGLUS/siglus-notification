@@ -14,7 +14,10 @@ New functionality added in a backwards-compatible manner:
   * the verification email will be sent for a new created users with email address
   * the verification email can be resent if there is a need
   * added new endpoint to get details about pending email verification
-  * [OLMIS-4835](https://openlmis.atlassian.net/browse/OLMIS-4835): when email address has been verified, the allowNotify flag is set to true. The flag must be unselected manually.
+* [OLMIS-4835](https://openlmis.atlassian.net/browse/OLMIS-4835): Added ability to opt-out from notifications
+  * if user contact details do not have verified email address, the allowNotify flag will be set to false,
+  * if email details do not have email address, the verified flag will be unset,
+  * when email address has been verified, the allowNotify flag is set to true. The flag must be unselected manually.
 * [OLMIS-4923](https://openlmis.atlassian.net/browse/OLMIS-4923): Store and allow retrieval of notifications.
 
 Improvements:

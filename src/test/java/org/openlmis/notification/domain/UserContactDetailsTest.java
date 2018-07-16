@@ -22,10 +22,10 @@ import static org.hamcrest.Matchers.nullValue;
 
 import java.util.UUID;
 import nl.jqno.equalsverifier.EqualsVerifier;
-import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.openlmis.notification.testutils.ToStringTestUtils;
 import org.openlmis.notification.util.UserContactDetailsDataBuilder;
+import org.openlmis.notification.web.usercontactdetails.EmailDetailsDto;
 import org.openlmis.notification.web.usercontactdetails.UserContactDetailsDto;
 
 @SuppressWarnings("PMD.TooManyMethods")
@@ -33,12 +33,33 @@ public class UserContactDetailsTest {
   private UserContactDetails contactDetails = new UserContactDetailsDataBuilder().build();
 
   @Test
-  public void shouldDefaultAllowNotifyToTrue() {
+  public void shouldDefaultAllowNotifyToTrueIfEmailAddressIsNotVerified() {
     UserContactDetails details = UserContactDetails.newUserContactDetails(
         new UserContactDetailsDto(UUID.randomUUID(), null, null, null)
     );
 
-    assertThat(details.getAllowNotify(), Matchers.is(equalTo(Boolean.TRUE)));
+    assertThat(details.getAllowNotify(), is(Boolean.FALSE));
+
+    details = UserContactDetails.newUserContactDetails(
+        new UserContactDetailsDto(UUID.randomUUID(), null, null, new EmailDetailsDto())
+    );
+
+    assertThat(details.getAllowNotify(), is(Boolean.FALSE));
+
+    details = UserContactDetails.newUserContactDetails(
+        new UserContactDetailsDto(UUID.randomUUID(), null, null, new EmailDetailsDto("test", false))
+    );
+
+    assertThat(details.getAllowNotify(), is(Boolean.FALSE));
+  }
+
+  @Test
+  public void shouldDefaultAllowNotifyToTrueIfEmailAddressIsVerified() {
+    UserContactDetails details = UserContactDetails.newUserContactDetails(
+        new UserContactDetailsDto(UUID.randomUUID(), null, null, new EmailDetailsDto("test", true))
+    );
+
+    assertThat(details.getAllowNotify(), is(equalTo(Boolean.TRUE)));
   }
 
   @Test
