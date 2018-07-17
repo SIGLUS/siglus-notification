@@ -51,7 +51,10 @@ public class UserContactDetailsServiceTest {
   @InjectMocks
   private UserContactDetailsService service;
 
-  private UserContactDetails contactDetails = new UserContactDetailsDataBuilder().build();
+  private UserContactDetails contactDetails = new UserContactDetailsDataBuilder()
+      .withEmailDetails(new EmailDetailsDataBuilder().withVerified(true).build())
+      .withAllowNotify(true)
+      .build();
 
   @Before
   public void setUp() {
@@ -62,11 +65,14 @@ public class UserContactDetailsServiceTest {
   public void shouldAddContactDetails() {
     when(repository.exists(contactDetails.getId())).thenReturn(false);
 
-    service.addOrUpdate(contactDetails);
+    UserContactDetails saved = service.addOrUpdate(contactDetails);
 
     verify(repository).save(contactDetails);
     verify(notifier)
         .sendNotification(contactDetails, contactDetails.getEmailAddress());
+
+    assertThat(saved.isAllowNotify(), is(false));
+    assertThat(saved.isEmailAddressVerified(), is(false));
   }
 
   @Test

@@ -37,9 +37,13 @@ public class UserContactDetailsDataBuilder {
     return this;
   }
 
-  public UserContactDetailsDataBuilder withUnsetAllowNotifyFlag() {
-    this.allowNotify = false;
+  public UserContactDetailsDataBuilder withAllowNotify(boolean allowNotify) {
+    this.allowNotify = allowNotify;
     return this;
+  }
+
+  public UserContactDetailsDataBuilder withUnsetAllowNotifyFlag() {
+    return withAllowNotify(false);
   }
 
   /**
