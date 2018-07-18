@@ -18,18 +18,18 @@ package org.openlmis.notification.domain;
 
 import javax.persistence.Column;
 import javax.persistence.Embeddable;
-import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
+import org.apache.commons.lang3.BooleanUtils;
+import org.apache.commons.lang3.StringUtils;
 
 @Embeddable
 @ToString
 @NoArgsConstructor
 @EqualsAndHashCode
-@AllArgsConstructor
 public class EmailDetails {
 
   @Column(unique = true)
@@ -42,18 +42,19 @@ public class EmailDetails {
   @Setter
   private Boolean emailVerified;
 
-  private EmailDetails(Importer importer) {
-    if (null == importer.getEmail()) {
-      email = null;
-      emailVerified = null;
+  /**
+   * Creates new instance with passed values. If the email parameter is blank, all fields will have
+   * a null value. If the emailVerified parameter is null, the false value will be used.
+   */
+  public EmailDetails(String email, Boolean emailVerified) {
+    if (StringUtils.isBlank(email)) {
+      this.email = null;
+      this.emailVerified = null;
     } else {
-      email = importer.getEmail();
-      emailVerified = null == importer.getEmailVerified()
-          ? Boolean.FALSE
-          : importer.getEmailVerified();
+      this.email = email;
+      this.emailVerified = BooleanUtils.toBoolean(emailVerified);
     }
   }
-
 
   /**
    * Construct new email details based on an importer (DTO).
@@ -62,7 +63,7 @@ public class EmailDetails {
    * @return new email details
    */
   static EmailDetails newEmailDetails(EmailDetails.Importer importer) {
-    return new EmailDetails(importer);
+    return new EmailDetails(importer.getEmail(), importer.getEmailVerified());
   }
 
   public interface Exporter {

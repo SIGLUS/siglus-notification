@@ -27,16 +27,27 @@ import org.openlmis.notification.web.usercontactdetails.EmailDetailsDto;
 public class EmailDetailsTest {
 
   @Test
-  public void shouldDefaultAllowNotifyToNullIfEmailWasNotProvided() {
+  public void shouldSetFieldsToNullIfEmailWasNotProvided() {
     EmailDetails details = EmailDetails.newEmailDetails(
         new EmailDetailsDto(null, null)
     );
 
+    assertThat(details.getEmail(), is(nullValue()));
     assertThat(details.getEmailVerified(), is(nullValue()));
   }
 
   @Test
-  public void shouldDefaultAllowNotifyToFalseIfEmailWasProvidedButVerifiedFlagWasNotProvided() {
+  public void shouldSetFieldsToNullIfEmailIsBlank() {
+    EmailDetails details = EmailDetails.newEmailDetails(
+        new EmailDetailsDto("", null)
+    );
+
+    assertThat(details.getEmail(), is(nullValue()));
+    assertThat(details.getEmailVerified(), is(nullValue()));
+  }
+
+  @Test
+  public void shouldSetEmailVerifiedToFalseIfEmailWasProvidedButVerifiedFlagWasNotProvided() {
     EmailDetails details = EmailDetails.newEmailDetails(
         new EmailDetailsDto("test@openlmis.org", null)
     );

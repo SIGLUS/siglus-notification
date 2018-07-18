@@ -78,37 +78,30 @@ public class UserContactDetailsRepositoryIntegrationTest
 
   @Test(expected = DataIntegrityViolationException.class)
   public void shouldNotAllowCreatingMultipleUserContactDetailsWithTheSameEmail() {
-    repository.saveAndFlush(
-        new UserContactDetailsDataBuilder()
-            .withEmailDetails(
-                new EmailDetailsDataBuilder()
-                  .withEmail("duplicated@email.com")
-                  .build()
-            )
-            .build()
-    );
-
-    repository.saveAndFlush(
-        new UserContactDetailsDataBuilder()
-            .withEmailDetails(
-                new EmailDetailsDataBuilder()
-                    .withEmail("duplicated@email.com")
-                    .build()
-            )
-            .build()
-    );
+    EmailDetails emailDetails = new EmailDetailsDataBuilder()
+        .withEmail("duplicated@email.com")
+        .build();
+    saveTwoSameEntities(emailDetails);
   }
 
   @Test
   public void shouldAllowCreatingMultipleUserContactDetailsWithNullEmail() {
-    repository.saveAndFlush(new UserContactDetailsDataBuilder().withEmailDetails(null).build());
-    repository.saveAndFlush(new UserContactDetailsDataBuilder().withEmailDetails(null).build());
+    saveTwoSameEntities(null);
+    saveTwoSameEntities(new EmailDetailsDataBuilder().withEmail(null).build());
+    saveTwoSameEntities(new EmailDetailsDataBuilder().withEmail("").build());
+  }
 
-    EmailDetails emailDetails = new EmailDetailsDataBuilder().withEmail(null).build();
-    repository
-        .saveAndFlush(new UserContactDetailsDataBuilder().withEmailDetails(emailDetails).build());
-    repository
-        .saveAndFlush(new UserContactDetailsDataBuilder().withEmailDetails(emailDetails).build());
+  private void saveTwoSameEntities(EmailDetails emailDetails) {
+    repository.saveAndFlush(
+        new UserContactDetailsDataBuilder()
+            .withEmailDetails(emailDetails)
+            .build()
+    );
+    repository.saveAndFlush(
+        new UserContactDetailsDataBuilder()
+            .withEmailDetails(emailDetails)
+            .build()
+    );
   }
 
   @Test
