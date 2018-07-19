@@ -42,7 +42,7 @@ public class EmailDetailsDataBuilder {
     return this;
   }
 
-  public EmailDetailsDataBuilder withVerified(boolean verified) {
+  public EmailDetailsDataBuilder withVerified(Boolean verified) {
     this.emailVerified = verified;
     return this;
   }

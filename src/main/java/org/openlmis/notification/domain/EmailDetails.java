@@ -20,7 +20,6 @@ import javax.persistence.Column;
 import javax.persistence.Embeddable;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import org.apache.commons.lang3.BooleanUtils;
@@ -28,7 +27,6 @@ import org.apache.commons.lang3.StringUtils;
 
 @Embeddable
 @ToString
-@NoArgsConstructor
 @EqualsAndHashCode
 public class EmailDetails {
 
@@ -41,6 +39,10 @@ public class EmailDetails {
   @Getter
   @Setter
   private Boolean emailVerified;
+
+  public EmailDetails() {
+    this(null, null);
+  }
 
   /**
    * Creates new instance with passed values. If the email parameter is blank, all fields will have
@@ -63,7 +65,9 @@ public class EmailDetails {
    * @return new email details
    */
   static EmailDetails newEmailDetails(EmailDetails.Importer importer) {
-    return new EmailDetails(importer.getEmail(), importer.getEmailVerified());
+    return null != importer
+        ? new EmailDetails(importer.getEmail(), importer.getEmailVerified())
+        : new EmailDetails();
   }
 
   public interface Exporter {

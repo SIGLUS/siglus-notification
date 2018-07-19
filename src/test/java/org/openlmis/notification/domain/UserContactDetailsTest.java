@@ -24,13 +24,17 @@ import java.util.UUID;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import org.junit.Test;
 import org.openlmis.notification.testutils.ToStringTestUtils;
+import org.openlmis.notification.util.EmailDetailsDataBuilder;
 import org.openlmis.notification.util.UserContactDetailsDataBuilder;
 import org.openlmis.notification.web.usercontactdetails.EmailDetailsDto;
 import org.openlmis.notification.web.usercontactdetails.UserContactDetailsDto;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class UserContactDetailsTest {
-  private UserContactDetails contactDetails = new UserContactDetailsDataBuilder().build();
+  private EmailDetails emailDetails = new EmailDetailsDataBuilder().build();
+  private UserContactDetails contactDetails = new UserContactDetailsDataBuilder()
+      .withEmailDetails(emailDetails)
+      .build();
 
   @Test
   public void shouldDefaultAllowNotifyToTrueIfEmailAddressIsNotVerified() {
@@ -118,6 +122,17 @@ public class UserContactDetailsTest {
   public void shouldSayNotificationIsDisabledIfFlagIsNotSet() {
     contactDetails.setAllowNotify(null);
     assertThat(contactDetails.isAllowNotify(), is(false));
+  }
+
+  @Test
+  public void shouldReturnEmailDetails() {
+    assertThat(contactDetails.getEmailDetails(), is(emailDetails));
+  }
+
+  @Test
+  public void shouldReturnEmptyEmailDetailsIfFieldIsNotSet() {
+    contactDetails.setEmailDetails(null);
+    assertThat(contactDetails.getEmailDetails(), is(new EmailDetails()));
   }
 
   @Test

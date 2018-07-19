@@ -18,16 +18,15 @@ package org.openlmis.notification.domain;
 import static org.apache.commons.lang3.BooleanUtils.isTrue;
 import static org.apache.commons.lang3.StringUtils.isNotBlank;
 
+import java.util.Optional;
 import java.util.UUID;
 import javax.persistence.Column;
 import javax.persistence.Embedded;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import org.hibernate.annotations.Type;
@@ -35,8 +34,6 @@ import org.hibernate.annotations.Type;
 @Entity
 @ToString
 @EqualsAndHashCode
-@NoArgsConstructor
-@AllArgsConstructor
 @Table(name = "user_contact_details", schema = "notification")
 public class UserContactDetails implements Identifiable {
 
@@ -56,25 +53,26 @@ public class UserContactDetails implements Identifiable {
   @Setter
   private Boolean allowNotify;
 
-  @Getter
   @Setter
   @Embedded
   private EmailDetails emailDetails;
 
-  private UserContactDetails(Importer importer) {
-    referenceDataUserId = importer.getReferenceDataUserId();
-    phoneNumber = importer.getPhoneNumber();
-    emailDetails = null != importer.getEmailDetails()
-        ? EmailDetails.newEmailDetails(importer.getEmailDetails())
-        : new EmailDetails();
+  public UserContactDetails() {
+    this(null, null, null, new EmailDetails());
+  }
 
-    if (isEmailAddressVerified()) {
-      allowNotify = null != importer.getAllowNotify()
-          ? importer.getAllowNotify()
-          : Boolean.TRUE;
-    } else {
-      allowNotify = false;
-    }
+  /**
+   * Creates new instance with passed values. If the emailDetails parameter is null, an empty
+   * instance of {@link EmailDetails} will be used. If the email address is not verified the
+   * allowNotify field will be false, otherwise if the allowNotify parameter is null, the true value
+   * will be used.
+   */
+  public UserContactDetails(UUID referenceDataUserId, String phoneNumber, Boolean allowNotify,
+      EmailDetails emailDetails) {
+    this.referenceDataUserId = referenceDataUserId;
+    this.phoneNumber = phoneNumber;
+    this.emailDetails = Optional.ofNullable(emailDetails).orElse(new EmailDetails());
+    this.allowNotify = isEmailAddressVerified() && (null == allowNotify || allowNotify);
   }
 
   /**
@@ -84,7 +82,10 @@ public class UserContactDetails implements Identifiable {
    * @return new user contact details
    */
   public static UserContactDetails newUserContactDetails(Importer importer) {
-    return new UserContactDetails(importer);
+    return new UserContactDetails(
+        importer.getReferenceDataUserId(), importer.getPhoneNumber(),
+        importer.getAllowNotify(), EmailDetails.newEmailDetails(importer.getEmailDetails())
+    );
   }
 
   /**
@@ -96,11 +97,15 @@ public class UserContactDetails implements Identifiable {
     exporter.setReferenceDataUserId(referenceDataUserId);
     exporter.setAllowNotify(allowNotify);
     exporter.setPhoneNumber(phoneNumber);
-    exporter.setEmailDetails(emailDetails);
+    exporter.setEmailDetails(getEmailDetails());
+  }
+
+  public EmailDetails getEmailDetails() {
+    return Optional.ofNullable(emailDetails).orElse(new EmailDetails());
   }
 
   public String getEmailAddress() {
-    return null == emailDetails ? null : emailDetails.getEmail();
+    return getEmailDetails().getEmail();
   }
 
   public boolean hasEmailAddress() {

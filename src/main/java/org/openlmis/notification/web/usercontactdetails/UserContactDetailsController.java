@@ -164,7 +164,8 @@ public class UserContactDetailsController {
       throw new ValidationException(bindingResult.getFieldError().getDefaultMessage());
     }
 
-    UserContactDetails contactDetails = fromDto(userContactDetailsDto);
+    UserContactDetails contactDetails = UserContactDetails
+        .newUserContactDetails(userContactDetailsDto);
     contactDetails = userContactDetailsService.addOrUpdate(contactDetails);
 
     return toDto(contactDetails);
@@ -214,10 +215,10 @@ public class UserContactDetailsController {
         .findOneByUserContactDetails(contactDetails);
 
     if (null == token) {
-      if (null == contactDetails.getEmailAddress()) {
-        throw new ValidationException(ERROR_USER_HAS_NO_EMAIL);
-      } else {
+      if (contactDetails.hasEmailAddress()) {
         throw new ValidationException(ERROR_VERIFICATION_EMAIL_VERIFIED);
+      } else {
+        throw new ValidationException(ERROR_USER_HAS_NO_EMAIL);
       }
     }
 
@@ -259,14 +260,9 @@ public class UserContactDetailsController {
 
   private UserContactDetailsDto toDto(UserContactDetails userContactDetails) {
     UserContactDetailsDto dto = new UserContactDetailsDto();
-
     userContactDetails.export(dto);
 
     return dto;
-  }
-
-  private UserContactDetails fromDto(UserContactDetailsDto userContactDetailsDto) {
-    return UserContactDetails.newUserContactDetails(userContactDetailsDto);
   }
 
 }

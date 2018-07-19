@@ -56,6 +56,11 @@ public class EmailDetailsTest {
   }
 
   @Test
+  public void shouldReturnEmptyInstanceIfImporterWasNotProvided() {
+    assertThat(EmailDetails.newEmailDetails(null), is(new EmailDetails()));
+  }
+
+  @Test
   public void equalsContract() {
     EqualsVerifier
         .forClass(EmailDetails.class)
