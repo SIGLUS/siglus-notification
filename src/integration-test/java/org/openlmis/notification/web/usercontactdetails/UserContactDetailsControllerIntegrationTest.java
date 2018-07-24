@@ -465,6 +465,20 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
   }
 
   @Test
+  public void shouldReturnBadRequestIfDuplicatingUnverifiedEmail() {
+    markDtoAsInvalid(EMAIL_VERIFIED, ERROR_EMAIL_DUPLICATED);
+
+    UserContactDetailsDto request = toDto(userContactDetails);
+
+    put(request, request.getReferenceDataUserId())
+        .then()
+        .statusCode(HttpStatus.BAD_REQUEST.value())
+        .body(MESSAGE_KEY, equalTo(ERROR_EMAIL_DUPLICATED));
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
   public void shouldGetPendingVerificationEmail() {
     EmailVerificationToken token = new EmailVerificationTokenDataBuilder()
         .withExpiredDate()

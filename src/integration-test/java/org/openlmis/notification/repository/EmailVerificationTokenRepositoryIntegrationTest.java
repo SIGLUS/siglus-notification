@@ -15,6 +15,8 @@
 
 package org.openlmis.notification.repository;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.UUID;
 import org.junit.Test;
 import org.openlmis.notification.domain.EmailVerificationToken;
@@ -71,6 +73,17 @@ public class EmailVerificationTokenRepositoryIntegrationTest
     newToken.setEmailAddress(token.getEmailAddress());
 
     repository.saveAndFlush(newToken);
+  }
+
+  @Test
+  public void shouldFindTokenByEmailAddress() {
+    EmailVerificationToken token = generateInstance();
+
+    repository.save(token);
+
+    EmailVerificationToken result = repository.findOneByEmailAddress(token.getEmailAddress());
+
+    assertEquals(token, result);
   }
 
 }

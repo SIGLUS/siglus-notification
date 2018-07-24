@@ -18,6 +18,7 @@ package org.openlmis.notification.web.usercontactdetails;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
+import static org.openlmis.notification.i18n.MessageKeys.ERROR_EMAIL_DUPLICATED;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_EMAIL_INVALID;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_FIELD_IS_INVARIANT;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_USER_NOT_FOUND;
@@ -32,10 +33,14 @@ import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+import org.openlmis.notification.domain.EmailVerificationToken;
 import org.openlmis.notification.domain.UserContactDetails;
+import org.openlmis.notification.repository.EmailVerificationTokenRepository;
 import org.openlmis.notification.repository.UserContactDetailsRepository;
 import org.openlmis.notification.service.referencedata.UserDto;
 import org.openlmis.notification.service.referencedata.UserReferenceDataService;
+import org.openlmis.notification.testutils.EmailVerificationTokenDataBuilder;
+import org.openlmis.notification.util.EmailDetailsDataBuilder;
 import org.openlmis.notification.util.UserContactDetailsDataBuilder;
 import org.openlmis.notification.web.BaseValidatorTest;
 import org.springframework.validation.BeanPropertyBindingResult;
@@ -49,6 +54,9 @@ public class UserContactDetailsDtoValidatorTest extends BaseValidatorTest {
 
   @Mock
   private UserReferenceDataService userReferenceDataService;
+
+  @Mock
+  private EmailVerificationTokenRepository emailVerificationTokenRepository;
 
   @InjectMocks
   private UserContactDetailsDtoValidator validator;
@@ -128,5 +136,43 @@ public class UserContactDetailsDtoValidatorTest extends BaseValidatorTest {
     validator.validate(dto, errors);
 
     assertErrorMessage(errors, REFERENCE_DATA_USER_ID, ERROR_USER_NOT_FOUND);
+  }
+
+  @Test
+  public void shouldRejectIfEmailIsDuplicatedButNotVerified() {
+    UserContactDetails otherUsersContactDetails = new UserContactDetailsDataBuilder()
+        .withEmailDetails(
+            new EmailDetailsDataBuilder()
+                .withEmail("some@test.email")
+                .build()
+        )
+        .build();
+
+    EmailVerificationToken otherUsersVerificationToken = new EmailVerificationTokenDataBuilder()
+        .withContactDetails(otherUsersContactDetails)
+        .withEmail(otherUsersContactDetails.getEmailAddress())
+        .build();
+
+    when(emailVerificationTokenRepository.findOneByEmailAddress(dto.getEmailDetails().getEmail()))
+        .thenReturn(otherUsersVerificationToken);
+
+    validator.validate(dto, errors);
+
+    assertErrorMessage(errors, EMAIL, ERROR_EMAIL_DUPLICATED);
+  }
+
+  @Test
+  public void shouldNotRejectIfUpdatingUserWithUnverifiedEmail() {
+    EmailVerificationToken verificationToken = new EmailVerificationTokenDataBuilder()
+        .withContactDetails(contactDetails)
+        .withEmail(contactDetails.getEmailAddress())
+        .build();
+
+    when(emailVerificationTokenRepository.findOneByEmailAddress(dto.getEmailDetails().getEmail()))
+        .thenReturn(verificationToken);
+
+    validator.validate(dto, errors);
+
+    assertThat(errors.hasErrors()).isFalse();
   }
 }

@@ -42,6 +42,11 @@ public class EmailVerificationTokenDataBuilder {
     return this;
   }
 
+  public EmailVerificationTokenDataBuilder withEmail(String email) {
+    this.email = email;
+    return this;
+  }
+
   /**
    * Builds instance of {@link EmailVerificationToken} without id.
    */

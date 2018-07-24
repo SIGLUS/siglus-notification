@@ -28,4 +28,6 @@ public interface EmailVerificationTokenRepository
       @Param("userContactDetails") UserContactDetails userContactDetails
   );
 
+  EmailVerificationToken findOneByEmailAddress(@Param("emailAddress") String emailAddress);
+
 }

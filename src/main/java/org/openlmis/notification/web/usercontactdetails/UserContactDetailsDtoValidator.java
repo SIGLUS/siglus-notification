@@ -18,8 +18,10 @@ package org.openlmis.notification.web.usercontactdetails;
 import static org.apache.commons.lang3.StringUtils.isBlank;
 
 import org.apache.commons.validator.routines.EmailValidator;
+import org.openlmis.notification.domain.EmailVerificationToken;
 import org.openlmis.notification.domain.UserContactDetails;
 import org.openlmis.notification.i18n.MessageKeys;
+import org.openlmis.notification.repository.EmailVerificationTokenRepository;
 import org.openlmis.notification.repository.UserContactDetailsRepository;
 import org.openlmis.notification.service.referencedata.UserDto;
 import org.openlmis.notification.service.referencedata.UserReferenceDataService;
@@ -41,6 +43,9 @@ public class UserContactDetailsDtoValidator implements BaseValidator {
 
   @Autowired
   private UserReferenceDataService userReferenceDataService;
+
+  @Autowired
+  private EmailVerificationTokenRepository emailVerificationTokenRepository;
 
   static final String REFERENCE_DATA_USER_ID = "referenceDataUserId";
   static final String EMAIL = "emailDetails.email";
@@ -70,18 +75,28 @@ public class UserContactDetailsDtoValidator implements BaseValidator {
   public void validate(Object target, Errors errors) {
     UserContactDetailsDto dto = (UserContactDetailsDto) target;
 
-    verifyEmail(dto.getEmailDetails(), errors);
+    verifyEmail(dto, errors);
     verifyReferenceDataUserId(dto, errors);
     verifyInvariants(dto, errors);
   }
 
-  private void verifyEmail(EmailDetailsDto emailDetails, Errors errors) {
+  private void verifyEmail(UserContactDetailsDto dto, Errors errors) {
+    EmailDetailsDto emailDetails = dto.getEmailDetails();
     if (null == emailDetails || isBlank(emailDetails.getEmail())) {
       return;
     }
 
     if (!EmailValidator.getInstance().isValid(emailDetails.getEmail())) {
       rejectValue(errors, EMAIL, MessageKeys.ERROR_EMAIL_INVALID);
+    }
+
+    EmailVerificationToken existingToken = emailVerificationTokenRepository
+        .findOneByEmailAddress(emailDetails.getEmail());
+
+
+    if (null != existingToken && !existingToken.getUserContactDetails().getReferenceDataUserId()
+        .equals(dto.getReferenceDataUserId())) {
+      rejectValue(errors, EMAIL, MessageKeys.ERROR_EMAIL_DUPLICATED);
     }
   }
 
