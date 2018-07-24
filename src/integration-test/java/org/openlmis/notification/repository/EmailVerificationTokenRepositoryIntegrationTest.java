@@ -79,7 +79,9 @@ public class EmailVerificationTokenRepositoryIntegrationTest
   public void shouldFindTokenByEmailAddress() {
     EmailVerificationToken token = generateInstance();
 
+    repository.save(generateInstance());
     repository.save(token);
+    repository.save(generateInstance());
 
     EmailVerificationToken result = repository.findOneByEmailAddress(token.getEmailAddress());
 

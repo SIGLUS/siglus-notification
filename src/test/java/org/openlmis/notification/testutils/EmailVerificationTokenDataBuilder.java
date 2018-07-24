@@ -22,10 +22,12 @@ import org.openlmis.notification.domain.UserContactDetails;
 import org.openlmis.notification.util.UserContactDetailsDataBuilder;
 
 public class EmailVerificationTokenDataBuilder {
+  private static int instanceNumber = 0;
+
   private UUID id = UUID.randomUUID();
   private ZonedDateTime expiryDate = ZonedDateTime.now().plusHours(12);
   private UserContactDetails contactDetails = new UserContactDetailsDataBuilder().build();
-  private String email = "example@test.org";
+  private String email = ++instanceNumber + "exampleNew@test.org";
 
   public EmailVerificationTokenDataBuilder withoutId() {
     this.id = null;
