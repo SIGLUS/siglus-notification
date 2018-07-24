@@ -19,15 +19,12 @@ import java.util.UUID;
 import org.openlmis.notification.domain.EmailVerificationToken;
 import org.openlmis.notification.domain.UserContactDetails;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.repository.query.Param;
 
 public interface EmailVerificationTokenRepository
     extends JpaRepository<EmailVerificationToken, UUID> {
 
-  EmailVerificationToken findOneByUserContactDetails(
-      @Param("userContactDetails") UserContactDetails userContactDetails
-  );
+  EmailVerificationToken findOneByUserContactDetails(UserContactDetails userContactDetails);
 
-  EmailVerificationToken findOneByEmailAddress(@Param("emailAddress") String emailAddress);
+  EmailVerificationToken findOneByEmailAddress(String emailAddress);
 
 }
