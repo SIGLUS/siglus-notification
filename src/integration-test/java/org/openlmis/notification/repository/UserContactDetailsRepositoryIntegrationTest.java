@@ -250,4 +250,14 @@ public class UserContactDetailsRepositoryIntegrationTest
 
     assertEquals(contactDetails, result);
   }
+
+  @Test
+  public void shouldReturnNullIfCouldNotFindOneByEmail() {
+    repository.save(generateInstance());
+    repository.save(generateInstance());
+    repository.save(generateInstance());
+
+    UserContactDetails result = repository.findOneByEmailAddress("this.is.special.email@for.it");
+    assertThat(result).isNull();
+  }
 }
