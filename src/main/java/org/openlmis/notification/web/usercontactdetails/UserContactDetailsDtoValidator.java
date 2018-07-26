@@ -98,6 +98,14 @@ public class UserContactDetailsDtoValidator implements BaseValidator {
         .equals(dto.getReferenceDataUserId())) {
       rejectValue(errors, EMAIL, MessageKeys.ERROR_EMAIL_DUPLICATED);
     }
+
+    UserContactDetails existingContactDetails = repository
+        .findOneByEmailAddress(emailDetails.getEmail());
+
+    if (null != existingContactDetails
+        && !existingContactDetails.getReferenceDataUserId().equals(dto.getReferenceDataUserId())) {
+      rejectValue(errors, EMAIL, MessageKeys.ERROR_EMAIL_DUPLICATED);
+    }
   }
 
   private void verifyReferenceDataUserId(UserContactDetailsDto contactDetails, Errors errors) {

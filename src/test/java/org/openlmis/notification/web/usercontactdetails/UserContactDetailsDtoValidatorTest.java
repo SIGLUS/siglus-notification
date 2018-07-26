@@ -47,6 +47,7 @@ import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
 
 @RunWith(MockitoJUnitRunner.class)
+@SuppressWarnings("PMD.TooManyMethods")
 public class UserContactDetailsDtoValidatorTest extends BaseValidatorTest {
 
   @Mock
@@ -170,6 +171,30 @@ public class UserContactDetailsDtoValidatorTest extends BaseValidatorTest {
 
     when(emailVerificationTokenRepository.findOneByEmailAddress(dto.getEmailDetails().getEmail()))
         .thenReturn(verificationToken);
+
+    validator.validate(dto, errors);
+
+    assertThat(errors.hasErrors()).isFalse();
+  }
+
+  @Test
+  public void shouldRejectIfEmailIsDuplicated() {
+    UserContactDetails otherContactDetails = new UserContactDetailsDataBuilder()
+        .withEmailDetails(contactDetails.getEmailDetails())
+        .build();
+
+    when(repository.findOneByEmailAddress(dto.getEmailDetails().getEmail()))
+        .thenReturn(otherContactDetails);
+
+    validator.validate(dto, errors);
+
+    assertErrorMessage(errors, EMAIL, ERROR_EMAIL_DUPLICATED);
+  }
+
+  @Test
+  public void shouldNotRejectIfUpdatingUserWithVerifiedEmail() {
+    when(repository.findOneByEmailAddress(dto.getEmailDetails().getEmail()))
+        .thenReturn(contactDetails);
 
     validator.validate(dto, errors);
 

@@ -16,6 +16,7 @@
 package org.openlmis.notification.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.assertEquals;
 
 import com.google.common.collect.Sets;
 import java.util.List;
@@ -235,5 +236,18 @@ public class UserContactDetailsRepositoryIntegrationTest
         .contains("test104@integration.test.org", "test103@integration.test.org",
             "test102@integration.test.org", "test101@integration.test.org",
             "test100@integration.test.org");
+  }
+
+  @Test
+  public void shouldFindOneByEmail() {
+    UserContactDetails contactDetails = generateInstance();
+
+    repository.save(generateInstance());
+    repository.save(contactDetails);
+    repository.save(generateInstance());
+
+    UserContactDetails result = repository.findOneByEmailAddress(contactDetails.getEmailAddress());
+
+    assertEquals(contactDetails, result);
   }
 }

@@ -18,10 +18,25 @@ package org.openlmis.notification.repository;
 import java.util.UUID;
 import org.openlmis.notification.domain.UserContactDetails;
 import org.openlmis.notification.repository.custom.UserContactDetailsRepositoryCustom;
+import org.openlmis.notification.util.Pagination;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface UserContactDetailsRepository
     extends JpaRepository<UserContactDetails, UUID>,
     UserContactDetailsRepositoryCustom {
+
+  /**
+   * Tries to find the first {@link UserContactDetails} with the given email address. If there is
+   * no such row, the null value will be returned.
+   */
+  default UserContactDetails findOneByEmailAddress(String email) {
+    Pageable pageable = new PageRequest(Pagination.DEFAULT_PAGE_NUMBER, Pagination.NO_PAGINATION);
+    Page<UserContactDetails> page = search(email, null, pageable);
+
+    return page.hasContent() ? page.getContent().get(0) : null;
+  }
 
 }
