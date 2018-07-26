@@ -90,22 +90,27 @@ public class UserContactDetailsDtoValidator implements BaseValidator {
       rejectValue(errors, EMAIL, MessageKeys.ERROR_EMAIL_INVALID);
     }
 
+    if (isEmailDuplicated(dto)) {
+      rejectValue(errors, EMAIL, MessageKeys.ERROR_EMAIL_DUPLICATED);
+    }
+  }
+
+  private boolean isEmailDuplicated(UserContactDetailsDto dto) {
+    EmailDetailsDto emailDetails = dto.getEmailDetails();
     EmailVerificationToken existingToken = emailVerificationTokenRepository
         .findOneByEmailAddress(emailDetails.getEmail());
 
-
     if (null != existingToken && !existingToken.getUserContactDetails().getReferenceDataUserId()
         .equals(dto.getReferenceDataUserId())) {
-      rejectValue(errors, EMAIL, MessageKeys.ERROR_EMAIL_DUPLICATED);
+      return true;
     }
 
     UserContactDetails existingContactDetails = repository
         .findOneByEmailAddress(emailDetails.getEmail());
 
-    if (null != existingContactDetails
-        && !existingContactDetails.getReferenceDataUserId().equals(dto.getReferenceDataUserId())) {
-      rejectValue(errors, EMAIL, MessageKeys.ERROR_EMAIL_DUPLICATED);
-    }
+    return null != existingContactDetails
+        && !existingContactDetails.getReferenceDataUserId().equals(dto.getReferenceDataUserId());
+
   }
 
   private void verifyReferenceDataUserId(UserContactDetailsDto contactDetails, Errors errors) {
