@@ -7,7 +7,7 @@ Breaking changes:
   * The request body has been changed.
   * The endpoint checks if user is active, has an email address and the address has been verified.
   * The endpoint has been pluralized and now it is available under /api/notifications address.
-  * Added important flag for ignoring allowNotify user setting.
+  * Added important flag for ignoring emailVerified flag and allowNotify user setting.
 
 New functionality added in a backwards-compatible manner:
 * [OLMIS-4907](https://openlmis.atlassian.net/browse/OLMIS-4907): Added Email verification functionality

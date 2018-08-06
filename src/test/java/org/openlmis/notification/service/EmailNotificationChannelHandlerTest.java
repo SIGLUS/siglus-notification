@@ -72,28 +72,28 @@ public class EmailNotificationChannelHandlerTest {
   }
 
   @Test
+  public void shouldSupportEmailNotificationChannel() {
+    assertThat(handler.getNotificationChannel(), is(NotificationChannel.EMAIL));
+  }
+
+  @Test
   public void shouldSendMessage() throws MessagingException, IOException {
     handler.handle(false, message, contactDetails);
-    verify(mailSender).send(mimeMessageCaptor.capture());
-
-    MimeMessage value = mimeMessageCaptor.getValue();
-    assertThat(value.getFrom()[0].toString(), is(from));
-    assertThat(value.getAllRecipients()[0].toString(), is(contactDetails.getEmailAddress()));
-    assertThat(value.getSubject(), is(message.getSubject()));
-    assertThat(value.getContent().toString(), is(message.getBody()));
+    verifySentMessage(contactDetails.getEmailAddress());
   }
 
   @Test
   public void shouldSendMessageToGivenEmail() throws MessagingException, IOException {
     String email = "example@test.org";
     handler.handle(email, message);
-    verify(mailSender).send(mimeMessageCaptor.capture());
+    verifySentMessage(email);
+  }
 
-    MimeMessage value = mimeMessageCaptor.getValue();
-    assertThat(value.getFrom()[0].toString(), is(from));
-    assertThat(value.getAllRecipients()[0].toString(), is(email));
-    assertThat(value.getSubject(), is(message.getSubject()));
-    assertThat(value.getContent().toString(), is(message.getBody()));
+  @Test
+  public void shouldNotSendMessageIfUserEmailIsNotSet() {
+    contactDetails.getEmailDetails().setEmail(null);
+    handler.handle(false, message, contactDetails);
+    verifyZeroInteractions(mailSender);
   }
 
   @Test
@@ -123,21 +123,26 @@ public class EmailNotificationChannelHandlerTest {
 
     handler.handle(true, message, contactDetails);
 
-    verify(mailSender).send(mimeMessageCaptor.capture());
-
-    MimeMessage value = mimeMessageCaptor.getValue();
-    assertThat(value.getFrom()[0].toString(), is(from));
-    assertThat(value.getAllRecipients()[0].toString(), is(contactDetails.getEmailAddress()));
-    assertThat(value.getSubject(), is(message.getSubject()));
-    assertThat(value.getContent().toString(), is(message.getBody()));
+    verifySentMessage(contactDetails.getEmailAddress());
   }
 
   @Test
-  public void shouldNotSentImportantMessageIfUsersEmailIsNotVerified() {
+  public void shouldSentImportantMessageIfUsersEmailIsNotVerified()
+      throws MessagingException, IOException {
     contactDetails.getEmailDetails().setEmailVerified(false);
 
     handler.handle(true, message, contactDetails);
 
-    verifyZeroInteractions(mailSender);
+    verifySentMessage(contactDetails.getEmailAddress());
+  }
+
+  private void verifySentMessage(String emailAddress) throws MessagingException, IOException {
+    verify(mailSender).send(mimeMessageCaptor.capture());
+
+    MimeMessage value = mimeMessageCaptor.getValue();
+    assertThat(value.getFrom()[0].toString(), is(from));
+    assertThat(value.getAllRecipients()[0].toString(), is(emailAddress));
+    assertThat(value.getSubject(), is(message.getSubject()));
+    assertThat(value.getContent().toString(), is(message.getBody()));
   }
 }

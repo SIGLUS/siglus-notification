@@ -15,7 +15,6 @@
 
 package org.openlmis.notification.service;
 
-import static org.apache.commons.lang3.BooleanUtils.isTrue;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_SEND_MAIL_FAILURE;
 
 import javax.mail.MessagingException;
@@ -92,9 +91,15 @@ public class EmailNotificationChannelHandler implements NotificationChannelHandl
   }
 
   private boolean shouldSendMessage(UserContactDetails contactDetails, Boolean important) {
-    return (null != contactDetails 
-        && contactDetails.isEmailAddressVerified()
-        && (contactDetails.isAllowNotify() || isTrue(important)));
+    if (null == contactDetails || !contactDetails.hasEmailAddress()) {
+      return false;
+    }
+
+    if (important) {
+      return true;
+    }
+
+    return contactDetails.isEmailAddressVerified() && contactDetails.isAllowNotify();
   }
 
 }
