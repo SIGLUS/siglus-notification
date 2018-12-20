@@ -15,9 +15,13 @@
 
 package org.openlmis.notification.web;
 
+import static org.hamcrest.Matchers.hasItems;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import java.time.ZonedDateTime;
 import java.util.UUID;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;
@@ -31,6 +35,7 @@ import org.springframework.util.MultiValueMap;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class SearchParamsTest {
+  private static final String WRONG_FORMAT = "wrong-format";
 
   @Rule
   public ExpectedException exception = ExpectedException.none();
@@ -92,6 +97,91 @@ public class SearchParamsTest {
     SearchParams searchParams = new SearchParams(map);
 
     assertFalse(searchParams.containsKey(sort));
+  }
+
+  @Test
+  public void shouldGetUuidsFromStrings() {
+    String key = "id";
+    UUID id1 = UUID.randomUUID();
+    UUID id2 = UUID.randomUUID();
+    UUID id3 = UUID.randomUUID();
+    map.add(key, id1.toString());
+    map.add(key, id2.toString());
+    map.add(key, id3.toString());
+
+    SearchParams searchParams = new SearchParams(map);
+
+    assertThat(searchParams.getUuids(key), hasItems(id1, id2, id3));
+  }
+
+  @Test
+  public void shouldThrowExceptionIfIdHasWrongFormatOnGetUuids() {
+    exception.expect(ValidationException.class);
+
+    String key = "id";
+
+    map.add(key, UUID.randomUUID().toString());
+    map.add(key, UUID.randomUUID().toString());
+    map.add(key, WRONG_FORMAT);
+
+    SearchParams searchParams = new SearchParams(map);
+    searchParams.getUuids(key);
+  }
+
+  @Test
+  public void shouldGetUuidFromString() {
+    String key = "id";
+    UUID id = UUID.randomUUID();
+    map.add(key, id.toString());
+
+    SearchParams searchParams = new SearchParams(map);
+
+    assertEquals(id, searchParams.getUuid(key));
+  }
+
+  @Test
+  public void shouldThrowExceptionIfIdHasWrongFormatOnGetUuid() {
+    exception.expect(ValidationException.class);
+
+    String key = "id";
+    map.add(key, WRONG_FORMAT);
+
+    SearchParams searchParams = new SearchParams(map);
+    searchParams.getUuid(key);
+  }
+
+
+  @Test
+  public void shouldGetZonedDateTimeFromString() {
+    String key = "dateTime";
+    ZonedDateTime dateTime = ZonedDateTime.now();
+    map.add(key, dateTime.toString());
+
+    SearchParams searchParams = new SearchParams(map);
+
+    assertEquals(dateTime, searchParams.getZonedDateTime(key));
+  }
+
+  @Test
+  public void shouldThrowExceptionIfDateHasWrongFormat() {
+    exception.expect(ValidationException.class);
+
+    String key = "date";
+    map.add(key, WRONG_FORMAT);
+
+    SearchParams searchParams = new SearchParams(map);
+    searchParams.getZonedDateTime(key);
+  }
+
+  @Test
+  public void shouldThrowExceptionIfZonedDateTimeHasWrongFormat() {
+    exception.expect(ValidationException.class);
+
+    String key = "dateTime";
+    map.add(key, WRONG_FORMAT);
+
+    SearchParams searchParams = new SearchParams(map);
+    searchParams.getZonedDateTime(key);
   }
 
   @Test

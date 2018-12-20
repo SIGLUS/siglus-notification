@@ -15,6 +15,7 @@
 
 package org.openlmis.notification.repository.custom.impl;
 
+import java.time.ZonedDateTime;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -70,6 +71,13 @@ abstract class BaseCustomRepository<T> {
         .collect(Collectors.toList());
   }
 
+  Predicate addEqualFilter(Predicate predicate, CriteriaBuilder builder, Root<T> root,
+      String field, Object filterValue) {
+    return null == filterValue
+        ? predicate
+        : builder.and(predicate, builder.equal(getField(root, field), filterValue));
+  }
+
   Predicate addLikeFilter(Predicate predicate, CriteriaBuilder builder, Root<T> root, String field,
       String filterValue) {
     return filterValue != null
@@ -83,6 +91,23 @@ abstract class BaseCustomRepository<T> {
     return null == values || values.isEmpty()
         ? predicate
         : builder.and(predicate, getField(root, field).in(values));
+  }
+
+  Predicate addDateRangeFilter(Predicate predicate, CriteriaBuilder builder,
+      Root<T> root, String field, ZonedDateTime startDate, ZonedDateTime endDate) {
+    if (null != startDate && null != endDate) {
+      return builder.and(predicate, builder.between(getField(root, field), startDate, endDate));
+    }
+
+    if (null != startDate) {
+      return builder.and(predicate, builder.greaterThanOrEqualTo(getField(root, field), startDate));
+    }
+
+    if (null != endDate) {
+      return builder.and(predicate, builder.lessThanOrEqualTo(getField(root, field), endDate));
+    }
+
+    return predicate;
   }
 
   private <Y> Expression<Y> getField(Root<T> root, String field) {

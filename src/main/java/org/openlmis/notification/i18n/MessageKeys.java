@@ -28,12 +28,17 @@ public abstract class MessageKeys {
   private static final String EMAIL = "email";
   private static final String MESSAGES = "messages";
   private static final String NOTIFICATION_CHANNEL = "notificationChannel";
+  private static final String NOTIFICATION = "notification";
+  private static final String SEARCH = "search";
 
   private static final String AUTHENTICATION = "authentication";
   private static final String USER = "user";
   private static final String NOT_FOUND = "notFound";
   private static final String UNSUPPORTED = "unsupported";
   private static final String DUPLICATED = "duplicated";
+  private static final String INVALID_PARAMS = "invalidParams";
+  private static final String INVALID_DATE_FORMAT = "invalidDateFormat";
+  private static final String INVALID_UUID_FORMAT = "invalidUuidFormat";
 
   private static final String SERVICE_PREFIX = "notification";
   private static final String ERROR_PREFIX = SERVICE_PREFIX + ".error";
@@ -48,7 +53,7 @@ public abstract class MessageKeys {
   public static final String ERROR_USER_NOT_ACTIVE_OR_NOT_FOUND =
       ERROR_PREFIX + DELIMITER + USER + DELIMITER + "notActiveOrNotFound";
   public static final String ERROR_USER_CONTACT_DETAILS_SEARCH_INVALID_PARAMS =
-      join(ERROR_PREFIX, USER_CONTACT_DETAILS, "search", "invalidParams");
+      join(ERROR_PREFIX, USER_CONTACT_DETAILS, SEARCH, INVALID_PARAMS);
 
   public static final String ERROR_NOTIFICATION_REQUEST_NULL = join(NOTIFICATION_REQUEST, "null");
   public static final String ERROR_NOTIFICATION_REQUEST_FIELD_REQUIRED =
@@ -108,6 +113,15 @@ public abstract class MessageKeys {
 
   public static final String EMAIL_VERIFICATION_SUCCESS =
       join(SERVICE_PREFIX, VERIFICATIONS, EMAIL, "success");
+
+  public static final String ERROR_NOTIFICATION_SEARCH_INVALID_PARAMS =
+      join(ERROR_PREFIX, NOTIFICATION, SEARCH, INVALID_PARAMS);
+
+  public static final String ERROR_INVALID_DATE_FORMAT =
+      join(ERROR_PREFIX, INVALID_DATE_FORMAT);
+
+  public static final String ERROR_INVALID_UUID_FORMAT =
+      join(ERROR_PREFIX, INVALID_UUID_FORMAT);
 
   private MessageKeys() {
     throw new UnsupportedOperationException();

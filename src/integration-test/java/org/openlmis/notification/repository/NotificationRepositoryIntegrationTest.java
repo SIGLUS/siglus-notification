@@ -15,15 +15,27 @@
 
 package org.openlmis.notification.repository;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
+import java.time.ZonedDateTime;
+import java.util.Arrays;
 import java.util.UUID;
+import java.util.concurrent.TimeUnit;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
 import org.openlmis.notification.domain.Notification;
+import org.openlmis.notification.repository.custom.NotificationRepositoryCustom;
 import org.openlmis.notification.service.NotificationChannel;
 import org.openlmis.notification.util.NotificationDataBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.CrudRepository;
 
 public class NotificationRepositoryIntegrationTest 
@@ -35,6 +47,13 @@ public class NotificationRepositoryIntegrationTest
   @Autowired
   private NotificationRepository repository;
 
+  private Pageable pageable;
+  private UUID userId1 = UUID.randomUUID();
+  private UUID userId2 = UUID.randomUUID();
+  private UUID userId3 = UUID.randomUUID();
+
+  private Notification[] notifications;
+
   @Override
   CrudRepository<Notification, UUID> getRepository() {
     return repository;
@@ -42,7 +61,37 @@ public class NotificationRepositoryIntegrationTest
 
   @Override
   Notification generateInstance() {
-    return new NotificationDataBuilder().withEmptyMessage(NotificationChannel.EMAIL).build();
+    return generateInstance(UUID.randomUUID());
+  }
+
+  private Notification generateInstance(UUID userId) {
+    return new NotificationDataBuilder()
+        .withUserId(userId)
+        .withEmptyMessage(NotificationChannel.EMAIL)
+        .build();
+  }
+
+  @Before
+  public void setUp() throws InterruptedException {
+    notifications = new Notification[25];
+    pageable = new PageRequest(0, notifications.length);
+
+    for (int i = 0; i < notifications.length; ++i) {
+      // we want to create ten (0..9) notifications for the first user,
+      // seven (10..16) notifications for the second user, and the rest
+      // (17..25) is for the third user
+      UUID userId = i < 10 ? userId1 : (i < 17 ? userId2 : userId3);
+
+      notifications[i] = repository.save(generateInstance(userId));
+
+      // to make sure that the createdDate field in each
+      // notification will have a different value
+      TimeUnit.MILLISECONDS.sleep(100);
+    }
+
+    // to make sure that array contains objects
+    // and to avoid unexpected NullPointerException
+    assertThat(notifications).doesNotContainNull();
   }
 
   @Test
@@ -55,5 +104,84 @@ public class NotificationRepositoryIntegrationTest
         .withMessage(NotificationChannel.EMAIL, "Body", "Subject")
         .build();
     repository.saveAndFlush(notification);
+  }
+
+  @Test
+  public void shouldFindAllNotificationsIfNoParamsWereSet() {
+    NotificationRepositoryCustom.SearchParams searchParams = new TestSearchParams(null, null, null);
+
+    Page<Notification> search = repository.search(searchParams, pageable);
+    assertThat(search.getContent()).contains(notifications);
+  }
+
+  @Test
+  public void shouldFindNotificationsByUserId() {
+    NotificationRepositoryCustom.SearchParams searchParams =
+        new TestSearchParams(userId1, null, null);
+
+    Page<Notification> search = repository.search(searchParams, pageable);
+    assertThat(search.getContent()).contains(Arrays.copyOfRange(notifications, 0, 10));
+  }
+
+  @Test
+  public void shouldFindNotificationsAfterDate() {
+    int startIndex = 14;
+    NotificationRepositoryCustom.SearchParams searchParams =
+        new TestSearchParams(null, notifications[startIndex].getCreatedDate(), null);
+
+    Page<Notification> search = repository.search(searchParams, pageable);
+    assertThat(search.getContent())
+        .hasSize(notifications.length - startIndex)
+        .contains(Arrays.copyOfRange(notifications, startIndex, notifications.length));
+  }
+
+  @Test
+  public void shouldFindNotificationsBeforeDate() {
+    int endIndex = 7;
+    NotificationRepositoryCustom.SearchParams searchParams =
+        new TestSearchParams(null, null, notifications[endIndex].getCreatedDate());
+
+    Page<Notification> search = repository.search(searchParams, pageable);
+    assertThat(search.getContent())
+        .hasSize(endIndex + 1)
+        .contains(Arrays.copyOfRange(notifications, 0, endIndex + 1));
+  }
+
+  @Test
+  public void shouldFindNotificationsInDateRange() {
+    int startIndex = 13;
+    int endIndex = 20;
+    NotificationRepositoryCustom.SearchParams searchParams =
+        new TestSearchParams(null, notifications[startIndex].getCreatedDate(),
+            notifications[endIndex].getCreatedDate());
+
+    Page<Notification> search = repository.search(searchParams, pageable);
+    assertThat(search.getContent())
+        .hasSize(endIndex - startIndex + 1)
+        .contains(Arrays.copyOfRange(notifications, startIndex, endIndex + 1));
+  }
+
+  @Test
+  public void shouldFindNotificationsThatMatchAllSearchParams() {
+    int startIndex = 7;
+    int endIndex = 20;
+    NotificationRepositoryCustom.SearchParams searchParams =
+        new TestSearchParams(userId2, notifications[startIndex].getCreatedDate(),
+            notifications[endIndex].getCreatedDate());
+
+    Page<Notification> search = repository.search(searchParams, pageable);
+    assertThat(search.getContent())
+        .hasSize(7)
+        .contains(Arrays.copyOfRange(notifications, 10, 17));
+  }
+
+  @Getter
+  @AllArgsConstructor
+  private static final class TestSearchParams
+      implements NotificationRepositoryCustom.SearchParams {
+
+    private final UUID userId;
+    private final ZonedDateTime sendingDateFrom;
+    private final ZonedDateTime sendingDateTo;
   }
 }

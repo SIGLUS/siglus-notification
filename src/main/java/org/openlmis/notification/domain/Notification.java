@@ -47,6 +47,7 @@ public class Notification extends BaseEntity {
   private Boolean important;
   
   @Column(columnDefinition = "timestamp with time zone", nullable = false)
+  @Getter
   private ZonedDateTime createdDate;
 
   /**

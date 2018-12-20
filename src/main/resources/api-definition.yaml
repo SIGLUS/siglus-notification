@@ -75,6 +75,28 @@ traits:
       get:
           is: [ secured, paginated, sorted ]
           description: Get notifications.
+          queryParameters:
+              userId:
+                  description: >
+                    This field represents a user id. Use it if you want to find notifications
+                    related to the given user.
+                  type: string
+                  required: false
+                  repeat: false
+              sendingDateFrom:
+                  description: >
+                    Reduce the number of notifications in a response to those that were sent after
+                    the given sending date.
+                  type: string
+                  required: false
+                  repeat: false
+              sendingDateTo:
+                  description: >
+                      Reduce the number of notifications in a response to those that were sent
+                      before the given sending date.
+                  type: string
+                  required: false
+                  repeat: false
           responses:
               200:
                   body:

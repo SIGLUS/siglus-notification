@@ -13,14 +13,26 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org.
  */
 
-package org.openlmis.notification.repository;
+package org.openlmis.notification.repository.custom;
 
+import java.time.ZonedDateTime;
 import java.util.UUID;
 import org.openlmis.notification.domain.Notification;
-import org.openlmis.notification.repository.custom.NotificationRepositoryCustom;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
-public interface NotificationRepository
-    extends JpaRepository<Notification, UUID>, NotificationRepositoryCustom {
+public interface NotificationRepositoryCustom {
+
+  Page<Notification> search(SearchParams searchParams, Pageable pageable);
+
+  interface SearchParams {
+
+    UUID getUserId();
+
+    ZonedDateTime getSendingDateFrom();
+
+    ZonedDateTime getSendingDateTo();
+
+  }
 
 }

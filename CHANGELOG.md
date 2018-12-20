@@ -1,3 +1,9 @@
+4.1.0 / WIP
+==================
+
+New functionality added in a backwards-compatible manner:
+* [OLMIS-5859](https://openlmis.atlassian.net/browse/OLMIS-5859): Added ability to search for notifications by `userId` and date range parameters.
+
 4.0.1 / 2018-12-12
 ==================
 

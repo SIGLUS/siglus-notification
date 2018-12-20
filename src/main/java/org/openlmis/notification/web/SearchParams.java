@@ -15,13 +15,16 @@
 
 package org.openlmis.notification.web;
 
+import static java.util.stream.Collectors.toSet;
+import static org.openlmis.notification.i18n.MessageKeys.ERROR_INVALID_DATE_FORMAT;
+import static org.openlmis.notification.i18n.MessageKeys.ERROR_INVALID_UUID_FORMAT;
+
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeParseException;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
-import java.util.stream.Collectors;
 import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
@@ -73,17 +76,54 @@ public final class SearchParams {
 
   /**
    * Parses String value into {@link UUID} based on given key.
+   * If format is wrong {@link ValidationException} will be thrown.
    *
    * @param key key for value be parsed into UUID
    * @return parsed list of UUIDs
    */
   public Set<UUID> getUuids(String key) {
-    return Optional
-        .ofNullable(params.get(key))
-        .orElse(Collections.emptyList())
-        .stream()
-        .map(UUID::fromString)
-        .collect(Collectors.toSet());
+    Collection<String> values = get(key);
+
+    return values.stream()
+        .map(value -> parse(value, key))
+        .collect(toSet());
+  }
+
+  /**
+   * Parses String value into {@link UUID} based on given key.
+   * If format is wrong {@link ValidationException} will be thrown.
+   *
+   * @param key key for value be parsed into UUID
+   * @return parsed UUID
+   */
+  public UUID getUuid(String key) {
+    String value = getFirst(key);
+    return parse(value, key);
+  }
+
+  private UUID parse(String value, String key) {
+    try {
+      return UUID.fromString(value);
+    } catch (IllegalArgumentException cause) {
+      throw new ValidationException(cause, ERROR_INVALID_UUID_FORMAT, value, key);
+    }
+  }
+
+  /**
+   * Parses String value into {@link ZonedDateTime}.
+   * If format is wrong {@link ValidationException} will be thrown.
+   *
+   * @param key key for value be parsed into ZonedDateTime
+   * @return parsed zoned date time
+   */
+  public ZonedDateTime getZonedDateTime(String key) {
+    String value = getFirst(key);
+
+    try {
+      return ZonedDateTime.parse(value);
+    } catch (DateTimeParseException cause) {
+      throw new ValidationException(cause, ERROR_INVALID_DATE_FORMAT, value, key);
+    }
   }
 
 }

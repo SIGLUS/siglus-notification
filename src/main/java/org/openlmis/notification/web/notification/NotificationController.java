@@ -17,6 +17,7 @@ package org.openlmis.notification.web.notification;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import org.apache.commons.collections.MapUtils;
 import org.openlmis.notification.domain.Notification;
 import org.openlmis.notification.repository.NotificationRepository;
 import org.openlmis.notification.service.NotificationHandler;
@@ -30,6 +31,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.util.MultiValueMap;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.validation.annotation.Validated;
@@ -39,6 +41,7 @@ import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -104,22 +107,32 @@ public class NotificationController {
    */
   @GetMapping("/notifications")
   @ResponseStatus(HttpStatus.OK)
-  public Page<NotificationDto> getNotificationCollection(Pageable pageable) {
-    XLOGGER.entry(pageable);
+  public Page<NotificationDto> getNotificationCollection(
+      @RequestParam MultiValueMap<String, String> queryParams,
+      Pageable pageable) {
+    XLOGGER.entry(queryParams, pageable);
     Profiler profiler = new Profiler("GET_NOTIFICATIONS");
     profiler.setLogger(XLOGGER);
 
     profiler.start("FIND_ALL");
-    Page<Notification> notificationsPage = notificationRepository.findAll(pageable);
+    Page<Notification> page;
+    if (MapUtils.isEmpty(queryParams)) {
+      page = notificationRepository.findAll(pageable);
+    } else {
+      NotificationSearchParams searchParams = new NotificationSearchParams(queryParams);
+      page = notificationRepository.search(searchParams, pageable);
+    }
 
     profiler.start("CREATE_DTOS");
-    List<NotificationDto> notificationDtos = notificationsPage.getContent().stream()
+    List<NotificationDto> notificationDtos = page
+        .getContent()
+        .stream()
         .map(this::exportToDto)
         .collect(Collectors.toList());
 
     profiler.start("CREATE_PAGE");
-    Page<NotificationDto> notificationDtosPage = Pagination.getPage(notificationDtos, pageable,
-        notificationsPage.getTotalElements());
+    Page<NotificationDto> notificationDtosPage = Pagination
+        .getPage(notificationDtos, pageable, page.getTotalElements());
 
     profiler.stop().log();
     XLOGGER.exit(notificationDtosPage);
