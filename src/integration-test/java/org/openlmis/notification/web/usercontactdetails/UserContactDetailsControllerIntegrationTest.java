@@ -15,6 +15,7 @@
 
 package org.openlmis.notification.web.usercontactdetails;
 
+import static java.util.Collections.emptySet;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
@@ -205,6 +206,26 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
     verify(repository).findOne(userContactDetails.getReferenceDataUserId());
     verify(permissionService)
         .canManageUserContactDetails(userContactDetails.getReferenceDataUserId());
+  }
+
+  @Test
+  public void shouldGetUserContactDetailsByEmailAddressWhenNoIdProvided() {
+    willDoNothing()
+        .given(permissionService).canManageUserContactDetails(null);
+
+    given(repository
+        .search(anyString(), eq(emptySet()), any(Pageable.class)))
+        .willReturn(new PageImpl<>(ImmutableList.of(userContactDetails)));
+
+    ImmutableMap<String, String> queryParams = ImmutableMap.of(
+        "email", userContactDetails.getEmailAddress());
+
+    getAll(queryParams)
+        .then()
+        .statusCode(200)
+        .body("numberOfElements", is(1));
+
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test

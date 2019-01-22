@@ -29,6 +29,7 @@ import org.openlmis.notification.i18n.MessageKeys;
 import org.openlmis.notification.testutils.ToStringTestUtils;
 import org.openlmis.notification.testutils.UserContactDetailsSearchParamsDataBuilder;
 import org.openlmis.notification.web.ValidationException;
+import org.springframework.util.LinkedMultiValueMap;
 
 public class UserContactDetailsSearchParamsTest {
   @Rule
@@ -92,5 +93,13 @@ public class UserContactDetailsSearchParamsTest {
         .build();
 
     Assert.assertThat(params.getIds(), hasItems(id1, id2, id3));
+  }
+
+  @Test
+  public void shouldReturnEmptySetOfIdsIfNoneHaveBeenProvided() {
+    LinkedMultiValueMap<String, String> queryMap = new LinkedMultiValueMap<>();
+    UserContactDetailsSearchParams params = new UserContactDetailsSearchParams(queryMap);
+
+    assertThat(params.getIds()).isNotNull().isEmpty();
   }
 }

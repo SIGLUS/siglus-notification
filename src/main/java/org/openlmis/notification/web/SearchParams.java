@@ -22,6 +22,7 @@ import static org.openlmis.notification.i18n.MessageKeys.ERROR_INVALID_UUID_FORM
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeParseException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
@@ -84,9 +85,11 @@ public final class SearchParams {
   public Set<UUID> getUuids(String key) {
     Collection<String> values = get(key);
 
-    return values.stream()
+    return containsKey(key)
+        ? values.stream()
         .map(value -> parse(value, key))
-        .collect(toSet());
+        .collect(toSet())
+        : Collections.emptySet();
   }
 
   /**
