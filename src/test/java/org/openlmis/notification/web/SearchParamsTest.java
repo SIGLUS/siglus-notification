@@ -36,6 +36,7 @@ import org.springframework.util.MultiValueMap;
 @SuppressWarnings("PMD.TooManyMethods")
 public class SearchParamsTest {
   private static final String WRONG_FORMAT = "wrong-format";
+  private static final String WRONG_FORMAT_TOO_FEW_CHARACTER = "a337ec45-31a0-4f2b-9b2e-a1";
 
   @Rule
   public ExpectedException exception = ExpectedException.none();
@@ -122,6 +123,7 @@ public class SearchParamsTest {
 
     map.add(key, UUID.randomUUID().toString());
     map.add(key, UUID.randomUUID().toString());
+    map.add(key, WRONG_FORMAT_TOO_FEW_CHARACTER);
     map.add(key, WRONG_FORMAT);
 
     SearchParams searchParams = new SearchParams(map);

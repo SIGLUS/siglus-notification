@@ -106,7 +106,15 @@ public final class SearchParams {
 
   private UUID parse(String value, String key) {
     try {
-      return UUID.fromString(value);
+
+      UUID uuidValue = UUID.fromString(value);
+
+      if (!(uuidValue.toString().equals(value.toLowerCase()))) {
+        throw new IllegalArgumentException();
+      }
+
+      return uuidValue;
+
     } catch (IllegalArgumentException cause) {
       throw new ValidationException(cause, ERROR_INVALID_UUID_FORMAT, value, key);
     }
