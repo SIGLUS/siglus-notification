@@ -109,7 +109,7 @@ public final class SearchParams {
 
       UUID uuidValue = UUID.fromString(value);
 
-      if (!(uuidValue.toString().equals(value.toLowerCase()))) {
+      if (!(uuidValue.toString().equalsIgnoreCase(value))) {
         throw new IllegalArgumentException();
       }
 
