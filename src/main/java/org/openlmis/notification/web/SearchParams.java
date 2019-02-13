@@ -109,8 +109,13 @@ public final class SearchParams {
 
       UUID uuidValue = UUID.fromString(value);
 
+      // On Java-8, UUID.fromString method returns false positive for some wrong UUID string
+      // format (UUID String with too few characters). This is a bug and to overcome this, we
+      // compare the original String value we want to convert with the String value of the
+      // converted UUID
       if (!(uuidValue.toString().equalsIgnoreCase(value))) {
-        throw new IllegalArgumentException();
+        throw new ValidationException(new IllegalArgumentException(),
+                ERROR_INVALID_UUID_FORMAT, value, key);
       }
 
       return uuidValue;
