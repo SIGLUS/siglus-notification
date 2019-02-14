@@ -15,13 +15,21 @@
 
 package org.openlmis.notification.service;
 
-import org.openlmis.notification.domain.NotificationMessage;
-import org.openlmis.notification.domain.UserContactDetails;
+import static org.openlmis.notification.service.AllowNotifyFilter.ALLOW_NOTIFY_CHANNEL;
 
-public interface NotificationChannelHandler {
+import org.springframework.integration.annotation.MessageEndpoint;
+import org.springframework.integration.annotation.Router;
+import org.springframework.messaging.Message;
 
-  NotificationChannel getNotificationChannel();
+@MessageEndpoint
+public class DigestFilter {
 
-  void handle(Boolean important, NotificationMessage message, UserContactDetails contactDetails);
+  static final String SEND_NOW_PREPARE_CHANNEL = "notificationToSend.sendNow.prepare";
+
+  @Router(inputChannel = ALLOW_NOTIFY_CHANNEL)
+  public String route(Message<?> message) {
+    System.out.println("DIGEST_FILTER");
+    return SEND_NOW_PREPARE_CHANNEL;
+  }
 
 }

@@ -34,7 +34,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 import org.openlmis.notification.domain.EmailVerificationToken;
-import org.openlmis.notification.domain.NotificationMessage;
 import org.openlmis.notification.domain.UserContactDetails;
 import org.openlmis.notification.i18n.ExposedMessageSource;
 import org.openlmis.notification.repository.EmailVerificationTokenRepository;
@@ -51,7 +50,7 @@ public class EmailVerificationNotifierTest {
   private UserReferenceDataService userReferenceDataService;
 
   @Mock
-  private EmailNotificationChannelHandler emailNotificationChannelHandler;
+  private EmailSender emailSender;
 
   @Mock
   private ExposedMessageSource messageSource;
@@ -108,11 +107,8 @@ public class EmailVerificationNotifierTest {
 
     // then
     verify(emailVerificationTokenRepository).save(tokenCaptor.capture());
-    verify(emailNotificationChannelHandler).handle(
-        email,
-        new NotificationMessage(NotificationChannel.EMAIL, EMAIL_VERIFICATION_EMAIL_BODY,
-            EMAIL_VERIFICATION_EMAIL_SUBJECT)
-    );
+    verify(emailSender).sendMail(email,
+        EMAIL_VERIFICATION_EMAIL_BODY, EMAIL_VERIFICATION_EMAIL_SUBJECT);
 
     EmailVerificationToken token = tokenCaptor.getValue();
     assertThat(token.getUserContactDetails()).isEqualTo(userContactDetails);

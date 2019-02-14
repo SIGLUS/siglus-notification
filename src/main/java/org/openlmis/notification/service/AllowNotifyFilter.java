@@ -16,60 +16,36 @@
 package org.openlmis.notification.service;
 
 import static org.apache.commons.lang3.BooleanUtils.isTrue;
-import static org.openlmis.notification.service.NotificationChannelRouter.EMAIL_SEND_NOW_CHANNEL;
 import static org.openlmis.notification.service.NotificationToSendRetriever.IMPORTANT_HEADER;
 import static org.openlmis.notification.service.NotificationToSendRetriever.RECIPIENT_HEADER;
+import static org.openlmis.notification.service.NotificationToSendRetriever.START_CHANNEL;
 
 import java.util.UUID;
-import org.openlmis.notification.domain.NotificationMessage;
 import org.openlmis.notification.domain.UserContactDetails;
-import org.openlmis.notification.repository.NotificationMessageRepository;
 import org.openlmis.notification.repository.UserContactDetailsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.integration.annotation.Filter;
 import org.springframework.integration.annotation.MessageEndpoint;
-import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.messaging.handler.annotation.Header;
 
 @MessageEndpoint
-public class EmailNotificationChannelHandler {
+public class AllowNotifyFilter {
+
+  static final String ALLOW_NOTIFY_CHANNEL = "notificationToSend.allowNotify";
 
   @Autowired
   private UserContactDetailsRepository userContactDetailsRepository;
 
-  @Autowired
-  private NotificationMessageRepository notificationMessageRepository;
-
-  @Autowired
-  private EmailSender emailSender;
-
   /**
-   * Tries to send a notification to a user by using email channel.
+   * Checks if user should get a notification.
    */
-  @ServiceActivator(inputChannel = EMAIL_SEND_NOW_CHANNEL)
-  public void handle(NotificationMessage payload,
-      @Header(RECIPIENT_HEADER) UUID recipient,
+  @Filter(inputChannel = START_CHANNEL, outputChannel = ALLOW_NOTIFY_CHANNEL)
+  public boolean test(@Header(RECIPIENT_HEADER) UUID recipient,
       @Header(IMPORTANT_HEADER) Boolean important) {
-    System.out.println("HANDLER: " + recipient + " " + important);
-    UserContactDetails contactDetails = userContactDetailsRepository.findOne(recipient);
+    System.out.println("ALLOW_NOTIFY_FILTER: " + recipient + " " + important);
+    UserContactDetails userContactDetails = userContactDetailsRepository.findOne(recipient);
 
-    if (shouldSendMessage(contactDetails, important)) {
-      emailSender.sendMail(contactDetails.getEmailAddress(),
-          payload.getSubject(), payload.getBody());
-
-      notificationMessageRepository.setSendFlag(payload.getId());
-    }
-  }
-
-  private boolean shouldSendMessage(UserContactDetails contactDetails, Boolean important) {
-    if (!contactDetails.hasEmailAddress()) {
-      return false;
-    }
-
-    if (isTrue(important)) {
-      return true;
-    }
-
-    return contactDetails.isEmailAddressVerified() && contactDetails.isAllowNotify();
+    return isTrue(important) || userContactDetails.isAllowNotify();
   }
 
 }

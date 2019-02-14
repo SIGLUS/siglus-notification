@@ -16,17 +16,16 @@
 package org.openlmis.notification.repository;
 
 import java.util.UUID;
-import org.openlmis.notification.domain.Notification;
-import org.openlmis.notification.repository.custom.NotificationRepositoryCustom;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.repository.JpaRepository;
+import org.openlmis.notification.domain.NotificationMessage;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.Repository;
+import org.springframework.data.repository.query.Param;
 
-public interface NotificationRepository
-    extends JpaRepository<Notification, UUID>, NotificationRepositoryCustom {
+public interface NotificationMessageRepository extends Repository<NotificationMessage, UUID> {
 
-  @Query("SELECT n FROM Notification AS n INNER JOIN n.messages AS m WHERE m.send IS FALSE")
-  Page<Notification> findNotificationsToSend(Pageable pageable);
+  @Query("UPDATE NotificationMessage SET send = true WHERE id = :id")
+  @Modifying(clearAutomatically = true)
+  void setSendFlag(@Param("id") UUID id);
 
 }

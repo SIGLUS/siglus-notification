@@ -21,8 +21,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_NOTIFICATION_REQUEST_FIELD_REQUIRED;
 import static org.openlmis.notification.i18n.MessageKeys.PERMISSION_MISSING_GENERIC;
 import static org.springframework.http.HttpHeaders.CONTENT_TYPE;
@@ -38,7 +36,6 @@ import org.openlmis.notification.domain.UserContactDetails;
 import org.openlmis.notification.repository.NotificationRepository;
 import org.openlmis.notification.repository.UserContactDetailsRepository;
 import org.openlmis.notification.service.NotificationChannel;
-import org.openlmis.notification.service.NotificationHandler;
 import org.openlmis.notification.service.PageDto;
 import org.openlmis.notification.service.referencedata.UserDto;
 import org.openlmis.notification.service.referencedata.UserReferenceDataService;
@@ -57,9 +54,6 @@ public class NotificationControllerIntegrationTest extends BaseWebIntegrationTes
   private static final UUID USER_ID = UUID.randomUUID();
   private static final String SUBJECT = "subject";
   private static final String CONTENT = "content";
-
-  @MockBean
-  private NotificationHandler notificationHandler;
 
   @MockBean
   private UserContactDetailsRepository userContactDetailsRepository;
@@ -99,7 +93,6 @@ public class NotificationControllerIntegrationTest extends BaseWebIntegrationTes
         .statusCode(200);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
-    verify(notificationHandler).handle(notification);
   }
 
   @Test
@@ -115,8 +108,6 @@ public class NotificationControllerIntegrationTest extends BaseWebIntegrationTes
         .body(MESSAGE_KEY, is(ERROR_NOTIFICATION_REQUEST_FIELD_REQUIRED));
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.validates());
-
-    verifyZeroInteractions(notificationHandler);
   }
 
   @Test
@@ -127,7 +118,6 @@ public class NotificationControllerIntegrationTest extends BaseWebIntegrationTes
         .body(MESSAGE_KEY, is(PERMISSION_MISSING_GENERIC));
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.validates());
-    verifyZeroInteractions(notificationHandler);
   }
 
   @Test
@@ -137,7 +127,6 @@ public class NotificationControllerIntegrationTest extends BaseWebIntegrationTes
         .statusCode(401);
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.validates());
-    verifyZeroInteractions(notificationHandler);
   }
   
   @Test

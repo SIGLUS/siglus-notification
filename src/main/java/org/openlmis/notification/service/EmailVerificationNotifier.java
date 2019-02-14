@@ -21,7 +21,6 @@ import static org.openlmis.notification.i18n.MessageKeys.EMAIL_VERIFICATION_EMAI
 import java.time.ZonedDateTime;
 import java.util.Locale;
 import org.openlmis.notification.domain.EmailVerificationToken;
-import org.openlmis.notification.domain.NotificationMessage;
 import org.openlmis.notification.domain.UserContactDetails;
 import org.openlmis.notification.i18n.ExposedMessageSource;
 import org.openlmis.notification.repository.EmailVerificationTokenRepository;
@@ -43,7 +42,7 @@ public class EmailVerificationNotifier {
   private ExposedMessageSource messageSource;
 
   @Autowired
-  private EmailNotificationChannelHandler emailNotificationChannelHandler;
+  private EmailSender emailSender;
 
   @Autowired
   private UserReferenceDataService userReferenceDataService;
@@ -105,8 +104,7 @@ public class EmailVerificationNotifier {
     String body = messageSource
         .getMessage(EMAIL_VERIFICATION_EMAIL_BODY, bodyMsgArgs, locale);
 
-    emailNotificationChannelHandler.handle(email, new NotificationMessage(
-        NotificationChannel.EMAIL, body, subject));
+    emailSender.sendMail(email, body, subject);
   }
 
   private String getVerificationPath(UserContactDetails contactDetails,

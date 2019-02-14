@@ -45,6 +45,7 @@ dependencies {
     compile "org.springframework.boot:spring-boot-starter-mail"
     compile "org.springframework.boot:spring-boot-starter-security"
     compile "org.springframework.boot:spring-boot-starter-web"
+    compile "org.springframework.boot:spring-boot-starter-integration"
     compile "org.springframework.security.oauth:spring-security-oauth2"
     compile 'com.google.guava:guava:23.3-jre'
     compile 'commons-io:commons-io:2.5'

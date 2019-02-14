@@ -15,14 +15,21 @@
 
 package org.openlmis.notification.web.notification;
 
+import static org.openlmis.notification.i18n.MessageKeys.ERROR_USER_CONTACT_DETAILS_NOT_FOUND;
+import static org.openlmis.notification.i18n.MessageKeys.ERROR_USER_NOT_ACTIVE_OR_NOT_FOUND;
+
 import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.commons.collections.MapUtils;
 import org.openlmis.notification.domain.Notification;
+import org.openlmis.notification.domain.UserContactDetails;
 import org.openlmis.notification.repository.NotificationRepository;
-import org.openlmis.notification.service.NotificationHandler;
+import org.openlmis.notification.repository.UserContactDetailsRepository;
 import org.openlmis.notification.service.PermissionService;
+import org.openlmis.notification.service.referencedata.UserDto;
+import org.openlmis.notification.service.referencedata.UserReferenceDataService;
 import org.openlmis.notification.util.Pagination;
+import org.openlmis.notification.web.NotFoundException;
 import org.openlmis.notification.web.ValidationException;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
@@ -55,11 +62,14 @@ public class NotificationController {
   private NotificationDtoValidator notificationValidator;
 
   @Autowired
-  private PermissionService permissionService;
+  private UserContactDetailsRepository userContactDetailsRepository;
 
   @Autowired
-  private NotificationHandler notificationHandler;
-  
+  private UserReferenceDataService userReferenceDataService;
+
+  @Autowired
+  private PermissionService permissionService;
+
   @Autowired
   private NotificationRepository notificationRepository;
 
@@ -89,14 +99,25 @@ public class NotificationController {
       throw new ValidationException(fieldError.getDefaultMessage(), fieldError.getField());
     }
 
+    profiler.start("FIND_USER_CONTACT_DETAILS_BY_ID");
+    UserContactDetails contactDetails = userContactDetailsRepository
+        .findOne(notificationDto.getUserId());
+
+    if (null == contactDetails) {
+      throw new NotFoundException(ERROR_USER_CONTACT_DETAILS_NOT_FOUND);
+    }
+
+    profiler.start("FIND_USER_BY_ID");
+    UserDto user = userReferenceDataService.findOne(contactDetails.getReferenceDataUserId());
+    if (null == user || !user.isActive()) {
+      throw new ValidationException(ERROR_USER_NOT_ACTIVE_OR_NOT_FOUND);
+    }
+
     profiler.start("IMPORT_FROM_DTO");
     Notification notification = Notification.newInstance(notificationDto);
 
     profiler.start("SAVE_NOTIFICATION");
-    notification = notificationRepository.save(notification);
-
-    profiler.start("HANDLE_NOTIFICATION");
-    notificationHandler.handle(notification);
+    notificationRepository.save(notification);
 
     profiler.stop().log();
     XLOGGER.exit();

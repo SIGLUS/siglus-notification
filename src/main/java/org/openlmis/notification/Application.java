@@ -15,7 +15,11 @@
 
 package org.openlmis.notification;
 
+import com.google.common.collect.Lists;
+import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
+import org.aopalliance.aop.Advice;
 import org.flywaydb.core.api.callback.FlywayCallback;
 import org.openlmis.notification.domain.Identifiable;
 import org.openlmis.notification.i18n.ExposedMessageSourceImpl;
@@ -28,14 +32,22 @@ import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.autoconfigure.flyway.FlywayMigrationStrategy;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Profile;
+import org.springframework.integration.config.EnableIntegration;
+import org.springframework.integration.scheduling.PollerMetadata;
 import org.springframework.scheduling.annotation.EnableAsync;
+import org.springframework.scheduling.support.PeriodicTrigger;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.interceptor.MatchAlwaysTransactionAttributeSource;
+import org.springframework.transaction.interceptor.TransactionInterceptor;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 
 @SpringBootApplication(scanBasePackages = "org.openlmis.notification")
 @EntityScan(basePackageClasses = {Identifiable.class})
 @EnableAsync
+@EnableIntegration
 public class Application {
+
   private static final Logger LOGGER = LoggerFactory.getLogger(Application.class);
 
   @Value("${defaultLocale}")
@@ -94,4 +106,25 @@ public class Application {
   public FlywayCallback flywayCallback() {
     return new ExportSchemaFlywayCallback();
   }
+
+  /**
+   * Creates a metadata that will be used to create a default poller.
+   */
+  @Bean(name = PollerMetadata.DEFAULT_POLLER)
+  public PollerMetadata defaultPoller(PlatformTransactionManager transactionManager) {
+    List<Advice> adviceChain = Lists.newArrayList();
+    adviceChain.add(new TransactionInterceptor(transactionManager,
+        new MatchAlwaysTransactionAttributeSource()));
+
+    PeriodicTrigger trigger = new PeriodicTrigger(5, TimeUnit.SECONDS);
+    trigger.setFixedRate(false);
+    trigger.setInitialDelay(0);
+
+    PollerMetadata metadata = new PollerMetadata();
+    metadata.setAdviceChain(adviceChain);
+    metadata.setTrigger(trigger);
+
+    return metadata;
+  }
+
 }

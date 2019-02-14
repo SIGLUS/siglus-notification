@@ -55,6 +55,9 @@ public class NotificationMessage extends BaseEntity {
   @Column(columnDefinition = TEXT_COLUMN_DEFINITION)
   private String subject;
 
+  @Column(nullable = false)
+  private Boolean send;
+
   /**
    * Default constructor.
    *
@@ -64,6 +67,7 @@ public class NotificationMessage extends BaseEntity {
   public NotificationMessage(NotificationChannel channel, String body) {
     this.channel = channel;
     this.body = body;
+    this.send = false;
   }
 
   /**

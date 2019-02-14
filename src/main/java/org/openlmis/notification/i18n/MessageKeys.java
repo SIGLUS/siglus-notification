@@ -61,7 +61,6 @@ public abstract class MessageKeys {
   public static final String ERROR_NOTIFICATION_REQUEST_MESSAGES_EMPTY =
       join(NOTIFICATION_REQUEST, MESSAGES, "empty");
 
-
   public static final String ERROR_UNSUPPORTED_NOTIFICATION_CHANNEL =
       join(NOTIFICATION_REQUEST, NOTIFICATION_CHANNEL, UNSUPPORTED);
 
