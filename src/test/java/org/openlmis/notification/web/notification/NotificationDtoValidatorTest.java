@@ -40,7 +40,7 @@ public class NotificationDtoValidatorTest extends BaseValidatorTest {
   public void setUp() {
     Notification notification = new NotificationDataBuilder()
         .withMessage(NotificationChannel.EMAIL, "body", "subject")
-        .build();
+        .buildAsNew();
     notification.export(request);
 
     errors = new BeanPropertyBindingResult(request, "request");

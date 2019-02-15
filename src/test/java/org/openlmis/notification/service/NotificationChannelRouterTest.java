@@ -13,23 +13,24 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org.
  */
 
-package org.openlmis.notification.domain;
+package org.openlmis.notification.service;
 
-import nl.jqno.equalsverifier.EqualsVerifier;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.openlmis.notification.service.NotificationChannelRouter.EMAIL_SEND_NOW_CHANNEL;
+
 import org.junit.Test;
-import org.openlmis.notification.util.NotificationDataBuilder;
 
-public class NotificationMessageTest {
+public class NotificationChannelRouterTest {
+
+  private NotificationChannelRouter router = new NotificationChannelRouter();
 
   @Test
-  public void equalsContract() {
-    EqualsVerifier
-        .forClass(NotificationMessage.class)
-        .withPrefabValues(Notification.class,
-            new NotificationDataBuilder().buildAsNew(),
-            new NotificationDataBuilder().buildAsNew())
-        .withRedefinedSuperclass()
-        .withIgnoredFields("notification")
-        .verify();
+  public void shouldReturnEmailChannelForEmailNotificationChannel() {
+    assertThat(router.route(NotificationChannel.EMAIL)).isEqualTo(EMAIL_SEND_NOW_CHANNEL);
+  }
+
+  @Test
+  public void shouldReturnNullForUnknownNotificationChannel() {
+    assertThat(router.route(null)).isNull();
   }
 }

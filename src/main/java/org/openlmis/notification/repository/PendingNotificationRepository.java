@@ -24,7 +24,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface PendingNotificationRepository
     extends JpaRepository<PendingNotification, PendingNotificationId> {
 
-  @EntityGraph(attributePaths = { "notification", "channels" }, type = EntityGraphType.FETCH)
+  @EntityGraph(attributePaths = { "notification" }, type = EntityGraphType.FETCH)
   PendingNotification findFirstByOrderByCreatedDateAsc();
+
+  default boolean hasZeroRecords() {
+    return count() <= 0;
+  }
 
 }

@@ -52,7 +52,6 @@ public class EmailNotificationChannelHandler {
       @Header(RECIPIENT_HEADER) UUID recipient,
       @Header(NOTIFICATION_ID_HEADER) UUID notificationId,
       @Header(IMPORTANT_HEADER) Boolean important) {
-    System.out.println("HANDLER: " + recipient + " " + important);
     UserContactDetails contactDetails = userContactDetailsRepository.findOne(recipient);
 
     if (shouldSendMessage(contactDetails, important)) {
@@ -74,7 +73,7 @@ public class EmailNotificationChannelHandler {
       return true;
     }
 
-    return contactDetails.isEmailAddressVerified() && contactDetails.isAllowNotify();
+    return contactDetails.isEmailAddressVerified();
   }
 
 }

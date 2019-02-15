@@ -13,23 +13,30 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org.
  */
 
-package org.openlmis.notification.domain;
+package org.openlmis.notification.service;
 
-import nl.jqno.equalsverifier.EqualsVerifier;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import org.junit.Rule;
 import org.junit.Test;
-import org.openlmis.notification.util.NotificationDataBuilder;
+import org.mockito.Mock;
+import org.mockito.junit.MockitoJUnit;
+import org.mockito.junit.MockitoRule;
+import org.springframework.messaging.Message;
 
-public class NotificationMessageTest {
+public class DigestFilterTest {
+
+  @Rule
+  public MockitoRule mockitoRule = MockitoJUnit.rule();
+
+  private DigestFilter filter = new DigestFilter();
+
+  @Mock
+  private Message<?> message;
 
   @Test
-  public void equalsContract() {
-    EqualsVerifier
-        .forClass(NotificationMessage.class)
-        .withPrefabValues(Notification.class,
-            new NotificationDataBuilder().buildAsNew(),
-            new NotificationDataBuilder().buildAsNew())
-        .withRedefinedSuperclass()
-        .withIgnoredFields("notification")
-        .verify();
+  public void shouldAlwaysReturnSendNowChannel() {
+    assertThat(filter.route(message)).isEqualTo(DigestFilter.SEND_NOW_PREPARE_CHANNEL);
   }
+
 }

@@ -24,6 +24,7 @@ import org.openlmis.notification.service.NotificationChannel;
 
 public class NotificationDataBuilder {
 
+  private UUID id = UUID.randomUUID();
   private UUID userId;
   private List<NotificationMessage> messages;
   private Boolean important;
@@ -66,11 +67,23 @@ public class NotificationDataBuilder {
   }
 
   /**
-   * Build notification from settings.
+   * Build a new notification based on parameters from the builder without id field.
    * 
    * @return new notification
    */
-  public Notification build() {
+  public Notification buildAsNew() {
     return new Notification(userId, messages, important);
+  }
+
+  /**
+   * Build a new notification based on parameters from the builder with id field.
+   *
+   * @return new notification
+   */
+  public Notification build() {
+    Notification built = buildAsNew();
+    built.setId(id);
+
+    return built;
   }
 }
