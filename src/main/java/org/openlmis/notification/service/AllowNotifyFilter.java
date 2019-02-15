@@ -40,9 +40,8 @@ public class AllowNotifyFilter {
    * Checks if user should get a notification.
    */
   @Filter(inputChannel = START_CHANNEL, outputChannel = ALLOW_NOTIFY_CHANNEL)
-  public boolean test(@Header(RECIPIENT_HEADER) UUID recipient,
+  public boolean accept(@Header(RECIPIENT_HEADER) UUID recipient,
       @Header(IMPORTANT_HEADER) Boolean important) {
-    System.out.println("ALLOW_NOTIFY_FILTER: " + recipient + " " + important);
     UserContactDetails userContactDetails = userContactDetailsRepository.findOne(recipient);
 
     return isTrue(important) || userContactDetails.isAllowNotify();

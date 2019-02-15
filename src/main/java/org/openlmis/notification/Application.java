@@ -116,7 +116,7 @@ public class Application {
     adviceChain.add(new TransactionInterceptor(transactionManager,
         new MatchAlwaysTransactionAttributeSource()));
 
-    PeriodicTrigger trigger = new PeriodicTrigger(5, TimeUnit.SECONDS);
+    PeriodicTrigger trigger = new PeriodicTrigger(1, TimeUnit.SECONDS);
     trigger.setFixedRate(false);
     trigger.setInitialDelay(0);
 

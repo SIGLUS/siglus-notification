@@ -36,7 +36,7 @@ import org.openlmis.notification.service.NotificationChannel;
     columnNames = { "notificationId", "channel" }))
 @NoArgsConstructor
 @Getter
-@EqualsAndHashCode(callSuper = true)
+@EqualsAndHashCode(callSuper = true, exclude = "notification")
 public class NotificationMessage extends BaseEntity {
 
   @ManyToOne

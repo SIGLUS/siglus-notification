@@ -3,20 +3,15 @@
 -- Migrations should NOT BE EDITED. Add a new migration to apply changes.
 
 CREATE TABLE pending_notifications (
-  notificationId UUID PRIMARY KEY,
+  notificationId UUID NOT NULL,
+  channel VARCHAR(255) NOT NULL,
   createdDate timestamptz DEFAULT now(),
+  CONSTRAINT pKey_pending_notifications
+    PRIMARY KEY (notificationId, channel),
   CONSTRAINT fKey_pending_notifications_notifications
     FOREIGN KEY (notificationId)
     REFERENCES notifications(id)
 );
 
-CREATE TABLE pending_notification_channels (
-  channel VARCHAR(255) NOT NULL,
-  pendingNotificationId UUID NOT NULL,
-  CONSTRAINT fKey_pending_notification_channels_pending_notifications
-    FOREIGN KEY (pendingNotificationId)
-    REFERENCES pending_notifications(notificationId)
-);
-
-CREATE UNIQUE INDEX pending_notification_channels_unique_idx
-  ON pending_notification_channels (channel, pendingNotificationId);
+CREATE UNIQUE INDEX pending_notifications_unique_idx
+  ON pending_notifications (channel, notificationId);

@@ -31,7 +31,7 @@ public class NotificationToSendRetriever {
 
   static final String RECIPIENT_HEADER = "recipient";
   static final String IMPORTANT_HEADER = "important";
-  static final String CHANNELS_HEADER = "channels";
+  static final String CHANNEL_TO_USE_HEADER = "channelToUse";
 
   @Autowired
   private PendingNotificationRepository pendingNotificationRepository;
@@ -39,22 +39,22 @@ public class NotificationToSendRetriever {
   /**
    * Finds the first notification that should be sent.
    */
-  @InboundChannelAdapter(channel = START_CHANNEL)
+  @InboundChannelAdapter(
+      channel = START_CHANNEL,
+      autoStartup = "${notificationToSend.autoStartup:true}")
   public Message<Notification> retrieve() {
-    System.out.println("START");
-    PendingNotification pending = pendingNotificationRepository.findFirstByOrderByCreatedDateAsc();
-
-    if (null == pending) {
+    if (pendingNotificationRepository.hasZeroRecords()) {
       return null;
     }
 
+    PendingNotification pending = pendingNotificationRepository.findFirstByOrderByCreatedDateAsc();
     Notification notification = pending.getNotification();
 
     return MessageBuilder
         .withPayload(notification)
         .setHeader(RECIPIENT_HEADER, notification.getUserId())
         .setHeader(IMPORTANT_HEADER, notification.getImportant())
-        .setHeader(CHANNELS_HEADER, pending.getChannels())
+        .setHeader(CHANNEL_TO_USE_HEADER, pending.getChannel())
         .build();
   }
 

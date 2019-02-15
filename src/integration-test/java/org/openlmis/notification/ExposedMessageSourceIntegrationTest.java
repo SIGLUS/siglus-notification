@@ -38,7 +38,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @RunWith(SpringRunner.class)
 @ActiveProfiles("test")
-@SpringBootTest
+@SpringBootTest(properties = { "notificationToSend.autoStartup=false" })
 @Transactional
 public class ExposedMessageSourceIntegrationTest {
 

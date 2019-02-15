@@ -27,13 +27,14 @@ import org.junit.Before;
 import org.junit.Test;
 import org.openlmis.notification.domain.Notification;
 import org.openlmis.notification.domain.PendingNotification;
+import org.openlmis.notification.domain.PendingNotification.PendingNotificationId;
 import org.openlmis.notification.service.NotificationChannel;
 import org.openlmis.notification.util.NotificationDataBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.CrudRepository;
 
 public class PendingNotificationRepositoryIntegrationTest
-    extends BaseCrudRepositoryIntegrationTest<PendingNotification> {
+    extends BaseCrudRepositoryIntegrationTest<PendingNotification, PendingNotificationId> {
 
   private static final int COUNT = 5;
 
@@ -49,7 +50,7 @@ public class PendingNotificationRepositoryIntegrationTest
   private List<PendingNotification> pendingNotifications;
 
   @Override
-  CrudRepository<PendingNotification, UUID> getRepository() {
+  CrudRepository<PendingNotification, PendingNotificationId> getRepository() {
     return repository;
   }
 
@@ -57,11 +58,16 @@ public class PendingNotificationRepositoryIntegrationTest
   PendingNotification generateInstance() {
     Notification notification = new NotificationDataBuilder()
         .withEmptyMessage(NotificationChannel.EMAIL)
-        .build();
+        .buildAsNew();
 
     notificationRepository.saveAndFlush(notification);
 
-    return new PendingNotification(notification);
+    return new PendingNotification(notification, NotificationChannel.EMAIL);
+  }
+
+  @Override
+  protected void assertBefore(PendingNotification instance) {
+    assertThat(instance.getId()).isNotNull();
   }
 
   @Before
@@ -80,20 +86,19 @@ public class PendingNotificationRepositoryIntegrationTest
     PendingNotification pending = repository.findFirstByOrderByCreatedDateAsc();
 
     assertThat(pending).isNotNull();
-    assertThat(pending).isEqualTo(pendingNotifications.get(0));
-    assertThat(pending.getId()).isNotNull();
+    assertThat(pending.getId()).isEqualTo(pendingNotifications.get(0).getId());
 
-    Notification notification = notificationRepository.findOne(pending.getId());
+    Notification notification = notificationRepository.findOne(pending.getNotificationId());
 
-    assertThat(pending.getChannels()).isEqualTo(notification.getChannels());
+    assertThat(notification).isNotNull();
   }
 
   @Test
   public void shouldNotRemoveNotificationWhenPendingNotificationWasRemoved() {
     PendingNotification pending = repository.findFirstByOrderByCreatedDateAsc();
-    UUID notificationId = pending.getNotification().getId();
+    UUID notificationId = pending.getNotificationId();
 
-    repository.delete(notificationId);
+    repository.delete(pending.getId());
     entityManager.flush();
 
     boolean notificationExists = notificationRepository.exists(notificationId);

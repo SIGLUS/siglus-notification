@@ -41,7 +41,7 @@ import org.springframework.data.repository.CrudRepository;
 
 @SuppressWarnings("PMD.TooManyMethods")
 public class UserContactDetailsRepositoryIntegrationTest
-    extends BaseCrudRepositoryIntegrationTest<UserContactDetails> {
+    extends BaseCrudRepositoryIntegrationTest<UserContactDetails, UUID> {
 
   @Rule
   public ExpectedException expectedException = ExpectedException.none();

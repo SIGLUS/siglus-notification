@@ -35,7 +35,7 @@ import org.hibernate.annotations.Type;
 @ToString
 @EqualsAndHashCode
 @Table(name = "user_contact_details", schema = "notification")
-public class UserContactDetails implements Identifiable {
+public class UserContactDetails implements Identifiable<UUID> {
 
   @Getter
   @Setter

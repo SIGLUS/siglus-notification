@@ -39,7 +39,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.CrudRepository;
 
 public class NotificationRepositoryIntegrationTest 
-    extends BaseCrudRepositoryIntegrationTest<Notification> {
+    extends BaseCrudRepositoryIntegrationTest<Notification, UUID> {
 
   @Rule
   public ExpectedException expectedException = ExpectedException.none();
@@ -68,7 +68,7 @@ public class NotificationRepositoryIntegrationTest
     return new NotificationDataBuilder()
         .withUserId(userId)
         .withEmptyMessage(NotificationChannel.EMAIL)
-        .build();
+        .buildAsNew();
   }
 
   @Before

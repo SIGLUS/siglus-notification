@@ -19,9 +19,11 @@ import static org.apache.commons.lang3.BooleanUtils.isTrue;
 import static org.openlmis.notification.service.NotificationChannelRouter.EMAIL_SEND_NOW_CHANNEL;
 import static org.openlmis.notification.service.NotificationToSendRetriever.IMPORTANT_HEADER;
 import static org.openlmis.notification.service.NotificationToSendRetriever.RECIPIENT_HEADER;
+import static org.openlmis.notification.service.NotificationTransformer.NOTIFICATION_ID_HEADER;
 
 import java.util.UUID;
 import org.openlmis.notification.domain.NotificationMessage;
+import org.openlmis.notification.domain.PendingNotification.PendingNotificationId;
 import org.openlmis.notification.domain.UserContactDetails;
 import org.openlmis.notification.repository.PendingNotificationRepository;
 import org.openlmis.notification.repository.UserContactDetailsRepository;
@@ -48,6 +50,7 @@ public class EmailNotificationChannelHandler {
   @ServiceActivator(inputChannel = EMAIL_SEND_NOW_CHANNEL)
   public void handle(NotificationMessage payload,
       @Header(RECIPIENT_HEADER) UUID recipient,
+      @Header(NOTIFICATION_ID_HEADER) UUID notificationId,
       @Header(IMPORTANT_HEADER) Boolean important) {
     System.out.println("HANDLER: " + recipient + " " + important);
     UserContactDetails contactDetails = userContactDetailsRepository.findOne(recipient);
@@ -55,9 +58,11 @@ public class EmailNotificationChannelHandler {
     if (shouldSendMessage(contactDetails, important)) {
       emailSender.sendMail(contactDetails.getEmailAddress(),
           payload.getSubject(), payload.getBody());
-
-      pendingNotificationRepository.delete(payload.getId());
     }
+
+    // in the end the pending notification should be always removed
+    pendingNotificationRepository
+        .delete(new PendingNotificationId(notificationId, NotificationChannel.EMAIL));
   }
 
   private boolean shouldSendMessage(UserContactDetails contactDetails, Boolean important) {

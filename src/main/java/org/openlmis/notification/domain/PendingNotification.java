@@ -15,68 +15,73 @@
 
 package org.openlmis.notification.domain;
 
+import java.io.Serializable;
 import java.time.ZonedDateTime;
-import java.util.Set;
 import java.util.UUID;
-import javax.persistence.CollectionTable;
 import javax.persistence.Column;
-import javax.persistence.ElementCollection;
+import javax.persistence.Embeddable;
+import javax.persistence.EmbeddedId;
 import javax.persistence.Entity;
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.MapsId;
 import javax.persistence.OneToOne;
-import javax.persistence.PrePersist;
 import javax.persistence.Table;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.openlmis.notification.domain.PendingNotification.PendingNotificationId;
 import org.openlmis.notification.service.NotificationChannel;
 
 @Getter
 @Entity
 @Table(name = "pending_notifications")
 @NoArgsConstructor
-public class PendingNotification implements Identifiable {
-  private static final String NOTIFICATION_ID_COLUMN_NAME = "notificationId";
+public class PendingNotification implements Identifiable<PendingNotificationId> {
 
-  @Id
-  @Column(name = NOTIFICATION_ID_COLUMN_NAME, unique = true, nullable = false)
-  private UUID id;
+  @EmbeddedId
+  private PendingNotificationId id;
 
-  @MapsId
+  @MapsId("notificationId")
   @OneToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = NOTIFICATION_ID_COLUMN_NAME, unique = true, nullable = false)
+  @JoinColumn(name = "notificationId", unique = true, nullable = false)
   private Notification notification;
-
-  @ElementCollection(fetch = FetchType.LAZY, targetClass = NotificationChannel.class)
-  @CollectionTable(
-      name = "pending_notification_channels",
-      joinColumns = @JoinColumn(name = "pendingNotificationId")
-  )
-  @Column(name = "channel")
-  @Enumerated(value = EnumType.STRING)
-  private Set<NotificationChannel> channels;
 
   @Column(columnDefinition = "timestamp with time zone", nullable = false)
   @Getter
   private ZonedDateTime createdDate;
 
   /**
-   * Sets default values before persisting the given object in a database.
+   * Creates a new instance based on passed parameters.
    */
-  @PrePersist
-  public void setDefaultValues() {
-    if (null == createdDate) {
-      createdDate = ZonedDateTime.now();
-    }
+  public PendingNotification(Notification notification, NotificationChannel channel) {
+    this.id = new PendingNotificationId(notification.getId(), channel);
+    this.notification = notification;
+    this.createdDate = ZonedDateTime.now();
   }
 
-  public PendingNotification(Notification notification) {
-    this.notification = notification;
-    this.channels = notification.getChannels();
+  public UUID getNotificationId() {
+    return id.notificationId;
+  }
+
+  public NotificationChannel getChannel() {
+    return id.channel;
+  }
+
+  @Embeddable
+  @NoArgsConstructor
+  @AllArgsConstructor
+  @EqualsAndHashCode
+  public static final class PendingNotificationId implements Serializable {
+
+    private UUID notificationId;
+
+    @Column(nullable = false)
+    @Enumerated(value = EnumType.STRING)
+    private NotificationChannel channel;
   }
 
 }

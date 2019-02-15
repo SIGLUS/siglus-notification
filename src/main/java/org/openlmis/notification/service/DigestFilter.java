@@ -28,7 +28,6 @@ public class DigestFilter {
 
   @Router(inputChannel = ALLOW_NOTIFY_CHANNEL)
   public String route(Message<?> message) {
-    System.out.println("DIGEST_FILTER");
     return SEND_NOW_PREPARE_CHANNEL;
   }
 

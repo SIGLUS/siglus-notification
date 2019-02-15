@@ -38,16 +38,20 @@ import guru.nidi.ramltester.restassured.RestAssuredClient;
 import javax.annotation.PostConstruct;
 import org.junit.Rule;
 import org.junit.runner.RunWith;
+import org.openlmis.notification.repository.PendingNotificationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.embedded.LocalServerPort;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+@SpringBootTest(
+    properties = { "notificationToSend.autoStartup=false" },
+    webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
 @ActiveProfiles("test")
 public abstract class BaseWebIntegrationTest {
   private static final String USER_ACCESS_TOKEN = "418c89c5-7f21-4cd1-a63a-38c47892b0fe";
@@ -76,6 +80,9 @@ public abstract class BaseWebIntegrationTest {
 
   @Autowired
   private ObjectMapper objectMapper;
+
+  @MockBean
+  protected PendingNotificationRepository pendingNotificationRepository;
 
   /**
    * Constructor for test.

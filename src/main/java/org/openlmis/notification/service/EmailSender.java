@@ -17,7 +17,6 @@ package org.openlmis.notification.service;
 
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_SEND_MAIL_FAILURE;
 
-import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
@@ -60,7 +59,7 @@ class EmailSender {
 
       profiler.stop().log();
       XLOGGER.exit();
-    } catch (MessagingException exp) {
+    } catch (Exception exp) {
       ServerException exception = new ServerException(exp, ERROR_SEND_MAIL_FAILURE);
 
       XLOGGER.throwing(exception);

@@ -28,7 +28,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.repository.CrudRepository;
 
 public class EmailVerificationTokenRepositoryIntegrationTest
-    extends BaseCrudRepositoryIntegrationTest<EmailVerificationToken> {
+    extends BaseCrudRepositoryIntegrationTest<EmailVerificationToken, UUID> {
 
   @Autowired
   private EmailVerificationTokenRepository repository;

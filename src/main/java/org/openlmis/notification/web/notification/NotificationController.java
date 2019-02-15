@@ -19,6 +19,7 @@ import static org.openlmis.notification.i18n.MessageKeys.ERROR_USER_CONTACT_DETA
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_USER_NOT_ACTIVE_OR_NOT_FOUND;
 
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import org.apache.commons.collections.MapUtils;
 import org.openlmis.notification.domain.Notification;
@@ -125,7 +126,13 @@ public class NotificationController {
     notificationRepository.saveAndFlush(notification);
 
     profiler.start("ADD_NOTIFICATION_TO_SENDING_QUEUE");
-    pendingNotificationRepository.save(new PendingNotification(notification));
+    Set<PendingNotification> pendingNotifications = notification
+        .getMessages()
+        .stream()
+        .map(message -> new PendingNotification(notification, message.getChannel()))
+        .collect(Collectors.toSet());
+
+    pendingNotificationRepository.save(pendingNotifications);
 
     profiler.stop().log();
     XLOGGER.exit();

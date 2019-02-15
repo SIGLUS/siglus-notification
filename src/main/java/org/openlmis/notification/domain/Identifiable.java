@@ -15,8 +15,8 @@
 
 package org.openlmis.notification.domain;
 
-import java.util.UUID;
+public interface Identifiable<I> {
 
-public interface Identifiable {
-  UUID getId();
+  I getId();
+
 }

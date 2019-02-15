@@ -15,8 +15,8 @@
 
 package org.openlmis.notification.service;
 
-import static org.openlmis.notification.service.NotificationSplitter.CHANNEL_HEADER;
-import static org.openlmis.notification.service.NotificationSplitter.READY_TO_SEND_CHANNEL;
+import static org.openlmis.notification.service.NotificationTransformer.CHANNEL_HEADER;
+import static org.openlmis.notification.service.NotificationTransformer.READY_TO_SEND_CHANNEL;
 
 import org.springframework.integration.annotation.MessageEndpoint;
 import org.springframework.integration.annotation.Router;
@@ -32,7 +32,6 @@ public class NotificationChannelRouter {
    */
   @Router(inputChannel = READY_TO_SEND_CHANNEL)
   public String route(@Header(CHANNEL_HEADER) NotificationChannel channel) {
-    System.out.println("ROUTER: " + channel);
     return NotificationChannel.EMAIL == channel
         ? EMAIL_SEND_NOW_CHANNEL
         : null;

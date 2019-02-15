@@ -27,7 +27,7 @@ import org.hibernate.annotations.Type;
 
 @MappedSuperclass
 @EqualsAndHashCode
-public abstract class BaseEntity implements Identifiable {
+public abstract class BaseEntity implements Identifiable<UUID> {
   static final String TEXT_COLUMN_DEFINITION = "text";
   static final String UUID_TYPE = "pg-uuid";
 

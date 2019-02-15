@@ -15,7 +15,7 @@
 
 package org.openlmis.notification.repository;
 
-import java.util.UUID;
+import java.io.Serializable;
 import java.util.concurrent.atomic.AtomicInteger;
 import org.junit.Assert;
 import org.junit.Test;
@@ -29,12 +29,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 
 @RunWith(SpringRunner.class)
-@SpringBootTest
+@SpringBootTest(properties = { "notificationToSend.autoStartup=false" })
 @ActiveProfiles("test")
 @Transactional
-public abstract class BaseCrudRepositoryIntegrationTest<T extends Identifiable> {
+public abstract class BaseCrudRepositoryIntegrationTest
+    <T extends Identifiable<I>, I extends Serializable> {
 
-  abstract CrudRepository<T, UUID> getRepository();
+  abstract CrudRepository<T, I> getRepository();
 
   /*
    * Generate a unique instance of given type.
@@ -58,7 +59,7 @@ public abstract class BaseCrudRepositoryIntegrationTest<T extends Identifiable> 
 
   @Test
   public void shouldCreate() throws Exception {
-    CrudRepository<T, UUID> repository = this.getRepository();
+    CrudRepository<T, I> repository = this.getRepository();
 
     T instance = this.generateInstance();
     assertBefore(instance);
@@ -66,19 +67,21 @@ public abstract class BaseCrudRepositoryIntegrationTest<T extends Identifiable> 
     instance = repository.save(instance);
     assertInstance(instance);
 
-    Assert.assertTrue(repository.exists(instance.getId()));
+    I id = instance.getId();
+
+    Assert.assertTrue(repository.exists(id));
   }
 
   @Test
   public void shouldFindOne() throws Exception {
-    CrudRepository<T, UUID> repository = this.getRepository();
+    CrudRepository<T, I> repository = this.getRepository();
 
     T instance = this.generateInstance();
 
     instance = repository.save(instance);
     assertInstance(instance);
 
-    UUID id = instance.getId();
+    I id = instance.getId();
 
     instance = repository.findOne(id);
     assertInstance(instance);
@@ -87,7 +90,7 @@ public abstract class BaseCrudRepositoryIntegrationTest<T extends Identifiable> 
 
   @Test
   public void shouldDelete() throws Exception {
-    CrudRepository<T, UUID> repository = this.getRepository();
+    CrudRepository<T, I> repository = this.getRepository();
 
     T instance = this.generateInstance();
     Assert.assertNotNull(instance);
@@ -95,7 +98,7 @@ public abstract class BaseCrudRepositoryIntegrationTest<T extends Identifiable> 
     instance = repository.save(instance);
     assertInstance(instance);
 
-    UUID id = instance.getId();
+    I id = instance.getId();
 
     repository.delete(id);
     Assert.assertFalse(repository.exists(id));
