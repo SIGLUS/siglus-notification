@@ -33,6 +33,7 @@ import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.ToString;
 import org.openlmis.notification.domain.PendingNotification.PendingNotificationId;
 import org.openlmis.notification.service.NotificationChannel;
 
@@ -40,6 +41,8 @@ import org.openlmis.notification.service.NotificationChannel;
 @Entity
 @Table(name = "pending_notifications")
 @NoArgsConstructor
+@EqualsAndHashCode(of = "id")
+@ToString(exclude = "notification")
 public class PendingNotification implements Identifiable<PendingNotificationId> {
 
   @EmbeddedId

@@ -104,4 +104,23 @@ public class PendingNotificationRepositoryIntegrationTest
     boolean notificationExists = notificationRepository.exists(notificationId);
     assertThat(notificationExists).isTrue();
   }
+
+  @Test
+  public void hasZeroRecordsShouldReturnTrueIfTableIsEmpty() {
+    // given
+    repository.deleteAll();
+    entityManager.flush();
+
+    // expect
+    assertThat(repository.hasZeroRecords()).isTrue();
+  }
+
+  @Test
+  public void hasZeroRecordsShouldReturnFalseIfTableIsNotEmpty() {
+    // given
+    // nothing has to be done because we add several entries in setUp method
+
+    // expect
+    assertThat(repository.hasZeroRecords()).isFalse();
+  }
 }
