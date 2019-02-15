@@ -155,6 +155,11 @@ pipeline {
                             string(name: 'serviceName', value: 'notification'),
                             text(name: 'customEnv', value: "OL_NOTIFICATION_VERSION=${STAGING_VERSION}")
                         ]
+                        build job: "OpenLMIS-contract-tests-pipeline/${params.contractTestsBranch}", propagate: true, wait: true,
+                        parameters: [
+                            string(name: 'serviceName', value: 'cce'),
+                            text(name: 'customEnv', value: "OL_NOTIFICATION_VERSION=${STAGING_VERSION}")
+                        ]
                     }
                     post {
                         failure {
