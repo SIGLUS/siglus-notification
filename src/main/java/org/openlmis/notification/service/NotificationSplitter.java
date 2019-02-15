@@ -16,7 +16,9 @@
 package org.openlmis.notification.service;
 
 import static org.openlmis.notification.service.DigestFilter.SEND_NOW_PREPARE_CHANNEL;
+import static org.openlmis.notification.service.NotificationToSendRetriever.CHANNELS_HEADER;
 
+import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Collectors;
 import org.openlmis.notification.domain.Notification;
@@ -39,14 +41,25 @@ public class NotificationSplitter {
   @Splitter(inputChannel = SEND_NOW_PREPARE_CHANNEL, outputChannel = READY_TO_SEND_CHANNEL)
   public Set<Message<NotificationMessage>> extractNotificationMessages(Message<?> message) {
     System.out.println("SPLITTER");
-    return ((Notification) message.getPayload())
+
+    // we set a correct set collection at the beginning of the flow
+    @SuppressWarnings("unchecked")
+    Set<NotificationChannel> channels = Collections.checkedSet(
+        message.getHeaders().get(CHANNELS_HEADER, Set.class),
+        NotificationChannel.class
+    );
+
+    Notification notification = (Notification) message.getPayload();
+
+    return notification
         .getMessages()
         .stream()
-        .filter(item -> !item.getSend())
+        .filter(item -> channels.contains(item.getChannel()))
         .map(item -> MessageBuilder
             .withPayload(item)
             .copyHeaders(message.getHeaders())
             .setHeader(CHANNEL_HEADER, item.getChannel())
+            .removeHeader(CHANNELS_HEADER)
             .build())
         .collect(Collectors.toSet());
   }

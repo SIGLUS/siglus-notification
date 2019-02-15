@@ -17,7 +17,9 @@ package org.openlmis.notification.domain;
 
 import java.time.ZonedDateTime;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -27,6 +29,7 @@ import javax.persistence.Table;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.openlmis.notification.service.NotificationChannel;
 
 @Entity
 @Table(name = "notifications")
@@ -73,6 +76,16 @@ public class Notification extends BaseEntity {
    */
   public static Notification newInstance(Importer importer) {
     return new Notification(importer.getUserId(), importer.getMessages(), importer.getImportant());
+  }
+
+  /**
+   * Gets notification's channels.
+   */
+  public Set<NotificationChannel> getChannels() {
+    return messages
+        .stream()
+        .map(NotificationMessage::getChannel)
+        .collect(Collectors.toSet());
   }
 
   /**

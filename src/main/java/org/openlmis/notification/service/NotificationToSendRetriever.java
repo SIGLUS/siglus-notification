@@ -16,10 +16,9 @@
 package org.openlmis.notification.service;
 
 import org.openlmis.notification.domain.Notification;
-import org.openlmis.notification.repository.NotificationRepository;
+import org.openlmis.notification.domain.PendingNotification;
+import org.openlmis.notification.repository.PendingNotificationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
 import org.springframework.integration.annotation.InboundChannelAdapter;
 import org.springframework.integration.annotation.MessageEndpoint;
 import org.springframework.integration.support.MessageBuilder;
@@ -32,9 +31,10 @@ public class NotificationToSendRetriever {
 
   static final String RECIPIENT_HEADER = "recipient";
   static final String IMPORTANT_HEADER = "important";
+  static final String CHANNELS_HEADER = "channels";
 
   @Autowired
-  private NotificationRepository notificationRepository;
+  private PendingNotificationRepository pendingNotificationRepository;
 
   /**
    * Finds the first notification that should be sent.
@@ -42,22 +42,19 @@ public class NotificationToSendRetriever {
   @InboundChannelAdapter(channel = START_CHANNEL)
   public Message<Notification> retrieve() {
     System.out.println("START");
-    Page<Notification> page = notificationRepository.findNotificationsToSend(new PageRequest(0, 1));
+    PendingNotification pending = pendingNotificationRepository.findFirstByOrderByCreatedDateAsc();
 
-    if (null == page || !page.hasContent()) {
+    if (null == pending) {
       return null;
     }
 
-    Notification notification = page.getContent().get(0);
-
-    if (null == notification) {
-      return null;
-    }
+    Notification notification = pending.getNotification();
 
     return MessageBuilder
         .withPayload(notification)
         .setHeader(RECIPIENT_HEADER, notification.getUserId())
         .setHeader(IMPORTANT_HEADER, notification.getImportant())
+        .setHeader(CHANNELS_HEADER, pending.getChannels())
         .build();
   }
 

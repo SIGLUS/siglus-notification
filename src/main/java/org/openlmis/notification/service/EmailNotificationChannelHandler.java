@@ -23,7 +23,7 @@ import static org.openlmis.notification.service.NotificationToSendRetriever.RECI
 import java.util.UUID;
 import org.openlmis.notification.domain.NotificationMessage;
 import org.openlmis.notification.domain.UserContactDetails;
-import org.openlmis.notification.repository.NotificationMessageRepository;
+import org.openlmis.notification.repository.PendingNotificationRepository;
 import org.openlmis.notification.repository.UserContactDetailsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.integration.annotation.MessageEndpoint;
@@ -37,7 +37,7 @@ public class EmailNotificationChannelHandler {
   private UserContactDetailsRepository userContactDetailsRepository;
 
   @Autowired
-  private NotificationMessageRepository notificationMessageRepository;
+  private PendingNotificationRepository pendingNotificationRepository;
 
   @Autowired
   private EmailSender emailSender;
@@ -56,7 +56,7 @@ public class EmailNotificationChannelHandler {
       emailSender.sendMail(contactDetails.getEmailAddress(),
           payload.getSubject(), payload.getBody());
 
-      notificationMessageRepository.setSendFlag(payload.getId());
+      pendingNotificationRepository.delete(payload.getId());
     }
   }
 

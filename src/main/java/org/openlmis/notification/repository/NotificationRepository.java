@@ -18,15 +18,9 @@ package org.openlmis.notification.repository;
 import java.util.UUID;
 import org.openlmis.notification.domain.Notification;
 import org.openlmis.notification.repository.custom.NotificationRepositoryCustom;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
 
 public interface NotificationRepository
     extends JpaRepository<Notification, UUID>, NotificationRepositoryCustom {
-
-  @Query("SELECT n FROM Notification AS n INNER JOIN n.messages AS m WHERE m.send IS FALSE")
-  Page<Notification> findNotificationsToSend(Pageable pageable);
 
 }

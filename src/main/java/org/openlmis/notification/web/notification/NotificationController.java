@@ -22,8 +22,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 import org.apache.commons.collections.MapUtils;
 import org.openlmis.notification.domain.Notification;
+import org.openlmis.notification.domain.PendingNotification;
 import org.openlmis.notification.domain.UserContactDetails;
 import org.openlmis.notification.repository.NotificationRepository;
+import org.openlmis.notification.repository.PendingNotificationRepository;
 import org.openlmis.notification.repository.UserContactDetailsRepository;
 import org.openlmis.notification.service.PermissionService;
 import org.openlmis.notification.service.referencedata.UserDto;
@@ -73,6 +75,9 @@ public class NotificationController {
   @Autowired
   private NotificationRepository notificationRepository;
 
+  @Autowired
+  private PendingNotificationRepository pendingNotificationRepository;
+
   @InitBinder
   private void initBinder(WebDataBinder binder) {
     binder.setValidator(notificationValidator);
@@ -117,7 +122,10 @@ public class NotificationController {
     Notification notification = Notification.newInstance(notificationDto);
 
     profiler.start("SAVE_NOTIFICATION");
-    notificationRepository.save(notification);
+    notificationRepository.saveAndFlush(notification);
+
+    profiler.start("ADD_NOTIFICATION_TO_SENDING_QUEUE");
+    pendingNotificationRepository.save(new PendingNotification(notification));
 
     profiler.stop().log();
     XLOGGER.exit();

@@ -16,16 +16,14 @@
 package org.openlmis.notification.repository;
 
 import java.util.UUID;
-import org.openlmis.notification.domain.NotificationMessage;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.Repository;
-import org.springframework.data.repository.query.Param;
+import org.openlmis.notification.domain.PendingNotification;
+import org.springframework.data.jpa.repository.EntityGraph;
+import org.springframework.data.jpa.repository.EntityGraph.EntityGraphType;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface NotificationMessageRepository extends Repository<NotificationMessage, UUID> {
+public interface PendingNotificationRepository extends JpaRepository<PendingNotification, UUID> {
 
-  @Query("UPDATE NotificationMessage SET send = true WHERE id = :id")
-  @Modifying(clearAutomatically = true)
-  void setSendFlag(@Param("id") UUID id);
+  @EntityGraph(attributePaths = { "notification", "channels" }, type = EntityGraphType.FETCH)
+  PendingNotification findFirstByOrderByCreatedDateAsc();
 
 }
