@@ -3,6 +3,7 @@
 
 New functionality added in a backwards-compatible manner:
 * [OLMIS-5859](https://openlmis.atlassian.net/browse/OLMIS-5859): Added ability to search for notifications by `userId` and date range parameters.
+* [OLMIS-6016](https://openlmis.atlassian.net/browse/OLMIS-6016): Added DigestConfiguration entity
 
 Bug fixes, security and performance improvements (backwards-compatible):
 * [OLMIS-5872](https://openlmis.atlassian.net/browse/OLMIS-5872): Added null checking for retrieving uuids in Search Params.
