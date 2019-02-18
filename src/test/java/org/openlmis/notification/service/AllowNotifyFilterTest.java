@@ -32,6 +32,9 @@ import org.openlmis.notification.util.UserContactDetailsDataBuilder;
 
 public class AllowNotifyFilterTest {
 
+  private static final boolean IMPORTANT = true;
+  private static final boolean UNIMPORTANT = false;
+
   @Rule
   public MockitoRule mockitoRule = MockitoJUnit.rule();
 
@@ -53,7 +56,7 @@ public class AllowNotifyFilterTest {
   @Test
   public void shouldAcceptImportantMessage() {
     // when
-    boolean accepted = filter.accept(recipient, true);
+    boolean accepted = filter.accept(recipient, IMPORTANT);
 
     // then
     assertThat(accepted).isTrue();
@@ -65,7 +68,7 @@ public class AllowNotifyFilterTest {
     contactDetails.setAllowNotify(true);
 
     // when
-    boolean accepted = filter.accept(recipient, false);
+    boolean accepted = filter.accept(recipient, UNIMPORTANT);
 
     // then
     assertThat(accepted).isTrue();
@@ -77,7 +80,7 @@ public class AllowNotifyFilterTest {
     contactDetails.setAllowNotify(false);
 
     // when
-    boolean accepted = filter.accept(recipient, false);
+    boolean accepted = filter.accept(recipient, UNIMPORTANT);
 
     // then
     assertThat(accepted).isFalse();
@@ -89,7 +92,7 @@ public class AllowNotifyFilterTest {
     given(userContactDetailsRepository.findOne(contactDetails.getId())).willReturn(null);
 
     // when
-    boolean accepted = filter.accept(recipient, false);
+    boolean accepted = filter.accept(recipient, UNIMPORTANT);
 
     // then
     assertThat(accepted).isFalse();
