@@ -15,26 +15,23 @@
 
 package org.openlmis.notification.domain;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Table;
-import lombok.AllArgsConstructor;
-import lombok.EqualsAndHashCode;
-import lombok.NoArgsConstructor;
-import lombok.ToString;
+import nl.jqno.equalsverifier.EqualsVerifier;
+import org.junit.Test;
+import org.openlmis.notification.testutils.ToStringTestUtils;
 
-@Entity
-@Table(name = "digest_configurations")
-@NoArgsConstructor
-@AllArgsConstructor
-@EqualsAndHashCode(callSuper = true)
-@ToString(callSuper = true)
-public class DigestConfiguration extends BaseEntity {
+public class DigestConfigurationTest {
 
-  @Column(columnDefinition = TEXT_COLUMN_DEFINITION, nullable = false)
-  private String message;
+  @Test
+  public void equalsContract() {
+    EqualsVerifier
+        .forClass(DigestConfiguration.class)
+        .withRedefinedSuperclass()
+        .verify();
+  }
 
-  @Column(nullable = false, unique = true)
-  private String tag;
+  @Test
+  public void shouldImplementToString() {
+    ToStringTestUtils.verify(DigestConfiguration.class, new DigestConfiguration());
+  }
 
 }
