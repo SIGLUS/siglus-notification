@@ -42,7 +42,7 @@ public class NotificationTransformer {
    * Split single notification into several messages. Skips messages that have been sent.
    */
   @Transformer(inputChannel = SEND_NOW_PREPARE_CHANNEL, outputChannel = READY_TO_SEND_CHANNEL)
-  public Message<?> extractNotificationMessage(Message<?> message) {
+  public Message extractNotificationMessage(Message<?> message) {
     NotificationChannel channel = message
         .getHeaders()
         .get(CHANNEL_TO_USE_HEADER, NotificationChannel.class);
