@@ -23,9 +23,7 @@ import static org.openlmis.notification.service.NotificationTransformer.NOTIFICA
 
 import java.util.UUID;
 import org.openlmis.notification.domain.NotificationMessage;
-import org.openlmis.notification.domain.PendingNotification.PendingNotificationId;
 import org.openlmis.notification.domain.UserContactDetails;
-import org.openlmis.notification.repository.PendingNotificationRepository;
 import org.openlmis.notification.repository.UserContactDetailsRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.integration.annotation.MessageEndpoint;
@@ -37,9 +35,6 @@ public class EmailNotificationChannelHandler {
 
   @Autowired
   private UserContactDetailsRepository userContactDetailsRepository;
-
-  @Autowired
-  private PendingNotificationRepository pendingNotificationRepository;
 
   @Autowired
   private EmailSender emailSender;
@@ -58,10 +53,6 @@ public class EmailNotificationChannelHandler {
       emailSender.sendMail(contactDetails.getEmailAddress(),
           payload.getSubject(), payload.getBody());
     }
-
-    // in the end the pending notification should be always removed
-    pendingNotificationRepository
-        .delete(new PendingNotificationId(notificationId, NotificationChannel.EMAIL));
   }
 
   private boolean shouldSendMessage(UserContactDetails contactDetails, Boolean important) {

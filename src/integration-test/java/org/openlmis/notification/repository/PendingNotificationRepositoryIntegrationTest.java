@@ -82,20 +82,8 @@ public class PendingNotificationRepositoryIntegrationTest
   }
 
   @Test
-  public void shouldFindFirstPendingNotification() {
-    PendingNotification pending = repository.findFirstByOrderByCreatedDateAsc();
-
-    assertThat(pending).isNotNull();
-    assertThat(pending.getId()).isEqualTo(pendingNotifications.get(0).getId());
-
-    Notification notification = notificationRepository.findOne(pending.getNotificationId());
-
-    assertThat(notification).isNotNull();
-  }
-
-  @Test
   public void shouldNotRemoveNotificationWhenPendingNotificationWasRemoved() {
-    PendingNotification pending = repository.findFirstByOrderByCreatedDateAsc();
+    PendingNotification pending = pendingNotifications.get(0);
     UUID notificationId = pending.getNotificationId();
 
     repository.delete(pending.getId());
@@ -105,22 +93,4 @@ public class PendingNotificationRepositoryIntegrationTest
     assertThat(notificationExists).isTrue();
   }
 
-  @Test
-  public void hasZeroRecordsShouldReturnTrueIfTableIsEmpty() {
-    // given
-    repository.deleteAll();
-    entityManager.flush();
-
-    // expect
-    assertThat(repository.hasZeroRecords()).isTrue();
-  }
-
-  @Test
-  public void hasZeroRecordsShouldReturnFalseIfTableIsNotEmpty() {
-    // given
-    // nothing has to be done because we add several entries in setUp method
-
-    // expect
-    assertThat(repository.hasZeroRecords()).isFalse();
-  }
 }

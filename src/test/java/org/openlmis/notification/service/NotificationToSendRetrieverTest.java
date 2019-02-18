@@ -21,16 +21,16 @@ import static org.openlmis.notification.service.NotificationToSendRetriever.CHAN
 import static org.openlmis.notification.service.NotificationToSendRetriever.IMPORTANT_HEADER;
 import static org.openlmis.notification.service.NotificationToSendRetriever.RECIPIENT_HEADER;
 
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 import org.openlmis.notification.domain.Notification;
 import org.openlmis.notification.domain.PendingNotification;
-import org.openlmis.notification.repository.PendingNotificationRepository;
 import org.openlmis.notification.util.NotificationDataBuilder;
+import org.springframework.integration.jpa.core.JpaExecutor;
 import org.springframework.messaging.Message;
 
 public class NotificationToSendRetrieverTest {
@@ -39,9 +39,8 @@ public class NotificationToSendRetrieverTest {
   public MockitoRule mockitoRule = MockitoJUnit.rule();
 
   @Mock
-  private PendingNotificationRepository pendingNotificationRepository;
+  private JpaExecutor jpaExecutor;
 
-  @InjectMocks
   private NotificationToSendRetriever retriever;
 
   private Notification notification = new NotificationDataBuilder()
@@ -51,12 +50,15 @@ public class NotificationToSendRetrieverTest {
   private PendingNotification pendingNotification =
       new PendingNotification(notification, NotificationChannel.EMAIL);
 
+  @Before
+  public void setUp() {
+    retriever = new NotificationToSendRetriever(jpaExecutor);
+  }
+
   @Test
   public void shouldReturnFirstPendingNotificationReadyToSend() {
     // given
-    given(pendingNotificationRepository.hasZeroRecords()).willReturn(false);
-    given(pendingNotificationRepository.findFirstByOrderByCreatedDateAsc())
-        .willReturn(pendingNotification);
+    given(jpaExecutor.poll()).willReturn(pendingNotification);
 
     // when
     Message<Notification> message = retriever.retrieve();
@@ -73,7 +75,7 @@ public class NotificationToSendRetrieverTest {
   @Test
   public void shouldReturnNullValueIfThereIsNoPendingNotification() {
     // given
-    given(pendingNotificationRepository.hasZeroRecords()).willReturn(true);
+    given(jpaExecutor.poll()).willReturn(null);
 
     // when
     Message<Notification> message = retriever.retrieve();

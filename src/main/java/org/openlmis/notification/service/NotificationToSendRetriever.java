@@ -15,12 +15,14 @@
 
 package org.openlmis.notification.service;
 
+import com.google.common.annotations.VisibleForTesting;
+import javax.persistence.EntityManager;
 import org.openlmis.notification.domain.Notification;
 import org.openlmis.notification.domain.PendingNotification;
-import org.openlmis.notification.repository.PendingNotificationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.integration.annotation.InboundChannelAdapter;
 import org.springframework.integration.annotation.MessageEndpoint;
+import org.springframework.integration.jpa.core.JpaExecutor;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
 
@@ -33,8 +35,17 @@ public class NotificationToSendRetriever {
   static final String IMPORTANT_HEADER = "important";
   static final String CHANNEL_TO_USE_HEADER = "channelToUse";
 
+  private JpaExecutor jpaExecutor;
+
   @Autowired
-  private PendingNotificationRepository pendingNotificationRepository;
+  public NotificationToSendRetriever(EntityManager entityManager) {
+    prepareJpaExecutor(entityManager);
+  }
+
+  @VisibleForTesting
+  NotificationToSendRetriever(JpaExecutor jpaExecutor) {
+    this.jpaExecutor = jpaExecutor;
+  }
 
   /**
    * Finds the first notification that should be sent.
@@ -43,11 +54,13 @@ public class NotificationToSendRetriever {
       channel = START_CHANNEL,
       autoStartup = "${notificationToSend.autoStartup:true}")
   public Message<Notification> retrieve() {
-    if (pendingNotificationRepository.hasZeroRecords()) {
+    Object item = jpaExecutor.poll();
+
+    if (!(item instanceof PendingNotification)) {
       return null;
     }
 
-    PendingNotification pending = pendingNotificationRepository.findFirstByOrderByCreatedDateAsc();
+    PendingNotification pending = (PendingNotification) item;
     Notification notification = pending.getNotification();
 
     return MessageBuilder
@@ -58,4 +71,19 @@ public class NotificationToSendRetriever {
         .build();
   }
 
+  private void prepareJpaExecutor(EntityManager entityManager) {
+    jpaExecutor = new JpaExecutor(entityManager);
+
+    jpaExecutor.setEntityClass(PendingNotification.class);
+    jpaExecutor.setNamedQuery(PendingNotification.GET_PENDING_NOTIFICATIONS_NAMED_QUERY);
+
+    jpaExecutor.setExpectSingleResult(true);
+    jpaExecutor.setMaxNumberOfResults(1);
+
+    jpaExecutor.setUsePayloadAsParameterSource(true);
+
+    jpaExecutor.setDeleteAfterPoll(true);
+    jpaExecutor.setFlush(true);
+    jpaExecutor.setClearOnFlush(true);
+  }
 }

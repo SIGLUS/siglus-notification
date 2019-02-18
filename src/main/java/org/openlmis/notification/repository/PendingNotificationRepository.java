@@ -17,18 +17,9 @@ package org.openlmis.notification.repository;
 
 import org.openlmis.notification.domain.PendingNotification;
 import org.openlmis.notification.domain.PendingNotification.PendingNotificationId;
-import org.springframework.data.jpa.repository.EntityGraph;
-import org.springframework.data.jpa.repository.EntityGraph.EntityGraphType;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface PendingNotificationRepository
     extends JpaRepository<PendingNotification, PendingNotificationId> {
-
-  @EntityGraph(attributePaths = { "notification" }, type = EntityGraphType.FETCH)
-  PendingNotification findFirstByOrderByCreatedDateAsc();
-
-  default boolean hasZeroRecords() {
-    return count() <= 0;
-  }
 
 }

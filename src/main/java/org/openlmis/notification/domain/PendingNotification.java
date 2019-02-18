@@ -27,6 +27,8 @@ import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.MapsId;
+import javax.persistence.NamedQueries;
+import javax.persistence.NamedQuery;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import lombok.AllArgsConstructor;
@@ -43,7 +45,17 @@ import org.openlmis.notification.service.NotificationChannel;
 @NoArgsConstructor
 @EqualsAndHashCode(of = "id")
 @ToString(exclude = "notification")
+@NamedQueries({
+    @NamedQuery(name = "PendingNotification.getPendingNotifications",
+        query = "SELECT p"
+            + " FROM PendingNotification p"
+            + " INNER JOIN FETCH p.notification"
+            + " ORDER BY p.createdDate ASC")
+})
 public class PendingNotification implements Identifiable<PendingNotificationId> {
+
+  public static final String GET_PENDING_NOTIFICATIONS_NAMED_QUERY =
+      "PendingNotification.getPendingNotifications";
 
   @EmbeddedId
   private PendingNotificationId id;

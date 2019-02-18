@@ -21,7 +21,6 @@ import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.openlmis.notification.service.NotificationChannel.EMAIL;
 
 import java.util.UUID;
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -31,9 +30,7 @@ import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 import org.openlmis.notification.domain.Notification;
 import org.openlmis.notification.domain.NotificationMessage;
-import org.openlmis.notification.domain.PendingNotification.PendingNotificationId;
 import org.openlmis.notification.domain.UserContactDetails;
-import org.openlmis.notification.repository.PendingNotificationRepository;
 import org.openlmis.notification.repository.UserContactDetailsRepository;
 import org.openlmis.notification.util.NotificationDataBuilder;
 import org.openlmis.notification.util.UserContactDetailsDataBuilder;
@@ -45,9 +42,6 @@ public class EmailNotificationChannelHandlerTest {
 
   @Mock
   private UserContactDetailsRepository userContactDetailsRepository;
-
-  @Mock
-  private PendingNotificationRepository pendingNotificationRepository;
 
   @Mock
   private EmailSender emailSender;
@@ -67,11 +61,6 @@ public class EmailNotificationChannelHandlerTest {
   @Before
   public void setUp() {
     given(userContactDetailsRepository.findOne(recipient)).willReturn(contactDetails);
-  }
-
-  @After
-  public void tearDown() {
-    verify(pendingNotificationRepository).delete(new PendingNotificationId(notificationId, EMAIL));
   }
 
   @Test
