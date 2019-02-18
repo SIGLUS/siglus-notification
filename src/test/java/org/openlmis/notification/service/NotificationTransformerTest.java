@@ -19,6 +19,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.openlmis.notification.service.NotificationToSendRetriever.CHANNEL_TO_USE_HEADER;
 import static org.openlmis.notification.service.NotificationTransformer.CHANNEL_HEADER;
 import static org.openlmis.notification.service.NotificationTransformer.NOTIFICATION_ID_HEADER;
+import static org.openlmis.notification.service.NotificationTransformer.READY_TO_SEND_FAILURE_CHANNEL;
 
 import org.junit.Test;
 import org.openlmis.notification.domain.Notification;
@@ -26,6 +27,7 @@ import org.openlmis.notification.domain.NotificationMessage;
 import org.openlmis.notification.util.NotificationDataBuilder;
 import org.springframework.integration.support.MessageBuilder;
 import org.springframework.messaging.Message;
+import org.springframework.messaging.MessageHeaders;
 
 public class NotificationTransformerTest {
 
@@ -43,7 +45,7 @@ public class NotificationTransformerTest {
   @Test
   public void shouldExtractNotificationMessages() {
     // when
-    Message<NotificationMessage> newMessage = transformer.extractNotificationMessages(message);
+    Message<?> newMessage = transformer.extractNotificationMessage(message);
 
     // then
     NotificationMessage existingMessage = notification.getMessages().get(0);
@@ -64,10 +66,11 @@ public class NotificationTransformerTest {
         .build();
 
     // when
-    Message<NotificationMessage> messages = transformer.extractNotificationMessages(message);
+    Message<?> newMessage = transformer.extractNotificationMessage(message);
 
     // then
-    assertThat(messages).isNull();
+    assertThat(newMessage.getHeaders())
+        .containsEntry(MessageHeaders.ERROR_CHANNEL, READY_TO_SEND_FAILURE_CHANNEL);
 
   }
 }

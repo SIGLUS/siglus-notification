@@ -25,6 +25,8 @@ import java.util.UUID;
 import org.openlmis.notification.domain.NotificationMessage;
 import org.openlmis.notification.domain.UserContactDetails;
 import org.openlmis.notification.repository.UserContactDetailsRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.integration.annotation.MessageEndpoint;
 import org.springframework.integration.annotation.ServiceActivator;
@@ -32,6 +34,8 @@ import org.springframework.messaging.handler.annotation.Header;
 
 @MessageEndpoint
 public class EmailNotificationChannelHandler {
+  private static final Logger LOGGER = LoggerFactory
+      .getLogger(EmailNotificationChannelHandler.class);
 
   @Autowired
   private UserContactDetailsRepository userContactDetailsRepository;
@@ -57,14 +61,29 @@ public class EmailNotificationChannelHandler {
 
   private boolean shouldSendMessage(UserContactDetails contactDetails, Boolean important) {
     if (!contactDetails.hasEmailAddress()) {
+      LOGGER.error(
+          "Can't send email because user with id {} has not email address",
+          contactDetails.getReferenceDataUserId());
       return false;
     }
 
     if (isTrue(important)) {
+      LOGGER.debug("The important flag is set");
       return true;
     }
 
-    return contactDetails.isEmailAddressVerified();
+    if (contactDetails.isEmailAddressVerified()) {
+      LOGGER.debug(
+          "Email address of user with id {} is verified",
+          contactDetails.getReferenceDataUserId());
+      return true;
+    }
+
+    LOGGER.error(
+        "Can't send email because email address of user with id {} was not verified",
+        contactDetails.getReferenceDataUserId());
+
+    return false;
   }
 
 }

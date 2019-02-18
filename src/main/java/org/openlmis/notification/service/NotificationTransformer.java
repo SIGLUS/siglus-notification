@@ -21,6 +21,8 @@ import static org.openlmis.notification.service.NotificationToSendRetriever.CHAN
 import java.util.Objects;
 import org.openlmis.notification.domain.Notification;
 import org.openlmis.notification.domain.NotificationMessage;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.integration.annotation.MessageEndpoint;
 import org.springframework.integration.annotation.Transformer;
 import org.springframework.integration.support.MessageBuilder;
@@ -28,6 +30,8 @@ import org.springframework.messaging.Message;
 
 @MessageEndpoint
 public class NotificationTransformer {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(NotificationTransformer.class);
 
   static final String READY_TO_SEND_CHANNEL = "notificationToSend.sendNow.readyToSend";
 
@@ -38,7 +42,7 @@ public class NotificationTransformer {
    * Split single notification into several messages. Skips messages that have been sent.
    */
   @Transformer(inputChannel = SEND_NOW_PREPARE_CHANNEL, outputChannel = READY_TO_SEND_CHANNEL)
-  public Message<NotificationMessage> extractNotificationMessages(Message<?> message) {
+  public Message<?> extractNotificationMessage(Message<?> message) {
     NotificationChannel channel = message
         .getHeaders()
         .get(CHANNEL_TO_USE_HEADER, NotificationChannel.class);
@@ -52,6 +56,7 @@ public class NotificationTransformer {
         .orElse(null);
 
     if (null == notificationMessage) {
+      LOGGER.error("Can't send notification, can't find message for channel: {}", channel);
       return null;
     }
 

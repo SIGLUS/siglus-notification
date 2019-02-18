@@ -82,4 +82,16 @@ public class AllowNotifyFilterTest {
     // then
     assertThat(accepted).isFalse();
   }
+
+  @Test
+  public void shouldDeclineStandardMessageWhenUserDoesNotExist() {
+    // given
+    given(userContactDetailsRepository.findOne(contactDetails.getId())).willReturn(null);
+
+    // when
+    boolean accepted = filter.accept(recipient, false);
+
+    // then
+    assertThat(accepted).isFalse();
+  }
 }

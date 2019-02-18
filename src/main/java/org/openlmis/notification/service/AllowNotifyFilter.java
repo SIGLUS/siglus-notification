@@ -23,6 +23,8 @@ import static org.openlmis.notification.service.NotificationToSendRetriever.STAR
 import java.util.UUID;
 import org.openlmis.notification.domain.UserContactDetails;
 import org.openlmis.notification.repository.UserContactDetailsRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.integration.annotation.Filter;
 import org.springframework.integration.annotation.MessageEndpoint;
@@ -30,6 +32,8 @@ import org.springframework.messaging.handler.annotation.Header;
 
 @MessageEndpoint
 public class AllowNotifyFilter {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(AllowNotifyFilter.class);
 
   static final String ALLOW_NOTIFY_CHANNEL = "notificationToSend.allowNotify";
 
@@ -44,7 +48,27 @@ public class AllowNotifyFilter {
       @Header(IMPORTANT_HEADER) Boolean important) {
     UserContactDetails userContactDetails = userContactDetailsRepository.findOne(recipient);
 
-    return isTrue(important) || userContactDetails.isAllowNotify();
+    if (null == userContactDetails) {
+      LOGGER.error("Can't send notification to a user with id {}"
+          + " because user contact details does not exist", recipient);
+      return false;
+    }
+
+    if (isTrue(important)) {
+      LOGGER.debug("The important flag is set");
+      return true;
+    }
+
+    if (userContactDetails.isAllowNotify()) {
+      LOGGER.debug("User {} has set allowNotify flag", recipient);
+      return true;
+    }
+
+    LOGGER.warn("Can't send notification to a user with id {}"
+        + " because the important flag was not set and"
+        + " the user unset the allowNotify flag", recipient);
+
+    return false;
   }
 
 }

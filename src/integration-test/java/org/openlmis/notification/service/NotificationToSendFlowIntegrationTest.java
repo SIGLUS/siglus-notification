@@ -18,9 +18,17 @@ package org.openlmis.notification.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.verify;
 
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
+import javax.persistence.EntityManager;
+import org.assertj.core.util.Lists;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Captor;
 import org.openlmis.notification.domain.Notification;
 import org.openlmis.notification.domain.PendingNotification;
 import org.openlmis.notification.domain.UserContactDetails;
@@ -35,6 +43,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
+import org.springframework.messaging.support.ErrorMessage;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.annotation.Transactional;
@@ -64,37 +73,80 @@ public class NotificationToSendFlowIntegrationTest {
   private NotificationToSendRetriever retriever;
 
   @Autowired
+  private EntityManager entityManager;
+
+  @Autowired
   @Qualifier(NotificationToSendRetriever.START_CHANNEL)
   private MessageChannel startChannel;
 
-  private UserContactDetails contactDetails = new UserContactDetailsDataBuilder()
-      .build();
+  private List<UserContactDetails> userContactDetails = Lists.newArrayList();
+  private List<Notification> emailNotifications = Lists.newArrayList();
 
-  private Notification emailNotification = new NotificationDataBuilder()
-      .withUserId(contactDetails.getId())
-      .withMessage(NotificationChannel.EMAIL, BODY, SUBJECT)
-      .buildAsNew();
-
-  private PendingNotification pendingEmailNotification =
-      new PendingNotification(emailNotification, NotificationChannel.EMAIL);
+  private List<PendingNotification> pendingEmailNotifications = Lists.newArrayList();
 
   @Before
   public void setUp() {
-    userContactDetailsRepository.saveAndFlush(contactDetails);
-    notificationRepository.saveAndFlush(emailNotification);
-    pendingNotificationRepository.saveAndFlush(pendingEmailNotification);
+    userContactDetails = IntStream
+        .range(0, 3)
+        .mapToObj(idx -> new UserContactDetailsDataBuilder().build())
+        .collect(Collectors.toList());
+
+    emailNotifications = userContactDetails
+        .stream()
+        .map(contactDetail -> new NotificationDataBuilder()
+            .withUserId(contactDetail.getId())
+            .withMessage(NotificationChannel.EMAIL, BODY, SUBJECT)
+            .buildAsNew())
+        .collect(Collectors.toList());
+
+    pendingEmailNotifications = emailNotifications
+        .stream()
+        .map(notification -> new PendingNotification(notification, NotificationChannel.EMAIL))
+        .collect(Collectors.toList());
+
+
+    userContactDetailsRepository.deleteAll();
+    userContactDetailsRepository.save(userContactDetails);
+
+    notificationRepository.deleteAll();
+    notificationRepository.save(emailNotifications);
+
+    pendingNotificationRepository.deleteAll();
+    pendingNotificationRepository.save(pendingEmailNotifications);
+
+    entityManager.flush();
   }
 
   @Test
   public void shouldSendEmail() {
     // given
     Message<Notification> message = retriever.retrieve();
+    UserContactDetails contactDetails = userContactDetails
+        .stream()
+        .filter(details -> Objects.equals(message.getPayload().getUserId(), details.getId()))
+        .findFirst()
+        .orElse(null);
+    PendingNotification pendingNotification = pendingEmailNotifications
+        .stream()
+        .filter(item -> Objects.equals(message.getPayload().getId(), item.getNotificationId()))
+        .findFirst()
+        .orElse(null);
 
     // when
+    assert null != contactDetails;
+    assert null != pendingNotification;
+
     startChannel.send(message);
 
     // then
     verify(emailSender).sendMail(contactDetails.getEmailAddress(), SUBJECT, BODY);
-    assertThat(pendingNotificationRepository.exists(pendingEmailNotification.getId())).isFalse();
+
+    assertThat(pendingNotificationRepository.exists(pendingNotification.getId())).isFalse();
+
+    assertThat(userContactDetailsRepository.count()).isEqualTo(userContactDetails.size());
+    assertThat(notificationRepository.count()).isEqualTo(emailNotifications.size());
+    assertThat(pendingNotificationRepository.count())
+        .isEqualTo(pendingEmailNotifications.size() - 1);
   }
+
 }

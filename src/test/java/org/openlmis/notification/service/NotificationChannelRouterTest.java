@@ -16,6 +16,7 @@
 package org.openlmis.notification.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.openlmis.notification.service.NotificationChannelRouter.CHANNEL_ROUTER_FAILURE_CHANNEL;
 import static org.openlmis.notification.service.NotificationChannelRouter.EMAIL_SEND_NOW_CHANNEL;
 
 import org.junit.Test;
@@ -30,7 +31,7 @@ public class NotificationChannelRouterTest {
   }
 
   @Test
-  public void shouldReturnNullForUnknownNotificationChannel() {
-    assertThat(router.route(null)).isNull();
+  public void shouldReturnErrorChannelForUnknownNotificationChannel() {
+    assertThat(router.route(null)).isEqualTo(CHANNEL_ROUTER_FAILURE_CHANNEL);
   }
 }

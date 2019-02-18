@@ -18,12 +18,16 @@ package org.openlmis.notification.service;
 import static org.openlmis.notification.service.NotificationTransformer.CHANNEL_HEADER;
 import static org.openlmis.notification.service.NotificationTransformer.READY_TO_SEND_CHANNEL;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.integration.annotation.MessageEndpoint;
 import org.springframework.integration.annotation.Router;
 import org.springframework.messaging.handler.annotation.Header;
 
 @MessageEndpoint
 public class NotificationChannelRouter {
+
+  private static final Logger LOGGER = LoggerFactory.getLogger(NotificationChannelRouter.class);
 
   static final String EMAIL_SEND_NOW_CHANNEL = "notificationToSend.sendNow.readyToSend.email";
 
@@ -32,9 +36,12 @@ public class NotificationChannelRouter {
    */
   @Router(inputChannel = READY_TO_SEND_CHANNEL)
   public String route(@Header(CHANNEL_HEADER) NotificationChannel channel) {
-    return NotificationChannel.EMAIL == channel
-        ? EMAIL_SEND_NOW_CHANNEL
-        : null;
+    if (NotificationChannel.EMAIL == channel) {
+      return EMAIL_SEND_NOW_CHANNEL;
+    }
+
+    LOGGER.error("Unknown notification channel: {}", channel);
+    return null;
   }
 
 }
