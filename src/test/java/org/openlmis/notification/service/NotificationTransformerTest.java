@@ -66,7 +66,7 @@ public class NotificationTransformerTest {
     Message<?> newMessage = transformer.extractNotificationMessage(message);
 
     // then
-    assertThat(newMessage.getHeaders()).isNull();
+    assertThat(newMessage).isNull();
 
   }
 }
