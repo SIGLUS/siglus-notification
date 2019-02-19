@@ -15,14 +15,26 @@
 
 package org.openlmis.notification.repository;
 
-import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
-import org.openlmis.notification.domain.DigestConfiguration;
+import org.openlmis.notification.domain.DigestSubscription;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
-public interface DigestConfigurationRepository extends JpaRepository<DigestConfiguration, UUID> {
+public interface DigestSubscriptionRepository extends JpaRepository<DigestSubscription, UUID> {
 
-  List<DigestConfiguration> findByTagIn(Collection<String> tags);
+  @Query("SELECT DISTINCT s"
+      + " FROM DigestSubscription AS s"
+      + " INNER JOIN s.userContactDetails AS u"
+      + " INNER JOIN s.digestConfiguration AS c"
+      + " WHERE u.referenceDataUserId = :userId")
+  List<DigestSubscription> getUserSubscriptions(@Param("userId") UUID userId);
+
+  @Query("DELETE FROM DigestSubscription AS s"
+      + " WHERE s.userContactDetails.referenceDataUserId = :userId")
+  @Modifying(clearAutomatically = true)
+  void deleteUserSubscriptions(@Param("userId") UUID userId);
 
 }

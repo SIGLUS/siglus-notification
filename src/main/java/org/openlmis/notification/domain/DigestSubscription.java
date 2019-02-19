@@ -15,8 +15,11 @@
 
 package org.openlmis.notification.domain;
 
-import javax.persistence.Column;
+import java.util.UUID;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
@@ -25,18 +28,50 @@ import lombok.NoArgsConstructor;
 import lombok.ToString;
 
 @Entity
-@Table(name = "digest_configurations")
+@Table(name = "digest_subscriptions")
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-public class DigestConfiguration extends BaseEntity {
-
-  @Column(columnDefinition = TEXT_COLUMN_DEFINITION, nullable = false)
-  private String message;
+public final class DigestSubscription extends BaseEntity {
 
   @Getter
-  @Column(nullable = false, unique = true)
-  private String tag;
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "userContactDetailsId", nullable = false)
+  private UserContactDetails userContactDetails;
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "digestConfigurationId", nullable = false)
+  private DigestConfiguration digestConfiguration;
+
+  private String time;
+
+  /**
+   * Exports current status of the object.
+   */
+  public void export(Exporter exporter) {
+    exporter.setId(getId());
+    exporter.setDigestConfiguration(digestConfiguration);
+    exporter.setTime(time);
+  }
+
+  public interface Exporter {
+
+    void setId(UUID id);
+
+    void setDigestConfiguration(DigestConfiguration configuration);
+
+    void setTime(String time);
+  }
+
+  public interface Importer {
+
+    UUID getId();
+
+    String getDigestConfigurationTag();
+
+    String getTime();
+
+  }
 
 }

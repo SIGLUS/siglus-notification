@@ -34,7 +34,6 @@ import org.junit.Test;
 import org.openlmis.notification.domain.Notification;
 import org.openlmis.notification.domain.UserContactDetails;
 import org.openlmis.notification.repository.NotificationRepository;
-import org.openlmis.notification.repository.UserContactDetailsRepository;
 import org.openlmis.notification.service.NotificationChannel;
 import org.openlmis.notification.service.PageDto;
 import org.openlmis.notification.service.referencedata.UserDto;
@@ -55,9 +54,6 @@ public class NotificationControllerIntegrationTest extends BaseWebIntegrationTes
   private static final String SUBJECT = "subject";
   private static final String CONTENT = "content";
 
-  @MockBean
-  private UserContactDetailsRepository userContactDetailsRepository;
-  
   @MockBean
   private NotificationRepository notificationRepository;
 

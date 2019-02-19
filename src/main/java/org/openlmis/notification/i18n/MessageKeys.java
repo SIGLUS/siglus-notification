@@ -30,6 +30,7 @@ public abstract class MessageKeys {
   private static final String NOTIFICATION_CHANNEL = "notificationChannel";
   private static final String NOTIFICATION = "notification";
   private static final String SEARCH = "search";
+  private static final String DIGEST_SUBSCRIPTION = "digestSubscription";
 
   private static final String AUTHENTICATION = "authentication";
   private static final String USER = "user";
@@ -121,6 +122,9 @@ public abstract class MessageKeys {
 
   public static final String ERROR_INVALID_UUID_FORMAT =
       join(ERROR_PREFIX, INVALID_UUID_FORMAT);
+
+  public static final String ERROR_INVALID_TAG_IN_SUBSCRIPTION =
+      join(ERROR_PREFIX, DIGEST_SUBSCRIPTION, "invalidTag");
 
   private MessageKeys() {
     throw new UnsupportedOperationException();

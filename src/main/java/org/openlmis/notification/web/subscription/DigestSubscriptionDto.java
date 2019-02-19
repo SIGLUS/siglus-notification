@@ -13,30 +13,48 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org.
  */
 
-package org.openlmis.notification.domain;
+package org.openlmis.notification.web.subscription;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.ToString;
+import org.openlmis.notification.domain.DigestConfiguration;
+import org.openlmis.notification.domain.DigestSubscription;
+import org.openlmis.notification.web.BaseDto;
 
-@Entity
-@Table(name = "digest_configurations")
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-public class DigestConfiguration extends BaseEntity {
+@EqualsAndHashCode(callSuper = true)
+public final class DigestSubscriptionDto
+    extends BaseDto
+    implements DigestSubscription.Importer, DigestSubscription.Exporter {
 
-  @Column(columnDefinition = TEXT_COLUMN_DEFINITION, nullable = false)
-  private String message;
-
-  @Getter
-  @Column(nullable = false, unique = true)
   private String tag;
+  private String time;
 
+  static DigestSubscriptionDto newInstance(DigestSubscription domain) {
+    DigestSubscriptionDto dto = new DigestSubscriptionDto();
+    domain.export(dto);
+
+    return dto;
+  }
+
+  @Override
+  @JsonIgnore
+  public void setDigestConfiguration(DigestConfiguration configuration) {
+    this.tag = configuration.getTag();
+  }
+
+  @Override
+  @JsonIgnore
+  public String getDigestConfigurationTag() {
+    return tag;
+  }
 }

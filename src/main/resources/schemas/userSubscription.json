@@ -1,0 +1,27 @@
+{
+  "type": "object",
+  "$schema": "http://json-schema.org/draft-04/schema",
+  "title": "User Subscription",
+  "description": "A single user subscriptions",
+  "properties": {
+    "id": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "title": "id"
+    },
+    "tag": {
+      "type": "string",
+      "title": "tag"
+    },
+    "time": {
+      "type": "string",
+      "title": "time"
+    }
+  },
+  "required": [
+    "tag",
+    "time"
+  ]
+}

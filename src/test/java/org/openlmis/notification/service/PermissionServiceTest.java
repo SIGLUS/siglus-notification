@@ -46,6 +46,7 @@ import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.test.util.ReflectionTestUtils;
 
 @RunWith(MockitoJUnitRunner.class)
+@SuppressWarnings("PMD.TooManyMethods")
 public class PermissionServiceTest {
 
   private static final String USERS_MANAGE = "USERS_MANAGE";
@@ -120,6 +121,48 @@ public class PermissionServiceTest {
     expectException();
 
     permissionService.canManageUserContactDetails(UUID.randomUUID());
+  }
+
+  @Test
+  public void shouldAllowOtherServiceToManageUserSubscriptions() {
+    when(securityContext.getAuthentication()).thenReturn(serviceAuthentication);
+
+    permissionService.canManageUserSubscriptions(UUID.randomUUID());
+  }
+
+  @Test
+  public void shouldAllowUserWithUsersManageRightToManageUserSubscriptions() {
+    when(securityContext.getAuthentication()).thenReturn(userAuthentication);
+    when(authenticationHelper.getCurrentUser()).thenReturn(userDto);
+    when(authenticationHelper.getRight(eq(USERS_MANAGE))).thenReturn(rightDto);
+    when(userReferenceDataService.hasRight(userDto.getId(), rightDto.getId(), null, null, null))
+        .thenReturn(new ResultDto<>(true));
+
+    permissionService.canManageUserSubscriptions(UUID.randomUUID());
+  }
+
+  @Test
+  public void shouldAllowUserWithoutUsersManageRightToManageOwnUserSubscriptions() {
+    when(securityContext.getAuthentication()).thenReturn(userAuthentication);
+    when(authenticationHelper.getCurrentUser()).thenReturn(userDto);
+    when(authenticationHelper.getRight(eq(USERS_MANAGE))).thenReturn(rightDto);
+    when(userReferenceDataService.hasRight(userDto.getId(), rightDto.getId(), null, null, null))
+        .thenReturn(new ResultDto<>(false));
+
+    permissionService.canManageUserSubscriptions(userDto.getId());
+  }
+
+  @Test
+  public void shouldNotAllowUserWithoutUsersManageRightToManageUserSubscriptions() {
+    when(securityContext.getAuthentication()).thenReturn(userAuthentication);
+    when(authenticationHelper.getCurrentUser()).thenReturn(userDto);
+    when(authenticationHelper.getRight(eq(USERS_MANAGE))).thenReturn(rightDto);
+    when(userReferenceDataService.hasRight(userDto.getId(), rightDto.getId(), null, null, null))
+        .thenReturn(new ResultDto<>(false));
+
+    expectException();
+
+    permissionService.canManageUserSubscriptions(UUID.randomUUID());
   }
 
   @Test

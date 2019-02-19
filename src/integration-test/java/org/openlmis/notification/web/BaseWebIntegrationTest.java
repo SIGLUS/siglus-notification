@@ -38,12 +38,17 @@ import guru.nidi.ramltester.restassured.RestAssuredClient;
 import javax.annotation.PostConstruct;
 import org.junit.Rule;
 import org.junit.runner.RunWith;
+import org.openlmis.notification.repository.DigestConfigurationRepository;
+import org.openlmis.notification.repository.DigestSubscriptionRepository;
 import org.openlmis.notification.repository.PendingNotificationRepository;
+import org.openlmis.notification.repository.UserContactDetailsRepository;
+import org.openlmis.notification.service.PermissionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.embedded.LocalServerPort;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.boot.test.mock.mockito.SpyBean;
 import org.springframework.http.HttpHeaders;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -83,6 +88,18 @@ public abstract class BaseWebIntegrationTest {
 
   @MockBean
   protected PendingNotificationRepository pendingNotificationRepository;
+
+  @MockBean
+  protected UserContactDetailsRepository userContactDetailsRepository;
+
+  @MockBean
+  protected DigestSubscriptionRepository digestSubscriptionRepository;
+
+  @MockBean
+  protected DigestConfigurationRepository digestConfigurationRepository;
+
+  @SpyBean
+  protected PermissionService permissionService;
 
   /**
    * Constructor for test.

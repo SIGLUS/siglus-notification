@@ -56,6 +56,15 @@ public class PermissionService {
   }
 
   /**
+   * Checks whether current request has access to manage user subscriptions.
+   */
+  public void canManageUserSubscriptions(UUID userId) {
+    if (!isCurrentUser(userId) && hasNoPermission(USERS_MANAGE, true)) {
+      throw new MissingPermissionException(USERS_MANAGE);
+    }
+  }
+
+  /**
    * Checks whether current request has access to sending notification.
    */
   public void canSendNotification() {
