@@ -19,7 +19,7 @@ import java.util.Arrays;
 import org.apache.commons.lang3.StringUtils;
 
 public enum NotificationChannel {
-  EMAIL;
+  EMAIL, SMS;
 
   /**
    * Tries to convert the given string value to one of available {@link NotificationChannel}.

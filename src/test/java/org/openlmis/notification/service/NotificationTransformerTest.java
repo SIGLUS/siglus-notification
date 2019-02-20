@@ -59,7 +59,8 @@ public class NotificationTransformerTest {
   public void shouldReturnNullIfThereIsNoMessageForGivenChannel() {
     // given
     message = MessageBuilder
-        .withPayload(notification)
+        .fromMessage(message)
+        .setHeader(CHANNEL_TO_USE_HEADER, NotificationChannel.SMS)
         .build();
 
     // when
