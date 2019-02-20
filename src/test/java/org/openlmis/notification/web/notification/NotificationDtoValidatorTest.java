@@ -79,7 +79,7 @@ public class NotificationDtoValidatorTest extends BaseValidatorTest {
 
   @Test
   public void shouldRejectIfChannelIsNotSupported() {
-    request.setMessageMap(Collections.singletonMap("sms", new MessageDto()));
+    request.setMessageMap(Collections.singletonMap("ab", new MessageDto()));
 
     validator.validate(request, errors);
     assertErrorMessage(errors, "messages", ERROR_UNSUPPORTED_NOTIFICATION_CHANNEL);
