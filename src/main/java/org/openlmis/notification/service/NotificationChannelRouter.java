@@ -40,7 +40,7 @@ public class NotificationChannelRouter {
       return EMAIL_SEND_NOW_CHANNEL;
     }
 
-    LOGGER.error("Unknown notification channel: {}", channel);
+    LOGGER.warn("Unknown notification channel: {}", channel);
     return null;
   }
 

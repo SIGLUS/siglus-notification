@@ -56,7 +56,7 @@ public class NotificationTransformer {
         .orElse(null);
 
     if (null == notificationMessage) {
-      LOGGER.error("Can't send notification, can't find message for channel: {}", channel);
+      LOGGER.warn("Can't extract a notification message for channel: {}", channel);
       return null;
     }
 
