@@ -18,7 +18,6 @@ package org.openlmis.notification.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.openlmis.notification.service.NotificationToSendRetriever.CHANNEL_TO_USE_HEADER;
 import static org.openlmis.notification.service.NotificationTransformer.CHANNEL_HEADER;
-import static org.openlmis.notification.service.NotificationTransformer.NOTIFICATION_ID_HEADER;
 
 import org.junit.Test;
 import org.openlmis.notification.domain.Notification;
@@ -51,7 +50,6 @@ public class NotificationTransformerTest {
     assertThat(newMessage.getPayload()).isEqualTo(existingMessage);
     assertThat(newMessage.getHeaders())
         .containsEntry(CHANNEL_HEADER, existingMessage.getChannel())
-        .containsEntry(NOTIFICATION_ID_HEADER, notification.getId())
         .doesNotContainKey(CHANNEL_TO_USE_HEADER);
   }
 

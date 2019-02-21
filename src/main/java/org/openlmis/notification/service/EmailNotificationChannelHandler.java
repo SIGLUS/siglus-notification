@@ -19,7 +19,6 @@ import static org.apache.commons.lang3.BooleanUtils.isTrue;
 import static org.openlmis.notification.service.NotificationChannelRouter.EMAIL_SEND_NOW_CHANNEL;
 import static org.openlmis.notification.service.NotificationToSendRetriever.IMPORTANT_HEADER;
 import static org.openlmis.notification.service.NotificationToSendRetriever.RECIPIENT_HEADER;
-import static org.openlmis.notification.service.NotificationTransformer.NOTIFICATION_ID_HEADER;
 
 import java.util.UUID;
 import org.openlmis.notification.domain.NotificationMessage;
@@ -49,7 +48,6 @@ public class EmailNotificationChannelHandler {
   @ServiceActivator(inputChannel = EMAIL_SEND_NOW_CHANNEL)
   public void handle(NotificationMessage payload,
       @Header(RECIPIENT_HEADER) UUID recipient,
-      @Header(NOTIFICATION_ID_HEADER) UUID notificationId,
       @Header(IMPORTANT_HEADER) Boolean important) {
     UserContactDetails contactDetails = userContactDetailsRepository.findOne(recipient);
 

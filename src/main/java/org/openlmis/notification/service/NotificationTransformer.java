@@ -36,7 +36,6 @@ public class NotificationTransformer {
   static final String READY_TO_SEND_CHANNEL = "notificationToSend.readyToSend";
 
   static final String CHANNEL_HEADER = "channel";
-  static final String NOTIFICATION_ID_HEADER = "notificationId";
   static final String TAG_HEADER = "tag";
 
   /**
@@ -65,7 +64,6 @@ public class NotificationTransformer {
         .withPayload(notificationMessage)
         .copyHeaders(message.getHeaders())
         .setHeader(CHANNEL_HEADER, notificationMessage.getChannel())
-        .setHeader(NOTIFICATION_ID_HEADER, notification.getId())
         .setHeader(TAG_HEADER, notificationMessage.getTag())
         .removeHeader(CHANNEL_TO_USE_HEADER)
         .build();

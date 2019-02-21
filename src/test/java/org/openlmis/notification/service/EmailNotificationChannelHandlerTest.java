@@ -56,7 +56,6 @@ public class EmailNotificationChannelHandlerTest {
   private NotificationMessage message = notification.getMessages().get(0);
 
   private UUID recipient = contactDetails.getId();
-  private UUID notificationId = notification.getId();
 
   @Before
   public void setUp() {
@@ -66,7 +65,7 @@ public class EmailNotificationChannelHandlerTest {
   @Test
   public void shouldSendMessage() {
     // when
-    handler.handle(message, recipient, notificationId, false);
+    handler.handle(message, recipient, false);
 
     // then
     verify(emailSender)
@@ -79,7 +78,7 @@ public class EmailNotificationChannelHandlerTest {
     contactDetails.getEmailDetails().setEmail(null);
 
     // when
-    handler.handle(message, recipient, notificationId, false);
+    handler.handle(message, recipient, false);
 
     // then
     verifyZeroInteractions(emailSender);
@@ -91,7 +90,7 @@ public class EmailNotificationChannelHandlerTest {
     contactDetails.getEmailDetails().setEmailVerified(false);
 
     // when
-    handler.handle(message, recipient, notificationId, false);
+    handler.handle(message, recipient, false);
 
     // then
     verifyZeroInteractions(emailSender);
@@ -103,7 +102,7 @@ public class EmailNotificationChannelHandlerTest {
     contactDetails.getEmailDetails().setEmailVerified(false);
 
     // when
-    handler.handle(message, recipient, notificationId, true);
+    handler.handle(message, recipient, true);
 
     // then
     verify(emailSender)
