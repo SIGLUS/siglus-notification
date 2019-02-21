@@ -23,6 +23,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
+import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -33,8 +34,9 @@ import org.openlmis.notification.service.NotificationChannel;
 @Entity
 @Table(name = "notification_messages",
     uniqueConstraints = @UniqueConstraint(name = "unq_notification_messages_notificationid_channel",
-    columnNames = { "notificationId", "channel" }))
+        columnNames = {"notificationId", "channel"}))
 @NoArgsConstructor
+@AllArgsConstructor
 @Getter
 @EqualsAndHashCode(callSuper = true, exclude = "notification")
 public class NotificationMessage extends BaseEntity {
@@ -55,6 +57,10 @@ public class NotificationMessage extends BaseEntity {
   @Column(columnDefinition = TEXT_COLUMN_DEFINITION)
   private String subject;
 
+  @Getter
+  @Column(nullable = false, unique = true)
+  private String tag;
+
   /**
    * Default constructor.
    *
@@ -62,19 +68,22 @@ public class NotificationMessage extends BaseEntity {
    * @param body body
    */
   public NotificationMessage(NotificationChannel channel, String body) {
-    this.channel = channel;
-    this.body = body;
+    this(channel, body, null);
   }
 
   /**
    * Constructor which includes subject.
-   * 
+   *
    * @param channel channel
    * @param body body
    * @param subject subject
    */
   public NotificationMessage(NotificationChannel channel, String body, String subject) {
-    this(channel, body);
-    this.subject = subject;
+    this(channel, body, subject, null);
+  }
+
+  public NotificationMessage(NotificationChannel channel, String body,
+      String subject, String tag) {
+    this(null, channel, body, subject, tag);
   }
 }

@@ -49,12 +49,17 @@ public class NotificationDataBuilder {
   }
 
   public NotificationDataBuilder withMessage(NotificationChannel channel, String body) {
-    return withMessage(new NotificationMessage(channel, body));
+    return withMessage(channel, body, null);
   }
 
   public NotificationDataBuilder withMessage(NotificationChannel channel, String body,
       String subject) {
-    return withMessage(new NotificationMessage(channel, body, subject));
+    return withMessage(channel, body, subject, null);
+  }
+
+  public NotificationDataBuilder withMessage(NotificationChannel channel, String body,
+      String subject, String tag) {
+    return withMessage(new NotificationMessage(channel, body, subject, tag));
   }
 
   public NotificationDataBuilder withEmptyMessage(NotificationChannel channel) {

@@ -58,7 +58,8 @@ public final class NotificationDto implements Notification.Exporter, Notificatio
   public void setMessages(List<NotificationMessage> messages) {
     this.messageMap = new HashMap<>();
     for (NotificationMessage message : messages) {
-      MessageDto messageDto = new MessageDto(message.getSubject(), message.getBody());
+      MessageDto messageDto = new MessageDto(message.getSubject(),
+          message.getBody(), message.getTag());
       this.messageMap.put(message.getChannel().toString().toLowerCase(), messageDto);
     }
   }
@@ -71,7 +72,7 @@ public final class NotificationDto implements Notification.Exporter, Notificatio
       String key = entry.getKey();
       MessageDto messageDto = entry.getValue();
       messageList.add(new NotificationMessage(NotificationChannel.fromString(key),
-          messageDto.getBody(), messageDto.getSubject()));
+          messageDto.getBody(), messageDto.getSubject(), messageDto.getTag()));
     }
     return messageList;
   }
