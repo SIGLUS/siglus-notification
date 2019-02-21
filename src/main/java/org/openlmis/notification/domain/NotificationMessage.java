@@ -58,7 +58,6 @@ public class NotificationMessage extends BaseEntity {
   private String subject;
 
   @Getter
-  @Column(nullable = false, unique = true)
   private String tag;
 
   /**
