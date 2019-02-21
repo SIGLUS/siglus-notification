@@ -15,7 +15,9 @@
 
 package org.openlmis.notification.service;
 
+import static org.apache.commons.lang3.BooleanUtils.isTrue;
 import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.openlmis.notification.service.NotificationToSendRetriever.IMPORTANT_HEADER;
 import static org.openlmis.notification.service.NotificationToSendRetriever.RECIPIENT_HEADER;
 import static org.openlmis.notification.service.NotificationTransformer.READY_TO_SEND_CHANNEL;
 import static org.openlmis.notification.service.NotificationTransformer.TAG_HEADER;
@@ -57,7 +59,13 @@ public class DigestFilter {
    */
   @Router(inputChannel = READY_TO_SEND_CHANNEL)
   public String route(@Header(RECIPIENT_HEADER) UUID recipient,
+      @Header(IMPORTANT_HEADER) boolean important,
       @Header(value = TAG_HEADER, required = false) String tag) {
+    if (isTrue(important)) {
+      LOGGER.debug("The important flag is set");
+      return SEND_NOW_PREPARE_CHANNEL;
+    }
+
     if (!isFeatureActive()) {
       LOGGER.warn("Digest feature is disabled");
       return SEND_NOW_PREPARE_CHANNEL;

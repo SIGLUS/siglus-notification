@@ -37,9 +37,13 @@ import org.openlmis.notification.testutils.DigestConfigurationDataBuilder;
 public class DigestFilterTest {
 
   private static final UUID RECIPIENT = UUID.randomUUID();
+
   private static final String CORRECT_TAG = "correct-tag";
   private static final String INCORRECT_TAG = "in" + CORRECT_TAG;
   private static final String EMPTY_TAG = "";
+
+  private static final boolean IMPORTANT = true;
+  private static final boolean UNIMPORTANT = false;
 
   @Rule
   public MockitoRule mockitoRule = MockitoJUnit.rule();
@@ -72,12 +76,21 @@ public class DigestFilterTest {
   }
 
   @Test
+  public void shouldReturnSendNowChannelIfImportantFlagIsSet() {
+    // when
+    String channelName = filter.route(RECIPIENT, IMPORTANT, EMPTY_TAG);
+
+    // then
+    assertThat(channelName).isEqualTo(DigestFilter.SEND_NOW_PREPARE_CHANNEL);
+  }
+
+  @Test
   public void shouldReturnSendNowChannelIfDigestFeatureIsOff() {
     // given
     digestFeature.setEnabled(false);
 
     // when
-    String channelName = filter.route(RECIPIENT, CORRECT_TAG);
+    String channelName = filter.route(RECIPIENT, UNIMPORTANT, CORRECT_TAG);
 
     // then
     assertThat(channelName).isEqualTo(DigestFilter.SEND_NOW_PREPARE_CHANNEL);
@@ -86,7 +99,7 @@ public class DigestFilterTest {
   @Test
   public void shouldReturnSendNowChannelIfTagIsEmpty() {
     // when
-    String channelName = filter.route(RECIPIENT, EMPTY_TAG);
+    String channelName = filter.route(RECIPIENT, UNIMPORTANT, EMPTY_TAG);
 
     // then
     assertThat(channelName).isEqualTo(DigestFilter.SEND_NOW_PREPARE_CHANNEL);
@@ -95,7 +108,7 @@ public class DigestFilterTest {
   @Test
   public void shouldReturnSendNowChannelIfConfigurationNotExistForTag() {
     // when
-    String channelName = filter.route(RECIPIENT, INCORRECT_TAG);
+    String channelName = filter.route(RECIPIENT, UNIMPORTANT, INCORRECT_TAG);
 
     // then
     assertThat(channelName).isEqualTo(DigestFilter.SEND_NOW_PREPARE_CHANNEL);
@@ -109,7 +122,7 @@ public class DigestFilterTest {
         .willReturn(false);
 
     // when
-    String channelName = filter.route(RECIPIENT, CORRECT_TAG);
+    String channelName = filter.route(RECIPIENT, UNIMPORTANT, CORRECT_TAG);
 
     // then
     assertThat(channelName).isEqualTo(DigestFilter.SEND_NOW_PREPARE_CHANNEL);
@@ -118,7 +131,7 @@ public class DigestFilterTest {
   @Test
   public void shouldReturnPostponeChannelIfUserIsSubscribedForTag() {
     // when
-    String channelName = filter.route(RECIPIENT, CORRECT_TAG);
+    String channelName = filter.route(RECIPIENT, UNIMPORTANT, CORRECT_TAG);
 
     // then
     assertThat(channelName).isEqualTo(DigestFilter.SEND_NOW_POSTPONE_CHANNEL);
