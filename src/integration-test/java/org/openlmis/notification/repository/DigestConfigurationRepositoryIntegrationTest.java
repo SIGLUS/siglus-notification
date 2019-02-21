@@ -33,6 +33,8 @@ import org.springframework.data.repository.CrudRepository;
 public class DigestConfigurationRepositoryIntegrationTest
     extends BaseCrudRepositoryIntegrationTest<DigestConfiguration, UUID> {
 
+  private static final int COUNT = 10;
+
   @Autowired
   private DigestConfigurationRepository repository;
 
@@ -51,10 +53,29 @@ public class DigestConfigurationRepositoryIntegrationTest
   @Before
   public void setUp() {
     configurations = IntStream
-        .range(0, 10)
+        .range(0, COUNT)
         .mapToObj(idx -> generateInstance())
         .peek(repository::save)
         .collect(Collectors.toList());
+  }
+
+  @Test
+  public void shouldFindDigestConfigurationBySingleTag() {
+    for (int i = 0; i < COUNT; ++i) {
+      // given
+      String tag = configurations.get(i).getTag();
+
+      // when
+      DigestConfiguration found = repository.findByTag(tag);
+
+      // then
+      assertThat(found).isEqualTo(configurations.get(i));
+    }
+  }
+
+  @Test
+  public void shouldNotFindDigestConfigurationIfTagIsIncorrect() {
+    assertThat(repository.findByTag("integration-test-incorrect-tag")).isNull();
   }
 
   @Test

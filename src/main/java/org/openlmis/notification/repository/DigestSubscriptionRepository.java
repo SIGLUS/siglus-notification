@@ -17,6 +17,7 @@ package org.openlmis.notification.repository;
 
 import java.util.List;
 import java.util.UUID;
+import org.openlmis.notification.domain.DigestConfiguration;
 import org.openlmis.notification.domain.DigestSubscription;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -31,6 +32,13 @@ public interface DigestSubscriptionRepository extends JpaRepository<DigestSubscr
       + " INNER JOIN s.digestConfiguration AS c"
       + " WHERE u.referenceDataUserId = :userId")
   List<DigestSubscription> getUserSubscriptions(@Param("userId") UUID userId);
+
+  @Query("SELECT CASE WHEN count(s) = 1 THEN TRUE ELSE FALSE END"
+      + " FROM DigestSubscription AS s"
+      + " WHERE s.userContactDetails.referenceDataUserId = :userId"
+      + " AND s.digestConfiguration = :configuration")
+  boolean existsBy(@Param("userId") UUID userId,
+      @Param("configuration") DigestConfiguration configuration);
 
   @Query("DELETE FROM DigestSubscription AS s"
       + " WHERE s.userContactDetails.referenceDataUserId = :userId")

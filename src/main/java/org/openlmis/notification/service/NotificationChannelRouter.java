@@ -15,8 +15,8 @@
 
 package org.openlmis.notification.service;
 
+import static org.openlmis.notification.service.DigestFilter.SEND_NOW_PREPARE_CHANNEL;
 import static org.openlmis.notification.service.NotificationTransformer.CHANNEL_HEADER;
-import static org.openlmis.notification.service.NotificationTransformer.READY_TO_SEND_CHANNEL;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +34,7 @@ public class NotificationChannelRouter {
   /**
    * Defines which handler should be used for notification.
    */
-  @Router(inputChannel = READY_TO_SEND_CHANNEL)
+  @Router(inputChannel = SEND_NOW_PREPARE_CHANNEL)
   public String route(@Header(CHANNEL_HEADER) NotificationChannel channel) {
     if (NotificationChannel.EMAIL == channel) {
       return EMAIL_SEND_NOW_CHANNEL;

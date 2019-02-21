@@ -16,27 +16,112 @@
 package org.openlmis.notification.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.BDDMockito.given;
 
+import java.util.UUID;
+import org.assertj.core.util.Lists;
+import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
-import org.springframework.messaging.Message;
+import org.openlmis.notification.domain.DigestConfiguration;
+import org.openlmis.notification.repository.DigestConfigurationRepository;
+import org.openlmis.notification.repository.DigestSubscriptionRepository;
+import org.openlmis.notification.service.referencedata.TogglzFeatureDto;
+import org.openlmis.notification.service.referencedata.TogglzReferenceDataService;
+import org.openlmis.notification.testutils.DigestConfigurationDataBuilder;
 
 public class DigestFilterTest {
+
+  private static final UUID RECIPIENT = UUID.randomUUID();
+  private static final String CORRECT_TAG = "correct-tag";
+  private static final String INCORRECT_TAG = "in" + CORRECT_TAG;
+  private static final String EMPTY_TAG = "";
 
   @Rule
   public MockitoRule mockitoRule = MockitoJUnit.rule();
 
-  private DigestFilter filter = new DigestFilter();
+  @Mock
+  private TogglzReferenceDataService togglzReferenceDataService;
 
   @Mock
-  private Message<?> message;
+  private DigestConfigurationRepository digestConfigurationRepository;
+
+  @Mock
+  private DigestSubscriptionRepository digestSubscriptionRepository;
+
+  @InjectMocks
+  private DigestFilter filter = new DigestFilter();
+
+  private DigestConfiguration configuration = new DigestConfigurationDataBuilder()
+      .withTag(CORRECT_TAG)
+      .build();
+  private TogglzFeatureDto digestFeature =
+      new TogglzFeatureDto(DigestFilter.CONSOLIDATE_NOTIFICATIONS, true, null, null);
+
+  @Before
+  public void setUp() {
+    given(togglzReferenceDataService.findAll()).willReturn(Lists.newArrayList(digestFeature));
+    given(digestConfigurationRepository.findByTag(CORRECT_TAG)).willReturn(configuration);
+    given(digestSubscriptionRepository
+        .existsBy(RECIPIENT, configuration))
+        .willReturn(true);
+  }
 
   @Test
-  public void shouldAlwaysReturnSendNowChannel() {
-    assertThat(filter.route(message)).isEqualTo(DigestFilter.SEND_NOW_PREPARE_CHANNEL);
+  public void shouldReturnSendNowChannelIfDigestFeatureIsOff() {
+    // given
+    digestFeature.setEnabled(false);
+
+    // when
+    String channelName = filter.route(RECIPIENT, CORRECT_TAG);
+
+    // then
+    assertThat(channelName).isEqualTo(DigestFilter.SEND_NOW_PREPARE_CHANNEL);
+  }
+
+  @Test
+  public void shouldReturnSendNowChannelIfTagIsEmpty() {
+    // when
+    String channelName = filter.route(RECIPIENT, EMPTY_TAG);
+
+    // then
+    assertThat(channelName).isEqualTo(DigestFilter.SEND_NOW_PREPARE_CHANNEL);
+  }
+
+  @Test
+  public void shouldReturnSendNowChannelIfConfigurationNotExistForTag() {
+    // when
+    String channelName = filter.route(RECIPIENT, INCORRECT_TAG);
+
+    // then
+    assertThat(channelName).isEqualTo(DigestFilter.SEND_NOW_PREPARE_CHANNEL);
+  }
+
+  @Test
+  public void shouldReturnSendNowChannelIfUserIsNotSubscribedForTag() {
+    // given
+    given(digestSubscriptionRepository
+        .existsBy(RECIPIENT, configuration))
+        .willReturn(false);
+
+    // when
+    String channelName = filter.route(RECIPIENT, CORRECT_TAG);
+
+    // then
+    assertThat(channelName).isEqualTo(DigestFilter.SEND_NOW_PREPARE_CHANNEL);
+  }
+
+  @Test
+  public void shouldReturnPostponeChannelIfUserIsSubscribedForTag() {
+    // when
+    String channelName = filter.route(RECIPIENT, CORRECT_TAG);
+
+    // then
+    assertThat(channelName).isEqualTo(DigestFilter.SEND_NOW_POSTPONE_CHANNEL);
   }
 
 }

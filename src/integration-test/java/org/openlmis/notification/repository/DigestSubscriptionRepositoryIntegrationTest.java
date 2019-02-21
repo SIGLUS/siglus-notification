@@ -37,6 +37,8 @@ import org.springframework.data.repository.CrudRepository;
 public class DigestSubscriptionRepositoryIntegrationTest
     extends BaseCrudRepositoryIntegrationTest<DigestSubscription, UUID> {
 
+  private static final int COUNT = 10;
+
   @Autowired
   private DigestSubscriptionRepository repository;
 
@@ -70,7 +72,7 @@ public class DigestSubscriptionRepositoryIntegrationTest
   @Before
   public void setUp() {
     userSubscriptions = IntStream
-        .range(0, 10)
+        .range(0, COUNT)
         .mapToObj(idx -> generateInstance())
         .peek(repository::save)
         .collect(Collectors.groupingBy(s -> s.getUserContactDetails().getId()));
@@ -116,5 +118,42 @@ public class DigestSubscriptionRepositoryIntegrationTest
     assertThat(subscriptions1).isEmpty();
     assertThat(subscriptions2).isEmpty();
     assertThat(subscriptions3).hasSize(userSubscriptions.get(user3).size());
+  }
+
+  @Test
+  public void shouldReturnTrueIfUserSubscribesForDigestConfiguration() {
+    for (List<DigestSubscription> subscriptions : userSubscriptions.values()) {
+      // given
+      DigestSubscription subscription = subscriptions.get(0);
+      UserContactDetails contactDetails = subscription.getUserContactDetails();
+      DigestConfiguration configuration = subscription.getDigestConfiguration();
+
+      // when
+      boolean exists = repository.existsBy(contactDetails.getId(), configuration);
+
+      // then
+      assertThat(exists).isTrue();
+    }
+  }
+
+  @Test
+  public void shouldReturnFalseIfUserSubscribesForDigestConfiguration() {
+    // given
+    Iterator<List<DigestSubscription>> valueIterator = userSubscriptions.values().iterator();
+    DigestSubscription subscription1 = valueIterator.next().get(0);
+    DigestSubscription subscription2 = valueIterator.next().get(0);
+
+    // we take contact details from one subscription
+    // and configuration from another
+    UserContactDetails contactDetails = subscription1.getUserContactDetails();
+    DigestConfiguration configuration = subscription2.getDigestConfiguration();
+
+    // when
+    boolean exists = repository.existsBy(contactDetails.getId(), configuration);
+
+    // then
+    assertThat(exists).isFalse();
+
+
   }
 }

@@ -16,6 +16,7 @@
 package org.openlmis.notification.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.verify;
 
 import java.util.List;
@@ -33,6 +34,8 @@ import org.openlmis.notification.domain.UserContactDetails;
 import org.openlmis.notification.repository.NotificationRepository;
 import org.openlmis.notification.repository.PendingNotificationRepository;
 import org.openlmis.notification.repository.UserContactDetailsRepository;
+import org.openlmis.notification.service.referencedata.TogglzFeatureDto;
+import org.openlmis.notification.service.referencedata.TogglzReferenceDataService;
 import org.openlmis.notification.util.NotificationDataBuilder;
 import org.openlmis.notification.util.UserContactDetailsDataBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -57,6 +60,9 @@ public class NotificationToSendFlowIntegrationTest {
   @MockBean
   private EmailSender emailSender;
 
+  @MockBean
+  private TogglzReferenceDataService togglzReferenceDataService;
+
   @Autowired
   private NotificationRepository notificationRepository;
 
@@ -80,6 +86,9 @@ public class NotificationToSendFlowIntegrationTest {
   private List<Notification> emailNotifications = Lists.newArrayList();
 
   private List<PendingNotification> pendingEmailNotifications = Lists.newArrayList();
+
+  private TogglzFeatureDto digestFeature =
+      new TogglzFeatureDto(DigestFilter.CONSOLIDATE_NOTIFICATIONS, true, null, null);
 
   @Before
   public void setUp() {
@@ -112,11 +121,14 @@ public class NotificationToSendFlowIntegrationTest {
     pendingNotificationRepository.save(pendingEmailNotifications);
 
     entityManager.flush();
+
+    given(togglzReferenceDataService.findAll()).willReturn(Lists.newArrayList(digestFeature));
   }
 
   @Test
   public void shouldSendEmail() {
     // given
+    digestFeature.setEnabled(false);
     Message<Notification> message = retriever.retrieve();
     UserContactDetails contactDetails = userContactDetails
         .stream()

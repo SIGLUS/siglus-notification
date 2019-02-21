@@ -15,20 +15,85 @@
 
 package org.openlmis.notification.service;
 
-import static org.openlmis.notification.service.AllowNotifyFilter.ALLOW_NOTIFY_CHANNEL;
+import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.openlmis.notification.service.NotificationToSendRetriever.RECIPIENT_HEADER;
+import static org.openlmis.notification.service.NotificationTransformer.READY_TO_SEND_CHANNEL;
+import static org.openlmis.notification.service.NotificationTransformer.TAG_HEADER;
 
+import java.util.UUID;
+import org.openlmis.notification.domain.DigestConfiguration;
+import org.openlmis.notification.repository.DigestConfigurationRepository;
+import org.openlmis.notification.repository.DigestSubscriptionRepository;
+import org.openlmis.notification.service.referencedata.TogglzFeatureDto;
+import org.openlmis.notification.service.referencedata.TogglzReferenceDataService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.integration.annotation.MessageEndpoint;
 import org.springframework.integration.annotation.Router;
-import org.springframework.messaging.Message;
+import org.springframework.messaging.handler.annotation.Header;
 
 @MessageEndpoint
 public class DigestFilter {
 
-  static final String SEND_NOW_PREPARE_CHANNEL = "notificationToSend.sendNow.prepare";
+  private static final Logger LOGGER = LoggerFactory.getLogger(DigestFilter.class);
 
-  @Router(inputChannel = ALLOW_NOTIFY_CHANNEL)
-  public String route(Message<?> message) {
-    return SEND_NOW_PREPARE_CHANNEL;
+  static final String SEND_NOW_PREPARE_CHANNEL = "notificationToSend.sendNow.prepare";
+  public static final String SEND_NOW_POSTPONE_CHANNEL = "notificationToSend.sendNow.postpone";
+
+  static final String CONSOLIDATE_NOTIFICATIONS = "CONSOLIDATE_NOTIFICATIONS";
+
+  @Autowired
+  private TogglzReferenceDataService togglzReferenceDataService;
+
+  @Autowired
+  private DigestConfigurationRepository digestConfigurationRepository;
+
+  @Autowired
+  private DigestSubscriptionRepository digestSubscriptionRepository;
+
+  /**
+   * Checks if the notification should be sent now or postpone for later.
+   */
+  @Router(inputChannel = READY_TO_SEND_CHANNEL)
+  public String route(@Header(RECIPIENT_HEADER) UUID recipient,
+      @Header(value = TAG_HEADER, required = false) String tag) {
+    if (!isFeatureActive()) {
+      LOGGER.warn("Digest feature is disabled");
+      return SEND_NOW_PREPARE_CHANNEL;
+    }
+
+    if (isBlank(tag)) {
+      LOGGER.warn("Message has no tag header");
+      return SEND_NOW_PREPARE_CHANNEL;
+    }
+
+    DigestConfiguration configuration = digestConfigurationRepository.findByTag(tag);
+
+    if (null == configuration) {
+      LOGGER.warn("Digest configuration for tag {} does not exist", tag);
+      return SEND_NOW_PREPARE_CHANNEL;
+    }
+
+    boolean subscriptionExists = digestSubscriptionRepository.existsBy(recipient, configuration);
+
+    if (!subscriptionExists) {
+      LOGGER.info("A notification for a user {} with {} tag will be sent now", recipient, tag);
+      return SEND_NOW_PREPARE_CHANNEL;
+    }
+
+    LOGGER.info("A notification for a user {} with {} tag will be postpone", recipient, tag);
+    return SEND_NOW_POSTPONE_CHANNEL;
+  }
+
+  private boolean isFeatureActive() {
+    return togglzReferenceDataService
+        .findAll()
+        .stream()
+        .filter(feature -> CONSOLIDATE_NOTIFICATIONS.equals(feature.getName()))
+        .findFirst()
+        .map(TogglzFeatureDto::isEnabled)
+        .orElse(false);
   }
 
 }

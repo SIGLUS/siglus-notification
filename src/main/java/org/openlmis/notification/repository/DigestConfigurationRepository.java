@@ -25,4 +25,6 @@ public interface DigestConfigurationRepository extends JpaRepository<DigestConfi
 
   List<DigestConfiguration> findByTagIn(Collection<String> tags);
 
+  DigestConfiguration findByTag(String tag);
+
 }

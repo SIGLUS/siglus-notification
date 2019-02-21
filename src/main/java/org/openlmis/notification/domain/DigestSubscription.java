@@ -40,6 +40,7 @@ public final class DigestSubscription extends BaseEntity {
   @JoinColumn(name = "userContactDetailsId", nullable = false)
   private UserContactDetails userContactDetails;
 
+  @Getter
   @ManyToOne(fetch = FetchType.LAZY)
   @JoinColumn(name = "digestConfigurationId", nullable = false)
   private DigestConfiguration digestConfiguration;
