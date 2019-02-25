@@ -4,13 +4,6 @@
   "title": "User Subscription",
   "description": "A single user subscriptions",
   "properties": {
-    "id": {
-      "type": [
-        "string",
-        "null"
-      ],
-      "title": "id"
-    },
     "tag": {
       "type": "string",
       "title": "tag"

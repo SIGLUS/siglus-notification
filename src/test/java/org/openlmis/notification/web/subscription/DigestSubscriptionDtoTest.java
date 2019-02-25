@@ -43,7 +43,6 @@ public class DigestSubscriptionDtoTest {
 
     // then
     assertThat(dto).isNotNull();
-    assertThat(dto.getId()).isEqualTo(domain.getId());
     assertThat(dto.getDigestConfigurationTag()).isEqualTo(configuration.getTag());
     assertThat(dto.getTime()).isEqualTo(time);
   }
@@ -53,7 +52,6 @@ public class DigestSubscriptionDtoTest {
     EqualsVerifier
         .forClass(DigestSubscriptionDto.class)
         .suppress(Warning.NONFINAL_FIELDS)
-        .withRedefinedSuperclass()
         .verify();
   }
 

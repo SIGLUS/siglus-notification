@@ -15,7 +15,6 @@
 
 package org.openlmis.notification.domain;
 
-import java.util.UUID;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
@@ -51,14 +50,11 @@ public final class DigestSubscription extends BaseEntity {
    * Exports current status of the object.
    */
   public void export(Exporter exporter) {
-    exporter.setId(getId());
     exporter.setDigestConfiguration(digestConfiguration);
     exporter.setTime(time);
   }
 
   public interface Exporter {
-
-    void setId(UUID id);
 
     void setDigestConfiguration(DigestConfiguration configuration);
 
@@ -66,8 +62,6 @@ public final class DigestSubscription extends BaseEntity {
   }
 
   public interface Importer {
-
-    UUID getId();
 
     String getDigestConfigurationTag();
 

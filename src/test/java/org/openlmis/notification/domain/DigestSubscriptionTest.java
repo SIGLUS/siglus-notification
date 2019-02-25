@@ -19,7 +19,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.google.common.collect.Maps;
 import java.util.Map;
-import java.util.UUID;
 import lombok.AllArgsConstructor;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import org.junit.Test;
@@ -29,7 +28,6 @@ import org.openlmis.notification.testutils.ToStringTestUtils;
 
 public class DigestSubscriptionTest {
 
-  private static final String ID = "id";
   private static final String CONFIGURATION = "configuration";
   private static final String TIME = "time";
 
@@ -48,7 +46,6 @@ public class DigestSubscriptionTest {
     subscription.export(exporter);
 
     assertThat(map)
-        .containsEntry(ID, subscription.getId())
         .containsEntry(CONFIGURATION, configuration)
         .containsEntry(TIME, time);
   }
@@ -70,11 +67,6 @@ public class DigestSubscriptionTest {
   private static final class DummyExporter implements DigestSubscription.Exporter {
 
     private Map<String, Object> map;
-
-    @Override
-    public void setId(UUID id) {
-      map.put(ID, id);
-    }
 
     @Override
     public void setDigestConfiguration(DigestConfiguration configuration) {

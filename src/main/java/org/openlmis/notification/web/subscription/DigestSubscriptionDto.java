@@ -24,16 +24,14 @@ import lombok.Setter;
 import lombok.ToString;
 import org.openlmis.notification.domain.DigestConfiguration;
 import org.openlmis.notification.domain.DigestSubscription;
-import org.openlmis.notification.web.BaseDto;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-@ToString(callSuper = true)
-@EqualsAndHashCode(callSuper = true)
+@ToString
+@EqualsAndHashCode
 public final class DigestSubscriptionDto
-    extends BaseDto
     implements DigestSubscription.Importer, DigestSubscription.Exporter {
 
   private String tag;

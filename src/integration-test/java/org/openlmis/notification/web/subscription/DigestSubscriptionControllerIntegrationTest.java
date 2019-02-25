@@ -94,7 +94,7 @@ public class DigestSubscriptionControllerIntegrationTest extends BaseWebIntegrat
         .get(USER_SUBSCRIPTIONS_URL)
         .then()
         .statusCode(HttpStatus.SC_OK)
-        .body("id", hasItems(subscriptionDto.getId().toString()));
+        .body("tag", hasItems(subscriptionDto.getTag()));
 
     // then
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
