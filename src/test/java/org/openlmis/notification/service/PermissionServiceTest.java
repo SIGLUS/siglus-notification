@@ -153,7 +153,7 @@ public class PermissionServiceTest {
   }
 
   @Test
-  public void shouldNotAllowUserWithoutUsersManageRightToManageUserSubscriptions() {
+  public void shouldNotAllowUserWithoutUsersManageRightToManageOtherUserSubscriptions() {
     when(securityContext.getAuthentication()).thenReturn(userAuthentication);
     when(authenticationHelper.getCurrentUser()).thenReturn(userDto);
     when(authenticationHelper.getRight(eq(USERS_MANAGE))).thenReturn(rightDto);
