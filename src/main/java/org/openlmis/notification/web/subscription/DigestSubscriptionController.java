@@ -39,6 +39,7 @@ import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
 import org.slf4j.profiler.Profiler;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -46,6 +47,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+@Transactional
 @RestController
 @RequestMapping("/api")
 public class DigestSubscriptionController {
@@ -75,39 +77,24 @@ public class DigestSubscriptionController {
    */
   @GetMapping(USER_ENDPOINT_URL)
   public List<DigestSubscriptionDto> getUserSubscriptions(@PathVariable("id") UUID userId) {
-    XLOGGER.entry(userId);
-    Profiler profiler = new Profiler("GET_USER_SUBSCRIPTIONS");
-    profiler.setLogger(XLOGGER);
-
-    profiler.start("CHECK_PERMISSION");
-    permissionService.canManageUserSubscriptions(userId);
+    Profiler profiler = getProfiler("GET_USER_SUBSCRIPTIONS", userId);
+    checkPermission(userId, profiler);
 
     profiler.start("CHECK_IF_USER_CONTACT_DETAILS");
     boolean exists = userContactDetailsRepository.exists(userId);
 
     if (!exists) {
       NotFoundException exception = new NotFoundException(ERROR_USER_CONTACT_DETAILS_NOT_FOUND);
-
-      profiler.stop().log();
-      XLOGGER.throwing(exception);
-
-      throw exception;
+      stopProfilerAndThrowException(profiler, exception);
     }
 
     profiler.start("RETRIEVE_USER_SUBSCRIPTIONS");
     List<DigestSubscription> subscriptions = digestSubscriptionRepository
         .getUserSubscriptions(userId);
 
-    profiler.start("CONVERT_TO_DTO");
-    List<DigestSubscriptionDto> subscriptionDtos = subscriptions
-        .stream()
-        .map(DigestSubscriptionDto::newInstance)
-        .collect(Collectors.toList());
+    List<DigestSubscriptionDto> subscriptionDtos = toDto(subscriptions, profiler);
 
-    profiler.stop().log();
-    XLOGGER.exit(subscriptionDtos);
-
-    return subscriptionDtos;
+    return stopProfilerAndReturnValue(profiler, subscriptionDtos);
   }
 
   /**
@@ -121,25 +108,46 @@ public class DigestSubscriptionController {
   @PostMapping(USER_ENDPOINT_URL)
   public List<DigestSubscriptionDto> createUserSubscriptions(@PathVariable("id") UUID userId,
       @RequestBody List<DigestSubscriptionDto> subscriptions) {
-    XLOGGER.entry(userId, subscriptions);
-    Profiler profiler = new Profiler("CREATE_USER_SUBSCRIPTIONS");
-    profiler.setLogger(XLOGGER);
-
-    profiler.start("CHECK_PERMISSION");
-    permissionService.canManageUserSubscriptions(userId);
+    Profiler profiler = getProfiler("CREATE_USER_SUBSCRIPTIONS", userId, subscriptions);
+    checkPermission(userId, profiler);
 
     profiler.start("GET_USER_CONTACT_DETAILS");
     UserContactDetails contactDetails = userContactDetailsRepository.findOne(userId);
 
     if (Objects.isNull(contactDetails)) {
       NotFoundException exception = new NotFoundException(ERROR_USER_CONTACT_DETAILS_NOT_FOUND);
-
-      profiler.stop().log();
-      XLOGGER.throwing(exception);
-
-      throw exception;
+      stopProfilerAndThrowException(profiler, exception);
     }
 
+
+    profiler.start("DELETE_OLD_USER_SUBSCRIPTIONS");
+    digestSubscriptionRepository.deleteUserSubscriptions(userId);
+
+    List<DigestSubscription> digestSubscriptions = toDomain(contactDetails,
+        subscriptions, profiler);
+
+    profiler.start("SAVE_USER_SUBSCRIPTIONS");
+    digestSubscriptions = digestSubscriptionRepository.save(digestSubscriptions);
+
+    List<DigestSubscriptionDto> subscriptionDtos = toDto(digestSubscriptions, profiler);
+    return stopProfilerAndReturnValue(profiler, subscriptionDtos);
+  }
+
+  private Profiler getProfiler(String name, Object... args) {
+    XLOGGER.entry(args);
+    Profiler profiler = new Profiler(name);
+    profiler.setLogger(XLOGGER);
+
+    return profiler;
+  }
+
+  private void checkPermission(UUID userId, Profiler profiler) {
+    profiler.start("CHECK_PERMISSION");
+    permissionService.canManageUserSubscriptions(userId);
+  }
+
+  private List<DigestSubscription> toDomain(UserContactDetails userContactDetails,
+      List<DigestSubscriptionDto> subscriptions, Profiler profiler) {
     profiler.start("GET_DIGEST_CONFIGURATION_TAGS_FROM_REQUEST");
     Set<String> tags = subscriptions
         .stream()
@@ -163,32 +171,38 @@ public class DigestSubscriptionController {
         ValidationException exception = new ValidationException(
             ERROR_INVALID_TAG_IN_SUBSCRIPTION, subscriptionDto.getDigestConfigurationTag());
 
-        profiler.stop().log();
-        XLOGGER.throwing(exception);
-
-        throw exception;
+        stopProfilerAndThrowException(profiler, exception);
       }
 
       digestSubscriptions.add(new DigestSubscription(
-          contactDetails, digestConfiguration, subscriptionDto.getTime()));
+          userContactDetails, digestConfiguration, subscriptionDto.getTime()));
     }
 
-    profiler.start("DELETE_OLD_USER_SUBSCRIPTIONS");
-    digestSubscriptionRepository.deleteUserSubscriptions(userId);
+    return digestSubscriptions;
+  }
 
-    profiler.start("SAVE_USER_SUBSCRIPTIONS");
-    digestSubscriptions = digestSubscriptionRepository.save(digestSubscriptions);
-
+  private List<DigestSubscriptionDto> toDto(List<DigestSubscription> digestSubscriptions,
+      Profiler profiler) {
     profiler.start("CONVERT_TO_DTO");
-    List<DigestSubscriptionDto> subscriptionDtos = digestSubscriptions
+    return digestSubscriptions
         .stream()
         .map(DigestSubscriptionDto::newInstance)
         .collect(Collectors.toList());
+  }
 
+  private <T> T stopProfilerAndReturnValue(Profiler profiler, T exitValue) {
     profiler.stop().log();
-    XLOGGER.exit(subscriptionDtos);
+    XLOGGER.exit(exitValue);
 
-    return subscriptionDtos;
+    return exitValue;
+  }
+
+  private <T extends RuntimeException> void stopProfilerAndThrowException(
+      Profiler profiler, T throwable) {
+    profiler.stop().log();
+    XLOGGER.throwing(throwable);
+
+    throw throwable;
   }
 
 }
