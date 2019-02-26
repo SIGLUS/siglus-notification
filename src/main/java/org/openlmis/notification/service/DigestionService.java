@@ -97,7 +97,7 @@ public class DigestionService {
       return;
     }
 
-    String sendTime = subscription.getTime();
+    String sendTime = subscription.getCronExpression();
 
     postponeMessageRepository.save(
         new PostponeMessage(configuration, message.getBody(),

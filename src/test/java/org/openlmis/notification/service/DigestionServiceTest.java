@@ -129,7 +129,8 @@ public class DigestionServiceTest {
 
     // then
     verify(postponeMessageRepository).save(postpone);
-    verify(service).setPollingAdapter(channel, configuration, recipient, subscription.getTime());
+    verify(service).setPollingAdapter(channel, configuration,
+        recipient, subscription.getCronExpression());
   }
 
   @Test
@@ -148,9 +149,10 @@ public class DigestionServiceTest {
 
     // then
     verify(service, times(1))
-        .setPollingAdapter(channel, configuration, recipient, subscription.getTime());
+        .setPollingAdapter(channel, configuration, recipient, subscription.getCronExpression());
     verify(service, times(1))
-        .setPollingAdapter(channel, anotherConfiguration, recipient, subscription.getTime());
+        .setPollingAdapter(channel, anotherConfiguration,
+            recipient, subscription.getCronExpression());
   }
 
   @Test

@@ -6,7 +6,7 @@ CREATE TABLE digest_subscriptions (
   id uuid NOT NULL PRIMARY KEY,
   userContactDetailsId uuid NOT NULL,
   digestConfigurationId uuid NOT NULL,
-  time VARCHAR(255) NOT NULL,
+  cronExpression VARCHAR(255) NOT NULL,
   CONSTRAINT fKey_digest_subscriptions_user_contact_details
     FOREIGN KEY (userContactDetailsId)
     REFERENCES user_contact_details(referencedatauserid),

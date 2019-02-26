@@ -45,14 +45,14 @@ public final class DigestSubscription extends BaseEntity {
   private DigestConfiguration digestConfiguration;
 
   @Getter
-  private String time;
+  private String cronExpression;
 
   /**
    * Exports current status of the object.
    */
   public void export(Exporter exporter) {
     exporter.setDigestConfiguration(digestConfiguration);
-    exporter.setTime(time);
+    exporter.setTime(cronExpression);
   }
 
   public interface Exporter {
