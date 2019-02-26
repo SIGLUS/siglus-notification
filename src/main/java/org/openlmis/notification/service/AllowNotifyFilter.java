@@ -45,7 +45,7 @@ public class AllowNotifyFilter {
    */
   @Filter(inputChannel = START_CHANNEL, outputChannel = ALLOW_NOTIFY_CHANNEL)
   public boolean accept(@Header(RECIPIENT_HEADER) UUID recipient,
-      @Header(IMPORTANT_HEADER) Boolean important) {
+      @Header(value = IMPORTANT_HEADER, required = false) Boolean important) {
     UserContactDetails userContactDetails = userContactDetailsRepository.findOne(recipient);
 
     if (null == userContactDetails) {

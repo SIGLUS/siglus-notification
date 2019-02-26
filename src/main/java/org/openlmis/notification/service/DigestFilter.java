@@ -59,7 +59,7 @@ public class DigestFilter {
    */
   @Router(inputChannel = READY_TO_SEND_CHANNEL)
   public String route(@Header(RECIPIENT_HEADER) UUID recipient,
-      @Header(IMPORTANT_HEADER) boolean important,
+      @Header(value = IMPORTANT_HEADER, required = false) Boolean important,
       @Header(value = TAG_HEADER, required = false) String tag) {
     if (isTrue(important)) {
       LOGGER.debug("The important flag is set");
