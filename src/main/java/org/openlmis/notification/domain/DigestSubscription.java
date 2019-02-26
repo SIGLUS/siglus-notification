@@ -44,6 +44,7 @@ public final class DigestSubscription extends BaseEntity {
   @JoinColumn(name = "digestConfigurationId", nullable = false)
   private DigestConfiguration digestConfiguration;
 
+  @Getter
   private String time;
 
   /**

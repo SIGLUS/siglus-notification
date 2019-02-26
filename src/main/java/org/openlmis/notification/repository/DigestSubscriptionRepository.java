@@ -24,6 +24,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+@SuppressWarnings("PMD.AvoidDuplicateLiterals")
 public interface DigestSubscriptionRepository extends JpaRepository<DigestSubscription, UUID> {
 
   @Query("SELECT DISTINCT s"
@@ -38,6 +39,13 @@ public interface DigestSubscriptionRepository extends JpaRepository<DigestSubscr
       + " WHERE s.userContactDetails.referenceDataUserId = :userId"
       + " AND s.digestConfiguration = :configuration")
   boolean existsBy(@Param("userId") UUID userId,
+      @Param("configuration") DigestConfiguration configuration);
+
+  @Query("SELECT s"
+      + " FROM DigestSubscription AS s"
+      + " WHERE s.userContactDetails.referenceDataUserId = :userId"
+      + " AND s.digestConfiguration = :configuration")
+  DigestSubscription findBy(@Param("userId") UUID userId,
       @Param("configuration") DigestConfiguration configuration);
 
   @Query("DELETE FROM DigestSubscription AS s"

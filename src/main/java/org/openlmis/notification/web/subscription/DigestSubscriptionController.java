@@ -32,6 +32,7 @@ import org.openlmis.notification.domain.UserContactDetails;
 import org.openlmis.notification.repository.DigestConfigurationRepository;
 import org.openlmis.notification.repository.DigestSubscriptionRepository;
 import org.openlmis.notification.repository.UserContactDetailsRepository;
+import org.openlmis.notification.service.DigestionService;
 import org.openlmis.notification.service.PermissionService;
 import org.openlmis.notification.web.NotFoundException;
 import org.openlmis.notification.web.ValidationException;
@@ -68,6 +69,9 @@ public class DigestSubscriptionController {
 
   @Autowired
   private PermissionService permissionService;
+
+  @Autowired
+  private DigestionService digestionService;
 
   /**
    * Gets users subscriptions.
@@ -128,6 +132,9 @@ public class DigestSubscriptionController {
 
     profiler.start("SAVE_USER_SUBSCRIPTIONS");
     digestSubscriptions = digestSubscriptionRepository.save(digestSubscriptions);
+
+    profiler.start("STOP_EXISTING_MESSAGE_SOURCES");
+    digestionService.dropExistingPollingAdapters(userId);
 
     List<DigestSubscriptionDto> subscriptionDtos = toDto(digestSubscriptions, profiler);
     return stopProfilerAndReturnValue(profiler, subscriptionDtos);

@@ -137,7 +137,7 @@ public class DigestSubscriptionRepositoryIntegrationTest
   }
 
   @Test
-  public void shouldReturnFalseIfUserSubscribesForDigestConfiguration() {
+  public void shouldReturnFalseIfUserDoesNotSubscribeForDigestConfiguration() {
     // given
     Iterator<List<DigestSubscription>> valueIterator = userSubscriptions.values().iterator();
     DigestSubscription subscription1 = valueIterator.next().get(0);
@@ -153,7 +153,40 @@ public class DigestSubscriptionRepositoryIntegrationTest
 
     // then
     assertThat(exists).isFalse();
+  }
 
+  @Test
+  public void shouldReturnObjectIfUserSubscribesForDigestConfiguration() {
+    for (List<DigestSubscription> subscriptions : userSubscriptions.values()) {
+      // given
+      DigestSubscription subscription = subscriptions.get(0);
+      UserContactDetails contactDetails = subscription.getUserContactDetails();
+      DigestConfiguration configuration = subscription.getDigestConfiguration();
 
+      // when
+      DigestSubscription found = repository.findBy(contactDetails.getId(), configuration);
+
+      // then
+      assertThat(found).isEqualTo(subscription);
+    }
+  }
+
+  @Test
+  public void shouldReturnNullIfUserDoesNotSubscribeForDigestConfiguration() {
+    // given
+    Iterator<List<DigestSubscription>> valueIterator = userSubscriptions.values().iterator();
+    DigestSubscription subscription1 = valueIterator.next().get(0);
+    DigestSubscription subscription2 = valueIterator.next().get(0);
+
+    // we take contact details from one subscription
+    // and configuration from another
+    UserContactDetails contactDetails = subscription1.getUserContactDetails();
+    DigestConfiguration configuration = subscription2.getDigestConfiguration();
+
+    // when
+    DigestSubscription found = repository.findBy(contactDetails.getId(), configuration);
+
+    // then
+    assertThat(found).isNull();
   }
 }
