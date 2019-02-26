@@ -108,7 +108,7 @@ public class EmailVerificationNotifierTest {
     // then
     verify(emailVerificationTokenRepository).save(tokenCaptor.capture());
     verify(emailSender).sendMail(email,
-        EMAIL_VERIFICATION_EMAIL_BODY, EMAIL_VERIFICATION_EMAIL_SUBJECT);
+        EMAIL_VERIFICATION_EMAIL_SUBJECT, EMAIL_VERIFICATION_EMAIL_BODY);
 
     EmailVerificationToken token = tokenCaptor.getValue();
     assertThat(token.getUserContactDetails()).isEqualTo(userContactDetails);

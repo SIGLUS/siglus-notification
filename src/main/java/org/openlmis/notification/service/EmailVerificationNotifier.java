@@ -104,7 +104,7 @@ public class EmailVerificationNotifier {
     String body = messageSource
         .getMessage(EMAIL_VERIFICATION_EMAIL_BODY, bodyMsgArgs, locale);
 
-    emailSender.sendMail(email, body, subject);
+    emailSender.sendMail(email, subject, body);
   }
 
   private String getVerificationPath(UserContactDetails contactDetails,
