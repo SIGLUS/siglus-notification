@@ -48,7 +48,7 @@ public class EmailNotificationChannelHandler {
   @ServiceActivator(inputChannel = EMAIL_SEND_NOW_CHANNEL)
   public void handle(NotificationMessage payload,
       @Header(RECIPIENT_HEADER) UUID recipient,
-      @Header(IMPORTANT_HEADER) Boolean important) {
+      @Header(value = IMPORTANT_HEADER, required = false) Boolean important) {
     UserContactDetails contactDetails = userContactDetailsRepository.findOne(recipient);
 
     if (shouldSendMessage(contactDetails, important)) {

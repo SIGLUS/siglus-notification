@@ -24,6 +24,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
 
+@Getter
 @Entity
 @Table(name = "digest_configurations")
 @NoArgsConstructor
@@ -35,7 +36,6 @@ public class DigestConfiguration extends BaseEntity {
   @Column(columnDefinition = TEXT_COLUMN_DEFINITION, nullable = false)
   private String message;
 
-  @Getter
   @Column(nullable = false, unique = true)
   private String tag;
 
