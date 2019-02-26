@@ -26,7 +26,7 @@ public class DigestSubscriptionDataBuilder {
   private UUID id = UUID.randomUUID();
   private UserContactDetails userContactDetails = new UserContactDetailsDataBuilder().build();
   private DigestConfiguration digestConfiguration = new DigestConfigurationDataBuilder().build();
-  private String time = "0 0 0 1 1 ? *";
+  private String cronExpression = "0 0 0 1 1 ? *";
 
   public DigestSubscriptionDataBuilder withId(UUID id) {
     this.id = id;
@@ -43,13 +43,13 @@ public class DigestSubscriptionDataBuilder {
     return this;
   }
 
-  public DigestSubscriptionDataBuilder withTime(String time) {
-    this.time = time;
+  public DigestSubscriptionDataBuilder withCronExpression(String cronExpression) {
+    this.cronExpression = cronExpression;
     return this;
   }
 
   public DigestSubscription buildAsNew() {
-    return new DigestSubscription(userContactDetails, digestConfiguration, time);
+    return new DigestSubscription(userContactDetails, digestConfiguration, cronExpression);
   }
 
   /**

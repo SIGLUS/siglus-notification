@@ -53,21 +53,21 @@ public final class DigestSubscription extends BaseEntity {
    */
   public void export(Exporter exporter) {
     exporter.setDigestConfiguration(digestConfiguration);
-    exporter.setTime(cronExpression);
+    exporter.setCronExpression(cronExpression);
   }
 
   public interface Exporter {
 
     void setDigestConfiguration(DigestConfiguration configuration);
 
-    void setTime(String time);
+    void setCronExpression(String time);
   }
 
   public interface Importer {
 
     UUID getDigestConfigurationId();
 
-    String getTime();
+    String getCronExpression();
 
   }
 

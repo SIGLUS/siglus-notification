@@ -46,14 +46,7 @@ public final class DigestSubscriptionDto
   private String serviceUrl;
 
   private ObjectReferenceDto digestConfiguration;
-  private String time;
-
-  static DigestSubscriptionDto newInstance(DigestSubscription domain) {
-    DigestSubscriptionDto dto = new DigestSubscriptionDto();
-    domain.export(dto);
-
-    return dto;
-  }
+  private String cronExpression;
 
   @Override
   @JsonIgnore

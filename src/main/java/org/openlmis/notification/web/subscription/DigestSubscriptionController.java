@@ -40,6 +40,7 @@ import org.openlmis.notification.web.NotFoundException;
 import org.openlmis.notification.web.ValidationException;
 import org.slf4j.profiler.Profiler;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -69,6 +70,9 @@ public class DigestSubscriptionController extends BaseController {
 
   @Autowired
   private DigestionService digestionService;
+
+  @Value("${service.url}")
+  private String serviceUrl;
 
   /**
    * Gets users subscriptions.
@@ -171,7 +175,7 @@ public class DigestSubscriptionController extends BaseController {
       }
 
       digestSubscriptions.add(new DigestSubscription(
-          userContactDetails, digestConfiguration, subscriptionDto.getTime()));
+          userContactDetails, digestConfiguration, subscriptionDto.getCronExpression()));
     }
 
     return digestSubscriptions;
@@ -182,7 +186,14 @@ public class DigestSubscriptionController extends BaseController {
     profiler.start("CONVERT_TO_DTO");
     return digestSubscriptions
         .stream()
-        .map(DigestSubscriptionDto::newInstance)
+        .map(domain -> {
+          DigestSubscriptionDto dto = new DigestSubscriptionDto();
+          dto.setServiceUrl(serviceUrl);
+
+          domain.export(dto);
+
+          return dto;
+        })
         .collect(Collectors.toList());
   }
 

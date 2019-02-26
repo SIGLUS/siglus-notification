@@ -9,13 +9,13 @@
       "title": "digestConfiguration",
       "$ref": "referenceObjectDto.json"
     },
-    "time": {
+    "cronExpression": {
       "type": "string",
-      "title": "time"
+      "title": "cronExpression"
     }
   },
   "required": [
     "digestConfiguration",
-    "time"
+    "cronExpression"
   ]
 }

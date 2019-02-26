@@ -37,17 +37,17 @@ public class DigestSubscriptionTest {
     Map<String, Object> map = Maps.newHashMap();
     DummyExporter exporter = new DummyExporter(map);
 
-    String time = "time";
+    String cronExpression = "cron";
     DigestConfiguration configuration = new DigestConfigurationDataBuilder().build();
     DigestSubscription subscription = new DigestSubscriptionDataBuilder()
         .withDigestConfiguration(configuration)
-        .withTime(time)
+        .withCronExpression(cronExpression)
         .build();
     subscription.export(exporter);
 
     assertThat(map)
         .containsEntry(CONFIGURATION, configuration)
-        .containsEntry(TIME, time);
+        .containsEntry(TIME, cronExpression);
   }
 
   @Test
@@ -74,7 +74,7 @@ public class DigestSubscriptionTest {
     }
 
     @Override
-    public void setTime(String time) {
+    public void setCronExpression(String time) {
       map.put(TIME, time);
     }
   }

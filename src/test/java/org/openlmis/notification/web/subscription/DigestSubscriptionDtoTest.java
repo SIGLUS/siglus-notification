@@ -15,37 +15,12 @@
 
 package org.openlmis.notification.web.subscription;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;
 import org.junit.Test;
-import org.openlmis.notification.domain.DigestConfiguration;
-import org.openlmis.notification.domain.DigestSubscription;
-import org.openlmis.notification.testutils.DigestConfigurationDataBuilder;
-import org.openlmis.notification.testutils.DigestSubscriptionDataBuilder;
 import org.openlmis.notification.testutils.ToStringTestUtils;
 
 public class DigestSubscriptionDtoTest {
-
-  @Test
-  public void shouldCreateInstanceBasedOnDomain() {
-    // given
-    String time = "time";
-    DigestConfiguration configuration = new DigestConfigurationDataBuilder().build();
-    DigestSubscription domain = new DigestSubscriptionDataBuilder()
-        .withDigestConfiguration(configuration)
-        .withTime(time)
-        .build();
-
-    // when
-    DigestSubscriptionDto dto = DigestSubscriptionDto.newInstance(domain);
-
-    // then
-    assertThat(dto).isNotNull();
-    assertThat(dto.getDigestConfigurationId()).isEqualTo(configuration.getId());
-    assertThat(dto.getTime()).isEqualTo(time);
-  }
 
   @Test
   public void equalsContract() {
