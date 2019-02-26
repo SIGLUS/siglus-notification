@@ -13,50 +13,34 @@
  * http://www.gnu.org/licenses.  For additional information contact info@OpenLMIS.org.
  */
 
-package org.openlmis.notification.domain;
+package org.openlmis.notification.web.digestconfiguration;
 
-import java.util.UUID;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import lombok.ToString;
+import org.openlmis.notification.domain.DigestConfiguration;
+import org.openlmis.notification.web.BaseDto;
 
 @Getter
-@Entity
-@Table(name = "digest_configurations")
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
-public class DigestConfiguration extends BaseEntity {
-
-  @Column(columnDefinition = TEXT_COLUMN_DEFINITION, nullable = false)
+public final class DigestConfigurationDto extends BaseDto implements DigestConfiguration.Exporter {
   private String message;
-
-  @Column(nullable = false, unique = true)
   private String tag;
 
   /**
-   * Exports current status of the object.
+   * Creates new instance based on domain object.
    */
-  public void export(Exporter exporter) {
-    exporter.setId(getId());
-    exporter.setMessage(message);
-    exporter.setTag(tag);
+  public static DigestConfigurationDto newInstance(DigestConfiguration domain) {
+    DigestConfigurationDto dto = new DigestConfigurationDto();
+    domain.export(dto);
+
+    return dto;
   }
-
-  public interface Exporter {
-
-    void setId(UUID id);
-
-    void setMessage(String message);
-
-    void setTag(String tag);
-
-  }
-
 }

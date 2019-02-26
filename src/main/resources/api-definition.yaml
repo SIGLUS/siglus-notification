@@ -10,6 +10,8 @@ schemas:
     - userContactDetails: !include schemas/userContactDetails.json
     - userContactDetailsPage: !include schemas/userContactDetailsPage.json
     - emailVerificationToken: !include schemas/emailVerificationToken.json
+    - digestConfiguration: !include schemas/digestConfiguration.json
+    - digestConfigurationPage: !include schemas/digestConfigurationPage.json
     - userSubscription: !include schemas/userSubscription.json
     - userSubscriptionList: |
         {
@@ -239,6 +241,46 @@ traits:
                              body:
                                  application/json:
                                     schema: localizedMessage
+  /digestConfiguration:
+      displayName: Digest Configuration
+      get:
+          is: [ secured, paginated, sorted ]
+          description: Get all available digest configurations.
+          responses:
+              200:
+                  description: The request is valid and a page of digest configurations has been returned.
+                  body:
+                      application/json:
+                          schema: digestConfigurationPage
+              401:
+                  description: The request does not contain a token or the token might be invalid.
+                  body:
+                      application/json:
+      /{id}:
+          uriParameters:
+              id:
+                  displayName: id
+                  type: string
+                  required: true
+                  repeat: false
+          get:
+              is: [ secured ]
+              description: Get digest configuration.
+              responses:
+                  200:
+                      description: The request is valid and a digest configuration has been returned.
+                      body:
+                          application/json:
+                              schema: digestConfiguration
+                  401:
+                      description: The request does not contain a token or the token might be invalid.
+                      body:
+                          application/json:
+                  404:
+                      description: The server could not find a user with the given id
+                      body:
+                          application/json:
+                              schema: localizedMessage
   /users:
     /{id}:
         uriParameters:

@@ -34,10 +34,9 @@ import org.openlmis.notification.repository.DigestSubscriptionRepository;
 import org.openlmis.notification.repository.UserContactDetailsRepository;
 import org.openlmis.notification.service.DigestionService;
 import org.openlmis.notification.service.PermissionService;
+import org.openlmis.notification.web.BaseController;
 import org.openlmis.notification.web.NotFoundException;
 import org.openlmis.notification.web.ValidationException;
-import org.slf4j.ext.XLogger;
-import org.slf4j.ext.XLoggerFactory;
 import org.slf4j.profiler.Profiler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.transaction.annotation.Transactional;
@@ -51,10 +50,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Transactional
 @RestController
 @RequestMapping("/api")
-public class DigestSubscriptionController {
-
-  private static final XLogger XLOGGER = XLoggerFactory
-      .getXLogger(DigestSubscriptionController.class);
+public class DigestSubscriptionController extends BaseController {
 
   private static final String USER_ENDPOINT_URL = "/users/{id}/subscriptions";
 
@@ -123,7 +119,6 @@ public class DigestSubscriptionController {
       stopProfilerAndThrowException(profiler, exception);
     }
 
-
     profiler.start("DELETE_OLD_USER_SUBSCRIPTIONS");
     digestSubscriptionRepository.deleteUserSubscriptions(userId);
 
@@ -138,14 +133,6 @@ public class DigestSubscriptionController {
 
     List<DigestSubscriptionDto> subscriptionDtos = toDto(digestSubscriptions, profiler);
     return stopProfilerAndReturnValue(profiler, subscriptionDtos);
-  }
-
-  private Profiler getProfiler(String name, Object... args) {
-    XLOGGER.entry(args);
-    Profiler profiler = new Profiler(name);
-    profiler.setLogger(XLOGGER);
-
-    return profiler;
   }
 
   private void checkPermission(UUID userId, Profiler profiler) {
@@ -195,21 +182,6 @@ public class DigestSubscriptionController {
         .stream()
         .map(DigestSubscriptionDto::newInstance)
         .collect(Collectors.toList());
-  }
-
-  private <T> T stopProfilerAndReturnValue(Profiler profiler, T exitValue) {
-    profiler.stop().log();
-    XLOGGER.exit(exitValue);
-
-    return exitValue;
-  }
-
-  private <T extends RuntimeException> void stopProfilerAndThrowException(
-      Profiler profiler, T throwable) {
-    profiler.stop().log();
-    XLOGGER.throwing(throwable);
-
-    throw throwable;
   }
 
 }
