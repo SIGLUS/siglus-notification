@@ -16,6 +16,9 @@
 package org.openlmis.notification.web.subscription;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import java.util.Optional;
+import java.util.UUID;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
@@ -24,6 +27,9 @@ import lombok.Setter;
 import lombok.ToString;
 import org.openlmis.notification.domain.DigestConfiguration;
 import org.openlmis.notification.domain.DigestSubscription;
+import org.openlmis.notification.web.BaseDto;
+import org.openlmis.notification.web.ObjectReferenceDto;
+import org.openlmis.notification.web.digestconfiguration.DigestConfigurationController;
 
 @Getter
 @Setter
@@ -34,7 +40,12 @@ import org.openlmis.notification.domain.DigestSubscription;
 public final class DigestSubscriptionDto
     implements DigestSubscription.Importer, DigestSubscription.Exporter {
 
-  private String tag;
+  @Setter
+  @Getter(AccessLevel.PROTECTED)
+  @JsonIgnore
+  private String serviceUrl;
+
+  private ObjectReferenceDto digestConfiguration;
   private String time;
 
   static DigestSubscriptionDto newInstance(DigestSubscription domain) {
@@ -47,12 +58,16 @@ public final class DigestSubscriptionDto
   @Override
   @JsonIgnore
   public void setDigestConfiguration(DigestConfiguration configuration) {
-    this.tag = configuration.getTag();
+    this.digestConfiguration = new ObjectReferenceDto(
+        serviceUrl, DigestConfigurationController.RESOURCE_URL, configuration.getId());
   }
 
   @Override
   @JsonIgnore
-  public String getDigestConfigurationTag() {
-    return tag;
+  public UUID getDigestConfigurationId() {
+    return Optional
+        .ofNullable(digestConfiguration)
+        .map(BaseDto::getId)
+        .orElse(null);
   }
 }

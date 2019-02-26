@@ -15,15 +15,11 @@
 
 package org.openlmis.notification.repository;
 
-import java.util.Collection;
-import java.util.List;
 import java.util.UUID;
 import org.openlmis.notification.domain.DigestConfiguration;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface DigestConfigurationRepository extends JpaRepository<DigestConfiguration, UUID> {
-
-  List<DigestConfiguration> findByTagIn(Collection<String> tags);
 
   DigestConfiguration findByTag(String tag);
 

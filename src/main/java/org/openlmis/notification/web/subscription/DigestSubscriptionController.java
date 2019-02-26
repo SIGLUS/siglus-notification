@@ -17,6 +17,7 @@ package org.openlmis.notification.web.subscription;
 
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_INVALID_TAG_IN_SUBSCRIPTION;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_USER_CONTACT_DETAILS_NOT_FOUND;
+import static org.openlmis.notification.web.BaseController.API_PREFIX;
 
 import com.google.common.collect.Lists;
 import java.util.List;
@@ -49,7 +50,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Transactional
 @RestController
-@RequestMapping("/api")
+@RequestMapping(API_PREFIX)
 public class DigestSubscriptionController extends BaseController {
 
   private static final String USER_ENDPOINT_URL = "/users/{id}/subscriptions";
@@ -143,27 +144,28 @@ public class DigestSubscriptionController extends BaseController {
   private List<DigestSubscription> toDomain(UserContactDetails userContactDetails,
       List<DigestSubscriptionDto> subscriptions, Profiler profiler) {
     profiler.start("GET_DIGEST_CONFIGURATION_TAGS_FROM_REQUEST");
-    Set<String> tags = subscriptions
+    Set<UUID> ids = subscriptions
         .stream()
-        .map(DigestSubscriptionDto::getDigestConfigurationTag)
+        .map(DigestSubscriptionDto::getDigestConfigurationId)
         .collect(Collectors.toSet());
 
     profiler.start("GET_DIGEST_CONFIGURATIONS");
-    Map<String, DigestConfiguration> configurations = digestConfigurationRepository
-        .findByTagIn(tags)
+    Map<UUID, DigestConfiguration> configurations = digestConfigurationRepository
+        .findAll(ids)
         .stream()
-        .collect(Collectors.toMap(DigestConfiguration::getTag, Function.identity()));
+        .collect(Collectors.toMap(DigestConfiguration::getId, Function.identity()));
 
     profiler.start("CONVERT_TO_DOMAIN");
     List<DigestSubscription> digestSubscriptions = Lists.newArrayList();
     for (int i = 0, size = subscriptions.size(); i < size; i++) {
       DigestSubscriptionDto subscriptionDto = subscriptions.get(i);
       DigestConfiguration digestConfiguration = configurations
-          .get(subscriptionDto.getDigestConfigurationTag());
+          .get(subscriptionDto.getDigestConfigurationId());
 
       if (null == digestConfiguration) {
         ValidationException exception = new ValidationException(
-            ERROR_INVALID_TAG_IN_SUBSCRIPTION, subscriptionDto.getDigestConfigurationTag());
+            ERROR_INVALID_TAG_IN_SUBSCRIPTION,
+            subscriptionDto.getDigestConfigurationId().toString());
 
         stopProfilerAndThrowException(profiler, exception);
       }

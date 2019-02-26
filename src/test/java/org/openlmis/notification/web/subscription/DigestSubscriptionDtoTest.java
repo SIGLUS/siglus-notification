@@ -43,7 +43,7 @@ public class DigestSubscriptionDtoTest {
 
     // then
     assertThat(dto).isNotNull();
-    assertThat(dto.getDigestConfigurationTag()).isEqualTo(configuration.getTag());
+    assertThat(dto.getDigestConfigurationId()).isEqualTo(configuration.getId());
     assertThat(dto.getTime()).isEqualTo(time);
   }
 

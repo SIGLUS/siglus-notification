@@ -17,9 +17,7 @@ package org.openlmis.notification.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-import com.google.common.collect.Sets;
 import java.util.List;
-import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -76,24 +74,6 @@ public class DigestConfigurationRepositoryIntegrationTest
   @Test
   public void shouldNotFindDigestConfigurationIfTagIsIncorrect() {
     assertThat(repository.findByTag("integration-test-incorrect-tag")).isNull();
-  }
-
-  @Test
-  public void shouldFindDigestConfigurationByTagInCollection() {
-    // given
-    Set<String> tags = Sets.newHashSet(
-        configurations.get(0).getTag(),
-        configurations.get(5).getTag(),
-        configurations.get(9).getTag());
-
-    // when
-    List<DigestConfiguration> found = repository.findByTagIn(tags);
-
-    assertThat(found)
-        .hasSize(tags.size())
-        .contains(configurations.get(0))
-        .contains(configurations.get(5))
-        .contains(configurations.get(9));
   }
 
 }

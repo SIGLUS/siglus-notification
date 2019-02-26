@@ -61,7 +61,7 @@ public class DigestSubscriptionControllerIntegrationTest extends BaseWebIntegrat
   private DigestSubscriptionDto subscriptionDto = new DigestSubscriptionDto();
 
   private UUID userId = userContactDetails.getReferenceDataUserId();
-  private String tag = configuration.getTag();
+  private UUID configurationId = configuration.getId();
 
   @Before
   public void setUp() {
@@ -69,7 +69,7 @@ public class DigestSubscriptionControllerIntegrationTest extends BaseWebIntegrat
 
     given(userContactDetailsRepository.findOne(userId)).willReturn(userContactDetails);
     given(userContactDetailsRepository.exists(userId)).willReturn(true);
-    given(digestConfigurationRepository.findByTagIn(Sets.newHashSet(tag)))
+    given(digestConfigurationRepository.findAll(Sets.newHashSet(configurationId)))
         .willReturn(Lists.newArrayList(configuration));
 
     given(digestSubscriptionRepository.save(anyListOf(DigestSubscription.class)))
@@ -94,7 +94,8 @@ public class DigestSubscriptionControllerIntegrationTest extends BaseWebIntegrat
         .get(USER_SUBSCRIPTIONS_URL)
         .then()
         .statusCode(HttpStatus.SC_OK)
-        .body("tag", hasItems(subscriptionDto.getTag()));
+        .body("digestConfiguration.id",
+            hasItems(subscriptionDto.getDigestConfigurationId().toString()));
 
     // then
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
@@ -162,7 +163,8 @@ public class DigestSubscriptionControllerIntegrationTest extends BaseWebIntegrat
         .post(USER_SUBSCRIPTIONS_URL)
         .then()
         .statusCode(HttpStatus.SC_OK)
-        .body("tag", hasItems(subscriptionDto.getTag()));
+        .body("digestConfiguration.id",
+            hasItems(subscriptionDto.getDigestConfigurationId().toString()));
 
     // then
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
@@ -171,7 +173,7 @@ public class DigestSubscriptionControllerIntegrationTest extends BaseWebIntegrat
   @Test
   public void shouldReturnBadRequestForCreateUserSubscriptionsIfRequestBodyIsInvalid() {
     // given
-    given(digestConfigurationRepository.findByTagIn(anySetOf(String.class)))
+    given(digestConfigurationRepository.findAll(anySetOf(UUID.class)))
         .willReturn(Lists.newArrayList());
 
     // when

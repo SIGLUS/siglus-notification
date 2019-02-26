@@ -21,6 +21,8 @@ import org.slf4j.profiler.Profiler;
 
 public class BaseController {
 
+  public static final String API_PREFIX = "/api";
+
   private final XLogger logger = XLoggerFactory.getXLogger(getClass());
 
   protected Profiler getProfiler(String name, Object... args) {

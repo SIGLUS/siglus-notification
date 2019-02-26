@@ -16,6 +16,8 @@
 package org.openlmis.notification.web.digestconfiguration;
 
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_DIGEST_CONFIGURATION_NOT_FOUND;
+import static org.openlmis.notification.web.BaseController.API_PREFIX;
+import static org.openlmis.notification.web.digestconfiguration.DigestConfigurationController.RESOURCE_URL;
 
 import java.util.List;
 import java.util.UUID;
@@ -37,8 +39,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 @Transactional
 @RestController
-@RequestMapping("/api/digestConfiguration")
+@RequestMapping(RESOURCE_URL)
 public class DigestConfigurationController extends BaseController {
+
+  public static final String RESOURCE_URL = API_PREFIX + "/digestConfiguration";
 
   @Autowired
   private DigestConfigurationRepository digestConfigurationRepository;

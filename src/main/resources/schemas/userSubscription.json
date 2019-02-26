@@ -4,9 +4,10 @@
   "title": "User Subscription",
   "description": "A single user subscriptions",
   "properties": {
-    "tag": {
-      "type": "string",
-      "title": "tag"
+    "digestConfiguration": {
+      "type": "object",
+      "title": "digestConfiguration",
+      "$ref": "referenceObjectDto.json"
     },
     "time": {
       "type": "string",
@@ -14,7 +15,7 @@
     }
   },
   "required": [
-    "tag",
+    "digestConfiguration",
     "time"
   ]
 }

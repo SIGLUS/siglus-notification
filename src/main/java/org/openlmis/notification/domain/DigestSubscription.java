@@ -15,6 +15,7 @@
 
 package org.openlmis.notification.domain;
 
+import java.util.UUID;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
@@ -64,7 +65,7 @@ public final class DigestSubscription extends BaseEntity {
 
   public interface Importer {
 
-    String getDigestConfigurationTag();
+    UUID getDigestConfigurationId();
 
     String getTime();
 
