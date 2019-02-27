@@ -16,6 +16,7 @@
 package org.openlmis.notification;
 
 import static org.mockito.Mockito.verify;
+import static org.openlmis.notification.TestDataInitializer.DIGEST_SUBSCRIPTIONS_TABLE;
 import static org.openlmis.notification.TestDataInitializer.NOTIFICATIONS_TABLE;
 import static org.openlmis.notification.TestDataInitializer.NOTIFICATION_MESSAGES_TABLE;
 import static org.openlmis.notification.TestDataInitializer.USER_CONTACT_DETAILS_TABLE;
@@ -41,6 +42,9 @@ public class TestDataInitializerTest {
   private Resource notificationMessagesResource;
 
   @Mock
+  private Resource digestSubscriptionsResource;
+
+  @Mock
   private Resource2Db loader;
 
   @InjectMocks
@@ -56,5 +60,7 @@ public class TestDataInitializerTest {
         notificationsResource);
     verify(loader).insertToDbFromCsv(NOTIFICATION_MESSAGES_TABLE,
         notificationMessagesResource);
+    verify(loader).insertToDbFromCsv(DIGEST_SUBSCRIPTIONS_TABLE,
+        digestSubscriptionsResource);
   }
 }

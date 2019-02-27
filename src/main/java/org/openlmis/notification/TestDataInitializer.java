@@ -40,12 +40,14 @@ public class TestDataInitializer implements CommandLineRunner {
   private static final String USER_CONTACT_DETAILS = "user_contact_details";
   private static final String NOTIFICATIONS = "notifications";
   private static final String NOTIFICATION_MESSAGES = "notification_messages";
+  private static final String DIGEST_SUBSCRIPTIONS = "digest_subscriptions";
 
   // database path
   private static final String DB_SCHEMA = "notification.";
   static final String USER_CONTACT_DETAILS_TABLE = DB_SCHEMA + USER_CONTACT_DETAILS;
   static final String NOTIFICATIONS_TABLE = DB_SCHEMA + NOTIFICATIONS;
   static final String NOTIFICATION_MESSAGES_TABLE = DB_SCHEMA + NOTIFICATION_MESSAGES;
+  static final String DIGEST_SUBSCRIPTIONS_TABLE = DB_SCHEMA + DIGEST_SUBSCRIPTIONS;
 
 
   @Value(value = DEMO_DATA_PATH + DB_SCHEMA + USER_CONTACT_DETAILS + FILE_EXTENSION)
@@ -56,6 +58,9 @@ public class TestDataInitializer implements CommandLineRunner {
 
   @Value(value = DEMO_DATA_PATH + DB_SCHEMA + NOTIFICATION_MESSAGES + FILE_EXTENSION)
   private Resource notificationMessagesResource;
+
+  @Value(value = DEMO_DATA_PATH + DB_SCHEMA + DIGEST_SUBSCRIPTIONS + FILE_EXTENSION)
+  private Resource digestSubscriptionsResource;
 
   private Resource2Db loader;
 
@@ -79,6 +84,8 @@ public class TestDataInitializer implements CommandLineRunner {
     
     loader.insertToDbFromCsv(NOTIFICATIONS_TABLE, notificationsResource);
     loader.insertToDbFromCsv(NOTIFICATION_MESSAGES_TABLE, notificationMessagesResource);
+
+    loader.insertToDbFromCsv(DIGEST_SUBSCRIPTIONS_TABLE, digestSubscriptionsResource);
 
     XLOGGER.exit();
   }
