@@ -79,7 +79,7 @@ public class DigestFilter {
     DigestConfiguration configuration = digestConfigurationRepository.findByTag(tag);
 
     if (null == configuration) {
-      LOGGER.warn("Digest configuration for tag {} does not exist", tag);
+      LOGGER.info("Digest configuration for tag {} does not exist", tag);
       return SEND_NOW_PREPARE_CHANNEL;
     }
 
