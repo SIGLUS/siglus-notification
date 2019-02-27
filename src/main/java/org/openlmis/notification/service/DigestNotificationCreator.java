@@ -21,10 +21,12 @@ import static org.openlmis.notification.service.NotificationToSendRetriever.RECI
 import static org.openlmis.notification.service.NotificationTransformer.CHANNEL_HEADER;
 import static org.openlmis.notification.service.PostponeMessageRetriever.CONFIGURATION_ID_HEADER;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
-import org.apache.commons.lang3.StringUtils;
+import org.apache.commons.lang3.text.StrSubstitutor;
 import org.openlmis.notification.domain.DigestConfiguration;
 import org.openlmis.notification.domain.NotificationMessage;
 import org.openlmis.notification.domain.PostponeMessage;
@@ -32,6 +34,7 @@ import org.openlmis.notification.repository.DigestConfigurationRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.integration.annotation.MessageEndpoint;
 import org.springframework.integration.annotation.Transformer;
 import org.springframework.messaging.Message;
@@ -45,6 +48,15 @@ public class DigestNotificationCreator {
 
   @Autowired
   private DigestConfigurationRepository digestConfigurationRepository;
+
+  @Value("${requisition.ui.approvalListUrl}")
+  private String requisitionApprovalListUrl;
+
+  @Value("${requisition.ui.convertToOrderUrl}")
+  private String requisitionConvertToOrderUrl;
+
+  @Value("${requisition.ui.requisitionListUrl}")
+  private String requisitionListUrl;
 
   /**
    * Creates a digest message based on postpone messages.
@@ -61,12 +73,18 @@ public class DigestNotificationCreator {
       return null;
     }
 
-    String digestMessage = StringUtils.replace(
-        configuration.getMessage(), "{count}", String.valueOf(postponeMessages.size()));
+    Map<String, String> valuesMap = new HashMap<>();
+    valuesMap.put("approvalListUrl", requisitionApprovalListUrl);
+    valuesMap.put("convertToOrderUrl", requisitionConvertToOrderUrl);
+    valuesMap.put("requisitionListUrl", requisitionListUrl);
+    valuesMap.put("count", String.valueOf(postponeMessages.size()));
+
+    StrSubstitutor sub = new StrSubstitutor(valuesMap);
 
     String subject = postponeMessages.get(0).getSubject();
+    String body = sub.replace(configuration.getMessage());
 
-    NotificationMessage message = new NotificationMessage(channel, digestMessage, subject);
+    NotificationMessage message = new NotificationMessage(channel, body, subject);
 
     return MessageBuilder
         .withPayload(message)

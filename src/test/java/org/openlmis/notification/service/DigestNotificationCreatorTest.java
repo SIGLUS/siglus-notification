@@ -39,7 +39,7 @@ import org.springframework.messaging.Message;
 
 public class DigestNotificationCreatorTest {
 
-  private static final String MSG_TEMPLATE = "There are {count} notifications";
+  private static final String MSG_TEMPLATE = "There are ${count} notifications";
   private static final String EXPECTED_MSG = "There are 2 notifications";
 
   @Rule
