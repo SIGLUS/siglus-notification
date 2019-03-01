@@ -49,14 +49,8 @@ public class DigestNotificationCreator {
   @Autowired
   private DigestConfigurationRepository digestConfigurationRepository;
 
-  @Value("${requisition.ui.approvalListUrl}")
-  private String requisitionApprovalListUrl;
-
-  @Value("${requisition.ui.convertToOrderUrl}")
-  private String requisitionConvertToOrderUrl;
-
-  @Value("${requisition.ui.requisitionListUrl}")
-  private String requisitionListUrl;
+  @Value("${service.url}")
+  private String serviceUrl;
 
   /**
    * Creates a digest message based on postpone messages.
@@ -74,9 +68,7 @@ public class DigestNotificationCreator {
     }
 
     Map<String, String> valuesMap = new HashMap<>();
-    valuesMap.put("approvalListUrl", requisitionApprovalListUrl);
-    valuesMap.put("convertToOrderUrl", requisitionConvertToOrderUrl);
-    valuesMap.put("requisitionListUrl", requisitionListUrl);
+    valuesMap.put("serviceUrl", serviceUrl);
     valuesMap.put("count", String.valueOf(postponeMessages.size()));
 
     StrSubstitutor sub = new StrSubstitutor(valuesMap);

@@ -36,11 +36,14 @@ import org.openlmis.notification.repository.DigestConfigurationRepository;
 import org.openlmis.notification.testutils.DigestConfigurationDataBuilder;
 import org.openlmis.notification.testutils.PostponeMessageDataBuilder;
 import org.springframework.messaging.Message;
+import org.springframework.test.util.ReflectionTestUtils;
 
 public class DigestNotificationCreatorTest {
 
-  private static final String MSG_TEMPLATE = "There are ${count} notifications";
-  private static final String EXPECTED_MSG = "There are 2 notifications";
+  private static final String SERVICE_URL = "http://localhost";
+
+  private static final String MSG_TEMPLATE = "There are ${count} notifications. ${serviceUrl}";
+  private static final String EXPECTED_MSG = "There are 2 notifications. " + SERVICE_URL;
 
   @Rule
   public MockitoRule mockitoRule = MockitoJUnit.rule();
@@ -64,6 +67,7 @@ public class DigestNotificationCreatorTest {
   @Before
   public void setUp() {
     given(digestConfigurationRepository.findOne(configurationId)).willReturn(configuration);
+    ReflectionTestUtils.setField(creator, "serviceUrl", SERVICE_URL);
   }
 
   @Test
