@@ -15,6 +15,8 @@
 
 package org.openlmis.notification.service;
 
+import static org.openlmis.notification.i18n.MessageKeys.ERROR_SEND_SMS_FAILURE;
+
 import java.util.Collections;
 import org.slf4j.ext.XLogger;
 import org.slf4j.ext.XLoggerFactory;
@@ -26,6 +28,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 @Component
@@ -58,17 +61,24 @@ public class SmsSender {
     profiler.start("POST_TO_SMS_SEND_API");
     SmsRequestDto requestBody = request.getBody();
     XLOGGER.debug("request, url = {}, body = {}", smsSendApiUrl, requestBody.toString());
-    ResponseEntity<SmsResponseDto> response = restTemplate.postForEntity(
-        smsSendApiUrl, request, SmsResponseDto.class);
 
-    int responseCode = response.getStatusCodeValue();
-    SmsResponseDto responseBody = response.getBody();
-    if (responseCode >= 200 && responseCode < 300) {
+    int responseCode;
+    String responseBody;
+    try {
+      ResponseEntity<String> response = restTemplate.postForEntity(
+          smsSendApiUrl, request, String.class);
+
+      responseCode = response.getStatusCodeValue();
+      responseBody = response.getBody();
       XLOGGER.debug("Send successful, status code was {}, response = {}", responseCode,
-          responseBody.toString());
-    } else {
-      XLOGGER.warn("Send unsuccessful, status code was {}, response = {}", responseCode,
-          responseBody.toString());
+          responseBody);
+    } catch (RestClientException rce) {
+      NotificationException exception = new ServerException(rce, ERROR_SEND_SMS_FAILURE);
+
+      XLOGGER.throwing(exception);
+      profiler.stop().log();
+
+      throw exception;
     }
 
     profiler.stop().log();

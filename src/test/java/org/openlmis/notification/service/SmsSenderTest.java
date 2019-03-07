@@ -20,9 +20,12 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
+import static org.openlmis.notification.i18n.MessageKeys.ERROR_SEND_SMS_FAILURE;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
@@ -35,6 +38,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.client.RestClientException;
 import org.springframework.web.client.RestTemplate;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -44,6 +48,9 @@ public class SmsSenderTest {
   private static final String SMS_SEND_API_TOKEN = "token";
   private static final String MESSAGE = "This is an SMS message";
   private static final String TO_PHONE_NUMBER = "12065551234";
+
+  @Rule
+  public ExpectedException exception = ExpectedException.none();
 
   @Mock
   private RestTemplate restTemplate;
@@ -63,8 +70,8 @@ public class SmsSenderTest {
     ReflectionTestUtils.setField(sender, "smsSendApiToken", SMS_SEND_API_TOKEN);
 
     given(restTemplate.postForEntity(
-        any(String.class), any(HttpEntity.class), eq(SmsResponseDto.class)))
-        .willReturn(new ResponseEntity<>(new SmsResponseDto(), HttpStatus.CREATED));
+        any(String.class), any(HttpEntity.class), eq(String.class)))
+        .willReturn(new ResponseEntity<>("Successful", HttpStatus.CREATED));
   }
 
   @Test
@@ -74,7 +81,7 @@ public class SmsSenderTest {
 
     // then
     verify(restTemplate).postForEntity(urlCaptor.capture(), requestCaptor.capture(),
-        eq(SmsResponseDto.class));
+        eq(String.class));
 
     String url = urlCaptor.getValue();
     assertThat(url).isEqualToIgnoringCase(SMS_SEND_API_URL);
@@ -88,5 +95,18 @@ public class SmsSenderTest {
     SmsRequestDto requestBody = (SmsRequestDto) requestValue.getBody();
     assertThat(requestBody.getText()).isEqualToIgnoringCase(MESSAGE);
     assertThat(requestBody.getUrns()).contains("tel:" + TO_PHONE_NUMBER);
+  }
+  
+  @Test
+  public void sendMessageShouldThrowExceptionIfServiceReturnsAnErrorCode() {
+    // given
+    given(restTemplate.postForEntity(
+        any(String.class), any(HttpEntity.class), eq(String.class)))
+        .willThrow(new RestClientException("Bad request"));
+    exception.expect(ServerException.class);
+    exception.expectMessage(ERROR_SEND_SMS_FAILURE);
+
+    // when
+    sender.sendMessage(TO_PHONE_NUMBER, MESSAGE);
   }
 }
