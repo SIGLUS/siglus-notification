@@ -24,7 +24,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.UUID;
 import javax.persistence.EntityManager;
-import org.apache.commons.lang3.StringUtils;
 import org.openlmis.notification.domain.PostponeMessage;
 import org.springframework.integration.core.MessageSource;
 import org.springframework.integration.jpa.core.JpaExecutor;
@@ -93,9 +92,9 @@ class PostponeMessageRetriever implements MessageSource<List<PostponeMessage>> {
     jpaExecutor.setEntityClass(PostponeMessage.class);
     jpaExecutor.setNamedQuery(PostponeMessage.GET_POSTPONE_MESSAGES_NAMED_QUERY);
     jpaExecutor.setJpaParameters(Lists.newArrayList(
-        new JpaParameter(CONFIGURATION_ID_HEADER, configurationId, StringUtils.EMPTY),
-        new JpaParameter("channel", channel, StringUtils.EMPTY),
-        new JpaParameter("userId", userId, StringUtils.EMPTY)
+        createParameter(CONFIGURATION_ID_HEADER, configurationId),
+        createParameter("channel", channel),
+        createParameter("userId", userId)
     ));
 
     jpaExecutor.setExpectSingleResult(false);
@@ -105,6 +104,10 @@ class PostponeMessageRetriever implements MessageSource<List<PostponeMessage>> {
     jpaExecutor.setDeleteAfterPoll(true);
     jpaExecutor.setFlush(true);
     jpaExecutor.setClearOnFlush(true);
+  }
+
+  private JpaParameter createParameter(String name, Object value) {
+    return new JpaParameter(name, value, String.format("'%s'", value));
   }
 
 }
