@@ -30,6 +30,7 @@ public class NotificationChannelRouter {
   private static final Logger LOGGER = LoggerFactory.getLogger(NotificationChannelRouter.class);
 
   static final String EMAIL_SEND_NOW_CHANNEL = "notificationToSend.sendNow.readyToSend.email";
+  static final String SMS_SEND_NOW_CHANNEL = "notificationToSend.sendNow.readyToSend.sms";
 
   /**
    * Defines which handler should be used for notification.
@@ -38,6 +39,8 @@ public class NotificationChannelRouter {
   public String route(@Header(CHANNEL_HEADER) NotificationChannel channel) {
     if (NotificationChannel.EMAIL == channel) {
       return EMAIL_SEND_NOW_CHANNEL;
+    } else if (NotificationChannel.SMS == channel) {
+      return SMS_SEND_NOW_CHANNEL;
     }
 
     LOGGER.warn("Unknown notification channel: {}", channel);

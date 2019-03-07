@@ -15,28 +15,24 @@
 
 package org.openlmis.notification.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.openlmis.notification.service.NotificationChannelRouter.EMAIL_SEND_NOW_CHANNEL;
-import static org.openlmis.notification.service.NotificationChannelRouter.SMS_SEND_NOW_CHANNEL;
-
+import nl.jqno.equalsverifier.EqualsVerifier;
+import nl.jqno.equalsverifier.Warning;
 import org.junit.Test;
+import org.openlmis.notification.service.referencedata.RightDto;
+import org.openlmis.notification.testutils.ToStringTestUtils;
 
-public class NotificationChannelRouterTest {
-
-  private NotificationChannelRouter router = new NotificationChannelRouter();
+public class SmsResponseDtoTest {
 
   @Test
-  public void routeShouldReturnEmailChannelForEmailNotificationChannel() {
-    assertThat(router.route(NotificationChannel.EMAIL)).isEqualTo(EMAIL_SEND_NOW_CHANNEL);
-  }
-  
-  @Test
-  public void routeShouldReturnSmsChannelForSmsNotificationChannel() {
-    assertThat(router.route(NotificationChannel.SMS)).isEqualTo(SMS_SEND_NOW_CHANNEL);
+  public void equalsContract() {
+    EqualsVerifier
+        .forClass(SmsResponseDto.class)
+        .suppress(Warning.NONFINAL_FIELDS)
+        .verify();
   }
 
   @Test
-  public void routeShouldReturnNullForUnknownNotificationChannel() {
-    assertThat(router.route(null)).isNull();
+  public void shouldImplementToString() {
+    ToStringTestUtils.verify(RightDto.class, new RightDto());
   }
 }

@@ -6,6 +6,7 @@ New functionality added in a backwards-compatible manner:
 * [OLMIS-6016](https://openlmis.atlassian.net/browse/OLMIS-6016): Added ability to set configuration for digest notifications.
 * [OLMIS-6017](https://openlmis.atlassian.net/browse/OLMIS-6017): Added ability to subscribe to get digest notifications.
 * [OLMIS-6029](https://openlmis.atlassian.net/browse/OLMIS-6029): Implemented digest notification feature
+* [OLMIS-6040](https://openlmis.atlassian.net/browse/OLMIS-6040): Added SMS integration to support SMS notifications.
 
 Bug fixes, security and performance improvements (backwards-compatible):
 * [OLMIS-5872](https://openlmis.atlassian.net/browse/OLMIS-5872): Added null checking for retrieving uuids in Search Params.

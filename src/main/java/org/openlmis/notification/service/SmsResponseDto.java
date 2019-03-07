@@ -15,28 +15,23 @@
 
 package org.openlmis.notification.service;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.openlmis.notification.service.NotificationChannelRouter.EMAIL_SEND_NOW_CHANNEL;
-import static org.openlmis.notification.service.NotificationChannelRouter.SMS_SEND_NOW_CHANNEL;
+import java.util.List;
+import java.util.Map;
+import lombok.AllArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
-import org.junit.Test;
+@Getter
+@Setter
+@ToString
+@NoArgsConstructor
+@AllArgsConstructor
+@EqualsAndHashCode
+public final class SmsResponseDto {
 
-public class NotificationChannelRouterTest {
-
-  private NotificationChannelRouter router = new NotificationChannelRouter();
-
-  @Test
-  public void routeShouldReturnEmailChannelForEmailNotificationChannel() {
-    assertThat(router.route(NotificationChannel.EMAIL)).isEqualTo(EMAIL_SEND_NOW_CHANNEL);
-  }
-  
-  @Test
-  public void routeShouldReturnSmsChannelForSmsNotificationChannel() {
-    assertThat(router.route(NotificationChannel.SMS)).isEqualTo(SMS_SEND_NOW_CHANNEL);
-  }
-
-  @Test
-  public void routeShouldReturnNullForUnknownNotificationChannel() {
-    assertThat(router.route(null)).isNull();
-  }
+  private Map<String, String> text;
+  private List<String> urns;
 }
