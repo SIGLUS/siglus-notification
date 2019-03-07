@@ -128,7 +128,7 @@ public class DigestionServiceTest {
     service.handleMessage(message, channel, recipient, tag);
 
     // then
-    verify(postponeMessageRepository).save(postpone);
+    verify(postponeMessageRepository).saveAndFlush(postpone);
     verify(service).setPollingAdapter(channel, configuration,
         recipient, subscription.getCronExpression());
   }
