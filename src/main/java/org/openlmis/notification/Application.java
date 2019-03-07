@@ -23,7 +23,6 @@ import org.aopalliance.aop.Advice;
 import org.flywaydb.core.api.callback.FlywayCallback;
 import org.openlmis.notification.domain.Identifiable;
 import org.openlmis.notification.i18n.ExposedMessageSourceImpl;
-import org.openlmis.notification.service.DigestFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -33,10 +32,8 @@ import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.boot.autoconfigure.flyway.FlywayMigrationStrategy;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Profile;
-import org.springframework.integration.channel.QueueChannel;
 import org.springframework.integration.config.EnableIntegration;
 import org.springframework.integration.scheduling.PollerMetadata;
-import org.springframework.messaging.PollableChannel;
 import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.support.PeriodicTrigger;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -128,11 +125,6 @@ public class Application {
     metadata.setTrigger(trigger);
 
     return metadata;
-  }
-
-  @Bean(name = DigestFilter.SEND_NOW_POSTPONE_CHANNEL)
-  public PollableChannel postponeChannel() {
-    return new QueueChannel();
   }
 
 }

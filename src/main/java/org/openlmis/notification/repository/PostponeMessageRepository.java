@@ -17,8 +17,8 @@ package org.openlmis.notification.repository;
 
 import java.util.UUID;
 import org.openlmis.notification.domain.PostponeMessage;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 
-public interface PostponeMessageRepository extends CrudRepository<PostponeMessage, UUID> {
+public interface PostponeMessageRepository extends JpaRepository<PostponeMessage, UUID> {
 
 }

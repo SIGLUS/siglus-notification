@@ -20,14 +20,16 @@ import static org.openlmis.notification.service.NotificationTransformer.CHANNEL_
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import javax.persistence.EntityManager;
 import org.openlmis.notification.domain.PostponeMessage;
 import org.springframework.integration.core.MessageSource;
 import org.springframework.integration.jpa.core.JpaExecutor;
-import org.springframework.integration.jpa.support.JpaParameter;
+import org.springframework.integration.jpa.support.parametersource.ParameterSource;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.support.MessageBuilder;
 
@@ -91,23 +93,37 @@ class PostponeMessageRetriever implements MessageSource<List<PostponeMessage>> {
 
     jpaExecutor.setEntityClass(PostponeMessage.class);
     jpaExecutor.setNamedQuery(PostponeMessage.GET_POSTPONE_MESSAGES_NAMED_QUERY);
-    jpaExecutor.setJpaParameters(Lists.newArrayList(
-        createParameter(CONFIGURATION_ID_HEADER, configurationId),
-        createParameter("channel", channel),
-        createParameter("userId", userId)
-    ));
 
+    MapParameterSource parameterSource = new MapParameterSource();
+    parameterSource.add(CONFIGURATION_ID_HEADER, configurationId);
+    parameterSource.add("channel", channel);
+    parameterSource.add("userId", userId);
+
+    jpaExecutor.setParameterSource(parameterSource);
     jpaExecutor.setExpectSingleResult(false);
-
-    jpaExecutor.setUsePayloadAsParameterSource(true);
 
     jpaExecutor.setDeleteAfterPoll(true);
     jpaExecutor.setFlush(true);
     jpaExecutor.setClearOnFlush(true);
   }
 
-  private JpaParameter createParameter(String name, Object value) {
-    return new JpaParameter(name, value, String.format("'%s'", value));
+  private static final class MapParameterSource implements ParameterSource {
+
+    private Map<String, Object> params = Maps.newHashMap();
+
+    @Override
+    public boolean hasValue(String paramName) {
+      return params.containsKey(paramName);
+    }
+
+    @Override
+    public Object getValue(String paramName) {
+      return params.get(paramName);
+    }
+
+    void add(String paramName, Object paramValue) {
+      params.put(paramName, paramValue);
+    }
   }
 
 }

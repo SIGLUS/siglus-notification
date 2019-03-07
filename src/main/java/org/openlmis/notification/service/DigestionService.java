@@ -22,6 +22,7 @@ import static org.openlmis.notification.service.NotificationTransformer.TAG_HEAD
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Table;
 import java.util.Map;
 import java.util.UUID;
@@ -35,6 +36,7 @@ import org.openlmis.notification.repository.DigestSubscriptionRepository;
 import org.openlmis.notification.repository.PostponeMessageRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.integration.annotation.MessageEndpoint;
 import org.springframework.integration.annotation.ServiceActivator;
@@ -43,7 +45,9 @@ import org.springframework.integration.endpoint.SourcePollingChannelAdapter;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.scheduling.support.CronTrigger;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.interceptor.MatchAlwaysTransactionAttributeSource;
+import org.springframework.transaction.interceptor.TransactionInterceptor;
 
 @MessageEndpoint
 public class DigestionService {
@@ -62,7 +66,13 @@ public class DigestionService {
   private PostponeMessageRepository postponeMessageRepository;
 
   @Autowired
+  private PlatformTransactionManager transactionManager;
+
+  @Autowired
   private EntityManager entityManager;
+
+  @Autowired
+  private BeanFactory beanFactory;
 
   private Table<UUID, String, SourcePollingChannelAdapter> adapters;
 
@@ -78,9 +88,8 @@ public class DigestionService {
   /**
    * Handle postpone notifications.
    */
-  @Transactional
   @ServiceActivator(inputChannel = SEND_NOW_POSTPONE_CHANNEL)
-  public void handleMessage(@Payload NotificationMessage message,
+  public final void handleMessage(@Payload NotificationMessage message,
       @Header(CHANNEL_HEADER) NotificationChannel channel,
       @Header(RECIPIENT_HEADER) UUID recipient, @Header(TAG_HEADER) String tag) {
     DigestConfiguration configuration = digestConfigurationRepository.findByTag(tag);
@@ -99,7 +108,7 @@ public class DigestionService {
 
     String sendTime = subscription.getCronExpression();
 
-    postponeMessageRepository.save(
+    postponeMessageRepository.saveAndFlush(
         new PostponeMessage(configuration, message.getBody(),
             message.getSubject(), recipient, channel));
 
@@ -112,10 +121,19 @@ public class DigestionService {
   void setPollingAdapter(NotificationChannel channel, DigestConfiguration configuration,
       UUID recipient, String cronExpression) {
     SourcePollingChannelAdapter adapter = new SourcePollingChannelAdapter();
+
     adapter.setOutputChannelName(AGGREGATE_POSTPONE_CHANNEL);
+
     adapter.setSource(new PostponeMessageRetriever(entityManager,
         channel, configuration.getId(), recipient));
+
+    adapter.setAdviceChain(Lists.newArrayList(new TransactionInterceptor(
+        transactionManager, new MatchAlwaysTransactionAttributeSource())));
+
     adapter.setTrigger(new CronTrigger(cronExpression));
+    adapter.setBeanFactory(beanFactory);
+
+    adapter.afterPropertiesSet();
 
     adapter.start();
 
