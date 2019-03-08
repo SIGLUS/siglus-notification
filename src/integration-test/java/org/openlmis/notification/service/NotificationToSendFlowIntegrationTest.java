@@ -133,7 +133,7 @@ public class NotificationToSendFlowIntegrationTest {
   @Before
   public void setUp() {
     TransactionTemplate template = new TransactionTemplate(transactionManager);
-    template.execute(new PrepareData());
+    template.execute(new DatabaseInitializer());
 
     given(togglzReferenceDataService.findAll()).willReturn(Lists.newArrayList(digestFeature));
   }
@@ -141,7 +141,7 @@ public class NotificationToSendFlowIntegrationTest {
   @After
   public void tearDown() {
     TransactionTemplate template = new TransactionTemplate(transactionManager);
-    template.execute(new RemoveExistingData());
+    template.execute(new DatabaseDestroyer());
   }
 
   @Test
@@ -191,7 +191,7 @@ public class NotificationToSendFlowIntegrationTest {
         .isEqualTo(pendingEmailNotifications.size() - 1L);
   }
 
-  private final class RemoveExistingData extends TransactionCallbackWithoutResult {
+  private final class DatabaseDestroyer extends TransactionCallbackWithoutResult {
 
     @Override
     protected void doInTransactionWithoutResult(TransactionStatus status) {
@@ -207,7 +207,7 @@ public class NotificationToSendFlowIntegrationTest {
 
   }
 
-  private final class PrepareData extends TransactionCallbackWithoutResult {
+  private final class DatabaseInitializer extends TransactionCallbackWithoutResult {
 
     @Override
     protected void doInTransactionWithoutResult(TransactionStatus status) {
