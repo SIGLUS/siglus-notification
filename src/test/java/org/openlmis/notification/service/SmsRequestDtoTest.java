@@ -18,7 +18,6 @@ package org.openlmis.notification.service;
 import nl.jqno.equalsverifier.EqualsVerifier;
 import nl.jqno.equalsverifier.Warning;
 import org.junit.Test;
-import org.openlmis.notification.service.referencedata.RightDto;
 import org.openlmis.notification.testutils.ToStringTestUtils;
 
 public class SmsRequestDtoTest {
@@ -33,6 +32,6 @@ public class SmsRequestDtoTest {
 
   @Test
   public void shouldImplementToString() {
-    ToStringTestUtils.verify(RightDto.class, new RightDto());
+    ToStringTestUtils.verify(SmsRequestDto.class, new SmsRequestDto());
   }
 }
