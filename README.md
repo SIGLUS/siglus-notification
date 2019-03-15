@@ -70,13 +70,15 @@ https://github.com/OpenLMIS/openlmis-template-service/blob/master/README.md#debu
 
 Environment variables common to all services are listed here: https://github.com/OpenLMIS/openlmis-template-service/blob/master/README.md#environment-variables
 
-This services also uses the following variables:
+This service also uses the following variables:
 
 * **MAIL_HOST** - The hostname or IP of the SMTP server that will be used for sending outgoing email. For example: smtp.example.com. This variable has to be defined in order to send emails. 
 * **MAIL_PORT** - The SMTP port to use for sending outgoing email. For example 25 or 465. This variable has to be defined in order to send emails. The default is 25.
 * **MAIL_USERNAME** - The SMTP username to use for sending outgoing email. Usually required by the SMTP server.  
 * **MAIL_PASSWORD** - The SMTP password to use for sending outgoing email. Usually required by the SMTP server.
 * **MAIL_ADDRESS** - The sender email address that will be used for sending all outgoing email messages (the from-address field). For example set it to noreply@mydomain.org in order for users to see that as the sender of the email they receive. Note that some email providers (like Gmail) might overwrite this value with details from your account.   
+
+See [SMS integration](#sms-integration) below for environment variables for SMS integration.
 
 ## Production by Spring Profile
 
@@ -110,3 +112,21 @@ $ gradle bootRun
 
 To see how to set environment variables through Docker Compose, see the 
 [Reference Distribution](https://github.com/openlmis/openlmis-ref-distro)
+
+## <a name="sms-integration">SMS Integration</a>
+
+The Notification Service now has integration with SMS through an SMS provider. This integration has 
+been designed with RapidPro/TextIt in mind, but as long as the SMS provider provides access to a 
+REST API (using a token) from which to send SMS messages, it should be supported.
+
+To enable SMS integration, two settings need to be set in the .env file:
+
+* **SMS_SEND_API_URL** - The REST API URL of the SMS provider that will be used for sending SMS 
+messages. (Example: https://textit.in/api/v2/broadcasts.json) This variable has to be defined in 
+order to send SMS messages. 
+* **SMS_SEND_API_TOKEN** - The API access token to use for the REST API. This variable has to be 
+defined in order to send SMS messages.
+
+Note: make sure that all users that are supposed to receive SMS messages have phone numbers set in 
+their user contact details, and that these numbers are in E.164 format (e.g. for US numbers, 
+12065551234).
