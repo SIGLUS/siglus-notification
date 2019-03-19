@@ -11,6 +11,7 @@ New functionality added in a backwards-compatible manner:
 Bug fixes, security and performance improvements (backwards-compatible):
 * [OLMIS-5872](https://openlmis.atlassian.net/browse/OLMIS-5872): Added null checking for retrieving uuids in Search Params.
 * [OLMIS-5971](https://openlmis.atlassian.net/browse/OLMIS-5971): Introduced `Spring Integration` to handle notifications sending
+* [OLMIS-4531](https://openlmis.atlassian.net/browse/OLMIS-4531): Added compressing HTTP POST responses.
 
 4.0.1 / 2018-12-12
 ==================
