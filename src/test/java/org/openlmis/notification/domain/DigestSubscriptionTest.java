@@ -16,28 +16,34 @@
 package org.openlmis.notification.domain;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.openlmis.notification.i18n.MessageKeys.ERROR_INVALID_CRON_EXPRESSION_IN_SUBSCRIPTION;
 
 import com.google.common.collect.Maps;
 import java.util.Map;
 import lombok.AllArgsConstructor;
 import nl.jqno.equalsverifier.EqualsVerifier;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.openlmis.notification.testutils.DigestConfigurationDataBuilder;
 import org.openlmis.notification.testutils.DigestSubscriptionDataBuilder;
 import org.openlmis.notification.testutils.ToStringTestUtils;
+import org.openlmis.notification.web.ValidationException;
 
 public class DigestSubscriptionTest {
 
   private static final String CONFIGURATION = "configuration";
   private static final String TIME = "time";
 
+  @Rule
+  public ExpectedException exception = ExpectedException.none();
 
   @Test
   public void shouldExportData() {
     Map<String, Object> map = Maps.newHashMap();
     DummyExporter exporter = new DummyExporter(map);
 
-    String cronExpression = "cron";
+    String cronExpression = "0 15 17 1 1 MON";
     DigestConfiguration configuration = new DigestConfigurationDataBuilder().build();
     DigestSubscription subscription = new DigestSubscriptionDataBuilder()
         .withDigestConfiguration(configuration)
@@ -48,6 +54,26 @@ public class DigestSubscriptionTest {
     assertThat(map)
         .containsEntry(CONFIGURATION, configuration)
         .containsEntry(TIME, cronExpression);
+  }
+
+  @Test
+  public void shouldNotCreateNewInstanceIfCronExpressionIsInvalid() {
+    exception.expect(ValidationException.class);
+    exception.expectMessage(ERROR_INVALID_CRON_EXPRESSION_IN_SUBSCRIPTION);
+
+    DigestSubscription.create(null, null, "* 0/bin * * * *");
+  }
+
+  @Test
+  public void shouldCreateNewInstanceForCorrectData() {
+    // given
+    String cronExpression = "* * * * * *";
+
+    // when
+    DigestSubscription subscription = DigestSubscription.create(null, null, cronExpression);
+
+    // then
+    assertThat(subscription.getCronExpression()).isEqualTo(cronExpression);
   }
 
   @Test

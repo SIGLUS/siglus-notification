@@ -15,22 +15,27 @@
 
 package org.openlmis.notification.domain;
 
+import static org.openlmis.notification.i18n.MessageKeys.ERROR_INVALID_CRON_EXPRESSION_IN_SUBSCRIPTION;
+
 import java.util.UUID;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import org.openlmis.notification.web.ValidationException;
+import org.springframework.scheduling.support.CronSequenceGenerator;
 
 @Entity
 @Table(name = "digest_subscriptions")
 @NoArgsConstructor
-@AllArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 @EqualsAndHashCode(callSuper = true)
 @ToString(callSuper = true)
 public final class DigestSubscription extends BaseEntity {
@@ -47,6 +52,25 @@ public final class DigestSubscription extends BaseEntity {
 
   @Getter
   private String cronExpression;
+
+  /**
+   * Creates new instance of {@link DigestSubscription}.
+   *
+   * @throws ValidationException if cron expression cannot be parsed.
+   */
+  public static DigestSubscription create(UserContactDetails userContactDetails,
+      DigestConfiguration digestConfiguration, String cronExpression) {
+    try {
+      // the following constructor tries to parse the passed cron expression
+      // and throws an IllegalArgumentException exception if it cannot be parsed.
+      new CronSequenceGenerator(cronExpression);
+    } catch (IllegalArgumentException exp) {
+      throw new ValidationException(exp,
+          ERROR_INVALID_CRON_EXPRESSION_IN_SUBSCRIPTION, cronExpression);
+    }
+
+    return new DigestSubscription(userContactDetails, digestConfiguration, cronExpression);
+  }
 
   /**
    * Exports current status of the object.

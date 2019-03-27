@@ -131,6 +131,9 @@ public abstract class MessageKeys {
   public static final String ERROR_INVALID_TAG_IN_SUBSCRIPTION =
       join(ERROR_PREFIX, DIGEST_SUBSCRIPTION, "invalidTag");
 
+  public static final String ERROR_INVALID_CRON_EXPRESSION_IN_SUBSCRIPTION =
+      join(ERROR_PREFIX, DIGEST_SUBSCRIPTION, "invalidCronExpression");
+
   public static final String ERROR_DIGEST_CONFIGURATION_NOT_FOUND =
       join(ERROR_PREFIX, DIGEST_CONFIGURATION, NOT_FOUND);
 

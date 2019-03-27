@@ -26,7 +26,7 @@ public class DigestSubscriptionDataBuilder {
   private UUID id = UUID.randomUUID();
   private UserContactDetails userContactDetails = new UserContactDetailsDataBuilder().build();
   private DigestConfiguration digestConfiguration = new DigestConfigurationDataBuilder().build();
-  private String cronExpression = "15 * * * *";
+  private String cronExpression = "* 0/15 * * * *";
 
   public DigestSubscriptionDataBuilder withId(UUID id) {
     this.id = id;
@@ -49,7 +49,7 @@ public class DigestSubscriptionDataBuilder {
   }
 
   public DigestSubscription buildAsNew() {
-    return new DigestSubscription(userContactDetails, digestConfiguration, cronExpression);
+    return DigestSubscription.create(userContactDetails, digestConfiguration, cronExpression);
   }
 
   /**

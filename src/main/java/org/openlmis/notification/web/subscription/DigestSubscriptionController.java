@@ -174,7 +174,7 @@ public class DigestSubscriptionController extends BaseController {
         stopProfilerAndThrowException(profiler, exception);
       }
 
-      digestSubscriptions.add(new DigestSubscription(
+      digestSubscriptions.add(DigestSubscription.create(
           userContactDetails, digestConfiguration, subscriptionDto.getCronExpression()));
     }
 
