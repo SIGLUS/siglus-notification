@@ -34,7 +34,7 @@ import org.springframework.messaging.handler.annotation.Header;
 @MessageEndpoint
 public class ChannelFilter {
 
-  private static final XLogger XLOGGER = XLoggerFactory.getXLogger(AllowNotifyFilter.class);
+  private static final XLogger XLOGGER = XLoggerFactory.getXLogger(ChannelFilter.class);
 
 
   static final String READY_TO_SEND_CHANNEL = "notificationToSend.readyToSend";
