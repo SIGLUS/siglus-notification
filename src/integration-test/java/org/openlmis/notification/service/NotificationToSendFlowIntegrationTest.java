@@ -19,7 +19,13 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willAnswer;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.openlmis.notification.service.NotificationToSendRetriever.CHANNEL_TO_USE_HEADER;
+import static org.openlmis.notification.service.NotificationToSendRetriever.IMPORTANT_HEADER;
+import static org.openlmis.notification.service.NotificationToSendRetriever.RECIPIENT_HEADER;
 
 import java.util.List;
 import java.util.Objects;
@@ -56,6 +62,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.messaging.Message;
 import org.springframework.messaging.MessageChannel;
+import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -81,6 +88,9 @@ public class NotificationToSendFlowIntegrationTest {
 
   @MockBean
   private EmailSender emailSender;
+
+  @MockBean
+  private SmsSender smsSender;
 
   @MockBean
   private TogglzReferenceDataService togglzReferenceDataService;
@@ -191,6 +201,62 @@ public class NotificationToSendFlowIntegrationTest {
         .isEqualTo(pendingEmailNotifications.size() - 1L);
   }
 
+  @Test
+  public void shouldNotSendMessageForNonPreferredChannel() {
+    Notification notification = new NotificationDataBuilder()
+        .withUserId(userContactDetails.get(0).getReferenceDataUserId())
+        .withMessage(NotificationChannel.SMS, "Test Body", "Test Subject",
+          subscriptions.get(0).getDigestConfiguration().getTag())
+        .build();
+
+    message = MessageBuilder.withPayload(notification)
+      .setHeader(RECIPIENT_HEADER, notification.getUserId())
+      .setHeader(IMPORTANT_HEADER, notification.getImportant())
+      .setHeader(CHANNEL_TO_USE_HEADER, notification.getMessages().get(0).getChannel())
+      .build();
+
+    // given
+    digestFeature.setEnabled(false);
+
+    // when
+    startChannel.send(message);
+
+    verify(emailSender, never()).sendMail(anyString(), anyString(), any());
+    verify(smsSender, never()).sendMessage(anyString(), anyString());
+  }
+
+  @Test
+  public void shouldSendEmailNotificationForTagWithoutSubscription() {
+    String subject = "Test Subject";
+    String body = "Test Body";
+
+    Notification notification = new NotificationDataBuilder()
+        .withUserId(userContactDetails.get(0).getReferenceDataUserId())
+        .withMessage(NotificationChannel.EMAIL, body, subject, "Test Tag")
+        .build();
+
+    message = MessageBuilder.withPayload(notification)
+        .setHeader(RECIPIENT_HEADER, notification.getUserId())
+        .setHeader(IMPORTANT_HEADER, notification.getImportant())
+        .setHeader(CHANNEL_TO_USE_HEADER, notification.getMessages().get(0).getChannel())
+        .build();
+
+    // given
+    digestFeature.setEnabled(false);
+
+    // when
+    startChannel.send(message);
+
+    verify(emailSender).sendMail(correctContactDetails.getEmailAddress(), subject, body);
+
+    assertThat(pendingNotificationRepository.exists(correctPendingNotification.getId())).isFalse();
+
+    assertThat(userContactDetailsRepository.count()).isEqualTo(userContactDetails.size());
+    assertThat(notificationRepository.count()).isEqualTo(emailNotifications.size());
+    assertThat(pendingNotificationRepository.count())
+        .isEqualTo(pendingEmailNotifications.size() - 1L);
+  }
+
   private final class DatabaseDestroyer extends TransactionCallbackWithoutResult {
 
     @Override
@@ -241,6 +307,8 @@ public class NotificationToSendFlowIntegrationTest {
           .map(contactDetail -> new DigestSubscriptionDataBuilder()
               .withDigestConfiguration(configuration)
               .withUserContactDetails(contactDetail)
+              .withPreferredChannel(NotificationChannel.EMAIL)
+              .withUseDigest(true)
               .withCronExpression(CRON_EXPRESSION)
               .buildAsNew())
           .collect(Collectors.toList());

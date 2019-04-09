@@ -17,13 +17,14 @@ package org.openlmis.notification.service;
 
 import static org.apache.commons.lang3.BooleanUtils.isTrue;
 import static org.apache.commons.lang3.StringUtils.isBlank;
+import static org.openlmis.notification.service.ChannelFilter.READY_TO_SEND_CHANNEL;
 import static org.openlmis.notification.service.NotificationToSendRetriever.IMPORTANT_HEADER;
 import static org.openlmis.notification.service.NotificationToSendRetriever.RECIPIENT_HEADER;
-import static org.openlmis.notification.service.NotificationTransformer.READY_TO_SEND_CHANNEL;
 import static org.openlmis.notification.service.NotificationTransformer.TAG_HEADER;
 
 import java.util.UUID;
 import org.openlmis.notification.domain.DigestConfiguration;
+import org.openlmis.notification.domain.DigestSubscription;
 import org.openlmis.notification.repository.DigestConfigurationRepository;
 import org.openlmis.notification.repository.DigestSubscriptionRepository;
 import org.openlmis.notification.service.referencedata.TogglzFeatureDto;
@@ -83,9 +84,14 @@ public class DigestFilter {
       return SEND_NOW_PREPARE_CHANNEL;
     }
 
-    boolean subscriptionExists = digestSubscriptionRepository.existsBy(recipient, configuration);
+    DigestSubscription subscription = digestSubscriptionRepository.findBy(recipient, configuration);
 
-    if (!subscriptionExists) {
+    if (null == subscription) {
+      LOGGER.info("A notification for a user {} with {} tag will be sent now", recipient, tag);
+      return SEND_NOW_PREPARE_CHANNEL;
+    }
+
+    if (!subscription.getUseDigest()) {
       LOGGER.info("A notification for a user {} with {} tag will be sent now", recipient, tag);
       return SEND_NOW_PREPARE_CHANNEL;
     }

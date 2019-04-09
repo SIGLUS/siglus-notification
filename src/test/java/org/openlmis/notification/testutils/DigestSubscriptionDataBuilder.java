@@ -19,6 +19,7 @@ import java.util.UUID;
 import org.openlmis.notification.domain.DigestConfiguration;
 import org.openlmis.notification.domain.DigestSubscription;
 import org.openlmis.notification.domain.UserContactDetails;
+import org.openlmis.notification.service.NotificationChannel;
 import org.openlmis.notification.util.UserContactDetailsDataBuilder;
 
 public class DigestSubscriptionDataBuilder {
@@ -27,6 +28,8 @@ public class DigestSubscriptionDataBuilder {
   private UserContactDetails userContactDetails = new UserContactDetailsDataBuilder().build();
   private DigestConfiguration digestConfiguration = new DigestConfigurationDataBuilder().build();
   private String cronExpression = "* 0/15 * * * *";
+  private NotificationChannel preferredChannel = NotificationChannel.EMAIL;
+  private Boolean useDigest = false;
 
   public DigestSubscriptionDataBuilder withId(UUID id) {
     this.id = id;
@@ -48,8 +51,19 @@ public class DigestSubscriptionDataBuilder {
     return this;
   }
 
+  public DigestSubscriptionDataBuilder withPreferredChannel(NotificationChannel preferredChannel) {
+    this.preferredChannel = preferredChannel;
+    return this;
+  }
+
+  public DigestSubscriptionDataBuilder withUseDigest(Boolean useDigest) {
+    this.useDigest = useDigest;
+    return this;
+  }
+
   public DigestSubscription buildAsNew() {
-    return DigestSubscription.create(userContactDetails, digestConfiguration, cronExpression);
+    return DigestSubscription.create(userContactDetails, digestConfiguration, cronExpression,
+        preferredChannel, useDigest);
   }
 
   /**

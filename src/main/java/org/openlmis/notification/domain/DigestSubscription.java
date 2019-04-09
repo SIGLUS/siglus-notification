@@ -15,10 +15,13 @@
 
 package org.openlmis.notification.domain;
 
+import static org.openlmis.notification.i18n.MessageKeys.ERROR_DIGEST_SUBSCRIPTION_INVALID_CHANNEL_FOR_DIGEST;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_INVALID_CRON_EXPRESSION_IN_SUBSCRIPTION;
 
 import java.util.UUID;
 import javax.persistence.Entity;
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
@@ -29,6 +32,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import org.openlmis.notification.service.NotificationChannel;
 import org.openlmis.notification.web.ValidationException;
 import org.springframework.scheduling.support.CronSequenceGenerator;
 
@@ -53,13 +57,22 @@ public final class DigestSubscription extends BaseEntity {
   @Getter
   private String cronExpression;
 
+  @Getter
+  @Enumerated(EnumType.STRING)
+  private NotificationChannel preferredChannel;
+
+  @Getter
+  private Boolean useDigest;
+
   /**
    * Creates new instance of {@link DigestSubscription}.
    *
    * @throws ValidationException if cron expression cannot be parsed.
    */
   public static DigestSubscription create(UserContactDetails userContactDetails,
-      DigestConfiguration digestConfiguration, String cronExpression) {
+      DigestConfiguration digestConfiguration, String cronExpression,
+      NotificationChannel preferredChannel, Boolean useDigest) {
+
     try {
       // the following constructor tries to parse the passed cron expression
       // and throws an IllegalArgumentException exception if it cannot be parsed.
@@ -69,7 +82,14 @@ public final class DigestSubscription extends BaseEntity {
           ERROR_INVALID_CRON_EXPRESSION_IN_SUBSCRIPTION, cronExpression);
     }
 
-    return new DigestSubscription(userContactDetails, digestConfiguration, cronExpression);
+    if (useDigest && !NotificationChannel.EMAIL.equals(preferredChannel)) {
+      throw new ValidationException(
+          ERROR_DIGEST_SUBSCRIPTION_INVALID_CHANNEL_FOR_DIGEST, preferredChannel.toString()
+      );
+    }
+
+    return new DigestSubscription(userContactDetails, digestConfiguration, cronExpression,
+      preferredChannel, useDigest);
   }
 
   /**
@@ -78,6 +98,8 @@ public final class DigestSubscription extends BaseEntity {
   public void export(Exporter exporter) {
     exporter.setDigestConfiguration(digestConfiguration);
     exporter.setCronExpression(cronExpression);
+    exporter.setPreferredChannel(preferredChannel);
+    exporter.setUseDigest(useDigest);
   }
 
   public interface Exporter {
@@ -85,6 +107,10 @@ public final class DigestSubscription extends BaseEntity {
     void setDigestConfiguration(DigestConfiguration configuration);
 
     void setCronExpression(String time);
+
+    void setPreferredChannel(NotificationChannel preferredChannel);
+
+    void setUseDigest(Boolean digest);
   }
 
   public interface Importer {
@@ -92,6 +118,10 @@ public final class DigestSubscription extends BaseEntity {
     UUID getDigestConfigurationId();
 
     String getCronExpression();
+
+    NotificationChannel getPreferredChannel();
+
+    Boolean getUseDigest();
 
   }
 

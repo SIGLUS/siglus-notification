@@ -29,8 +29,8 @@ public interface DigestSubscriptionRepository extends JpaRepository<DigestSubscr
 
   @Query("SELECT DISTINCT s"
       + " FROM DigestSubscription AS s"
-      + " INNER JOIN s.userContactDetails AS u"
-      + " INNER JOIN s.digestConfiguration AS c"
+      + " INNER JOIN FETCH s.userContactDetails AS u"
+      + " INNER JOIN FETCH s.digestConfiguration AS c"
       + " WHERE u.referenceDataUserId = :userId")
   List<DigestSubscription> getUserSubscriptions(@Param("userId") UUID userId);
 

@@ -27,6 +27,7 @@ import lombok.Setter;
 import lombok.ToString;
 import org.openlmis.notification.domain.DigestConfiguration;
 import org.openlmis.notification.domain.DigestSubscription;
+import org.openlmis.notification.service.NotificationChannel;
 import org.openlmis.notification.web.BaseDto;
 import org.openlmis.notification.web.ObjectReferenceDto;
 import org.openlmis.notification.web.digestconfiguration.DigestConfigurationController;
@@ -47,6 +48,8 @@ public final class DigestSubscriptionDto
 
   private ObjectReferenceDto digestConfiguration;
   private String cronExpression;
+  private Boolean useDigest;
+  private NotificationChannel preferredChannel;
 
   @Override
   @JsonIgnore

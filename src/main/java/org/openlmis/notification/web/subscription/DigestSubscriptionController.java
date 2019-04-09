@@ -175,7 +175,8 @@ public class DigestSubscriptionController extends BaseController {
       }
 
       digestSubscriptions.add(DigestSubscription.create(
-          userContactDetails, digestConfiguration, subscriptionDto.getCronExpression()));
+          userContactDetails, digestConfiguration, subscriptionDto.getCronExpression(),
+          subscriptionDto.getPreferredChannel(), subscriptionDto.getUseDigest()));
     }
 
     return digestSubscriptions;

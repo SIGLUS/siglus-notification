@@ -16,6 +16,7 @@
 package org.openlmis.notification.service;
 
 import static org.openlmis.notification.service.AllowNotifyFilter.ALLOW_NOTIFY_CHANNEL;
+import static org.openlmis.notification.service.ChannelFilter.FILTER_CHANNEL;
 import static org.openlmis.notification.service.NotificationToSendRetriever.CHANNEL_TO_USE_HEADER;
 
 import java.util.Objects;
@@ -33,15 +34,13 @@ public class NotificationTransformer {
 
   private static final Logger LOGGER = LoggerFactory.getLogger(NotificationTransformer.class);
 
-  static final String READY_TO_SEND_CHANNEL = "notificationToSend.readyToSend";
-
   static final String CHANNEL_HEADER = "channel";
   static final String TAG_HEADER = "tag";
 
   /**
    * Split single notification into several messages. Skips messages that have been sent.
    */
-  @Transformer(inputChannel = ALLOW_NOTIFY_CHANNEL, outputChannel = READY_TO_SEND_CHANNEL)
+  @Transformer(inputChannel = ALLOW_NOTIFY_CHANNEL, outputChannel = FILTER_CHANNEL)
   public Message extractNotificationMessage(Message<?> message) {
     NotificationChannel channel = message
         .getHeaders()

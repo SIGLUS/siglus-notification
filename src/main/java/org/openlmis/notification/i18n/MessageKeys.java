@@ -42,6 +42,7 @@ public abstract class MessageKeys {
   private static final String INVALID_PARAMS = "invalidParams";
   private static final String INVALID_DATE_FORMAT = "invalidDateFormat";
   private static final String INVALID_UUID_FORMAT = "invalidUuidFormat";
+  private static final String INVALID_CHANNEL_FOR_DIGEST = "invalidChannelForDigest";
 
   private static final String SERVICE_PREFIX = "notification";
   private static final String ERROR_PREFIX = SERVICE_PREFIX + ".error";
@@ -136,6 +137,9 @@ public abstract class MessageKeys {
 
   public static final String ERROR_DIGEST_CONFIGURATION_NOT_FOUND =
       join(ERROR_PREFIX, DIGEST_CONFIGURATION, NOT_FOUND);
+
+  public static final String ERROR_DIGEST_SUBSCRIPTION_INVALID_CHANNEL_FOR_DIGEST =
+      join(ERROR_PREFIX, DIGEST_SUBSCRIPTION, INVALID_CHANNEL_FOR_DIGEST);
 
   private MessageKeys() {
     throw new UnsupportedOperationException();

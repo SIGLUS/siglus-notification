@@ -23,6 +23,7 @@ import static org.mockito.BDDMockito.willDoNothing;
 import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Matchers.anyListOf;
 import static org.mockito.Matchers.anySetOf;
+import static org.openlmis.notification.i18n.MessageKeys.ERROR_DIGEST_SUBSCRIPTION_INVALID_CHANNEL_FOR_DIGEST;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_INVALID_TAG_IN_SUBSCRIPTION;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_USER_CONTACT_DETAILS_NOT_FOUND;
 import static org.openlmis.notification.i18n.MessageKeys.PERMISSION_MISSING;
@@ -38,6 +39,7 @@ import org.junit.Test;
 import org.openlmis.notification.domain.DigestConfiguration;
 import org.openlmis.notification.domain.DigestSubscription;
 import org.openlmis.notification.domain.UserContactDetails;
+import org.openlmis.notification.service.NotificationChannel;
 import org.openlmis.notification.testutils.DigestConfigurationDataBuilder;
 import org.openlmis.notification.testutils.DigestSubscriptionDataBuilder;
 import org.openlmis.notification.util.UserContactDetailsDataBuilder;
@@ -243,6 +245,33 @@ public class DigestSubscriptionControllerIntegrationTest extends BaseWebIntegrat
         .then()
         .statusCode(HttpStatus.SC_NOT_FOUND)
         .body(MESSAGE_KEY, is(ERROR_USER_CONTACT_DETAILS_NOT_FOUND));
+
+    // then
+    assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
+  }
+
+  @Test
+  public void shouldReturnInvalidRequestIfUseDigestIsSetForSmsChannel() {
+    // given
+    new DigestSubscriptionDataBuilder()
+        .withPreferredChannel(NotificationChannel.SMS)
+        .withDigestConfiguration(configuration)
+        .withUseDigest(false)
+        .buildAsNew()
+        .export(subscriptionDto);
+
+    subscriptionDto.setUseDigest(true);
+
+    // when
+    startUserRequest()
+        .pathParam("id", userId)
+        .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+        .body(Lists.newArrayList(subscriptionDto))
+        .when()
+        .post(USER_SUBSCRIPTIONS_URL)
+        .then()
+        .statusCode(HttpStatus.SC_BAD_REQUEST)
+        .body(MESSAGE_KEY, is(ERROR_DIGEST_SUBSCRIPTION_INVALID_CHANNEL_FOR_DIGEST));
 
     // then
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());

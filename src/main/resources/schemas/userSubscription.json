@@ -12,10 +12,20 @@
     "cronExpression": {
       "type": "string",
       "title": "cronExpression"
+    },
+    "useDigest": {
+      "type": "boolean",
+      "title": "useDigest"
+    },
+    "preferredChannel": {
+      "type": "string",
+      "title": "preferredChannel"
     }
   },
   "required": [
     "digestConfiguration",
-    "cronExpression"
+    "cronExpression",
+    "useDigest",
+    "preferredChannel"
   ]
 }

@@ -16,6 +16,7 @@
 package org.openlmis.notification.domain;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.openlmis.notification.i18n.MessageKeys.ERROR_DIGEST_SUBSCRIPTION_INVALID_CHANNEL_FOR_DIGEST;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_INVALID_CRON_EXPRESSION_IN_SUBSCRIPTION;
 
 import com.google.common.collect.Maps;
@@ -25,6 +26,7 @@ import nl.jqno.equalsverifier.EqualsVerifier;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
+import org.openlmis.notification.service.NotificationChannel;
 import org.openlmis.notification.testutils.DigestConfigurationDataBuilder;
 import org.openlmis.notification.testutils.DigestSubscriptionDataBuilder;
 import org.openlmis.notification.testutils.ToStringTestUtils;
@@ -34,6 +36,8 @@ public class DigestSubscriptionTest {
 
   private static final String CONFIGURATION = "configuration";
   private static final String TIME = "time";
+  private static final String PREFERRED_CHANNEL = "preferredChannel";
+  private static final String USE_DIGEST = "useDigest";
 
   @Rule
   public ExpectedException exception = ExpectedException.none();
@@ -61,7 +65,16 @@ public class DigestSubscriptionTest {
     exception.expect(ValidationException.class);
     exception.expectMessage(ERROR_INVALID_CRON_EXPRESSION_IN_SUBSCRIPTION);
 
-    DigestSubscription.create(null, null, "* 0/bin * * * *");
+    DigestSubscription.create(null, null, "* 0/bin * * * *", null, false);
+  }
+
+  @Test
+  public void shouldNotCreateNewInstanceIfUseDigestIsSetForNonEmailChannel() {
+    exception.expect(ValidationException.class);
+    exception.expectMessage(ERROR_DIGEST_SUBSCRIPTION_INVALID_CHANNEL_FOR_DIGEST);
+
+    DigestSubscription.create(null, null, "0 15 17 1 1 MON", NotificationChannel.SMS, true);
+
   }
 
   @Test
@@ -70,7 +83,8 @@ public class DigestSubscriptionTest {
     String cronExpression = "* * * * * *";
 
     // when
-    DigestSubscription subscription = DigestSubscription.create(null, null, cronExpression);
+    DigestSubscription subscription = DigestSubscription.create(null, null, cronExpression, null,
+        false);
 
     // then
     assertThat(subscription.getCronExpression()).isEqualTo(cronExpression);
@@ -102,6 +116,16 @@ public class DigestSubscriptionTest {
     @Override
     public void setCronExpression(String time) {
       map.put(TIME, time);
+    }
+
+    @Override
+    public void setPreferredChannel(NotificationChannel preferredChannel) {
+      map.put(PREFERRED_CHANNEL, preferredChannel);
+    }
+
+    @Override
+    public void setUseDigest(Boolean digest) {
+      map.put(USE_DIGEST, digest);
     }
   }
 
