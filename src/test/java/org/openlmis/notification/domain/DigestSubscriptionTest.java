@@ -18,6 +18,7 @@ package org.openlmis.notification.domain;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_DIGEST_SUBSCRIPTION_INVALID_CHANNEL_FOR_DIGEST;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_INVALID_CRON_EXPRESSION_IN_SUBSCRIPTION;
+import static org.openlmis.notification.i18n.MessageKeys.ERROR_MISSING_CRON_EXPRESSION;
 
 import com.google.common.collect.Maps;
 import java.util.Map;
@@ -66,6 +67,19 @@ public class DigestSubscriptionTest {
     exception.expectMessage(ERROR_INVALID_CRON_EXPRESSION_IN_SUBSCRIPTION);
 
     DigestSubscription.create(null, null, "* 0/bin * * * *", null, false);
+  }
+
+  @Test
+  public void shouldNotCreateNewInstanceIfCronExpressionIsMissingAndUsesDigest() {
+    DigestSubscription.create(null, null, null, null, false);
+  }
+
+  @Test
+  public void shouldCreateNewInstanceIfCronExpressionIsMissingAndDigestIsNotUsed() {
+    exception.expect(ValidationException.class);
+    exception.expectMessage(ERROR_MISSING_CRON_EXPRESSION);
+
+    DigestSubscription.create(null, null, null, null, true);
   }
 
   @Test

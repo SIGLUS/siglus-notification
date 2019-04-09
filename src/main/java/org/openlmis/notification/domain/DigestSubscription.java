@@ -17,6 +17,7 @@ package org.openlmis.notification.domain;
 
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_DIGEST_SUBSCRIPTION_INVALID_CHANNEL_FOR_DIGEST;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_INVALID_CRON_EXPRESSION_IN_SUBSCRIPTION;
+import static org.openlmis.notification.i18n.MessageKeys.ERROR_MISSING_CRON_EXPRESSION;
 
 import java.util.UUID;
 import javax.persistence.Entity;
@@ -73,13 +74,19 @@ public final class DigestSubscription extends BaseEntity {
       DigestConfiguration digestConfiguration, String cronExpression,
       NotificationChannel preferredChannel, Boolean useDigest) {
 
-    try {
-      // the following constructor tries to parse the passed cron expression
-      // and throws an IllegalArgumentException exception if it cannot be parsed.
-      new CronSequenceGenerator(cronExpression);
-    } catch (IllegalArgumentException exp) {
-      throw new ValidationException(exp,
+    if (useDigest && null == cronExpression) {
+      throw new ValidationException(ERROR_MISSING_CRON_EXPRESSION);
+    }
+
+    if (null != cronExpression) {
+      try {
+        // the following constructor tries to parse the passed cron expression
+        // and throws an IllegalArgumentException exception if it cannot be parsed.
+        new CronSequenceGenerator(cronExpression);
+      } catch (IllegalArgumentException exp) {
+        throw new ValidationException(exp,
           ERROR_INVALID_CRON_EXPRESSION_IN_SUBSCRIPTION, cronExpression);
+      }
     }
 
     if (useDigest && !NotificationChannel.EMAIL.equals(preferredChannel)) {
