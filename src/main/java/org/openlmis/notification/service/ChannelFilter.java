@@ -19,11 +19,13 @@ import static org.openlmis.notification.service.NotificationToSendRetriever.RECI
 import static org.openlmis.notification.service.NotificationTransformer.CHANNEL_HEADER;
 import static org.openlmis.notification.service.NotificationTransformer.TAG_HEADER;
 
+import java.util.Optional;
 import java.util.UUID;
-import java.util.function.Function;
 import java.util.function.Predicate;
 import org.openlmis.notification.domain.DigestSubscription;
 import org.openlmis.notification.repository.DigestSubscriptionRepository;
+import org.slf4j.ext.XLogger;
+import org.slf4j.ext.XLoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.integration.annotation.Filter;
 import org.springframework.integration.annotation.MessageEndpoint;
@@ -31,6 +33,9 @@ import org.springframework.messaging.handler.annotation.Header;
 
 @MessageEndpoint
 public class ChannelFilter {
+
+  private static final XLogger XLOGGER = XLoggerFactory.getXLogger(AllowNotifyFilter.class);
+
 
   static final String READY_TO_SEND_CHANNEL = "notificationToSend.readyToSend";
   static final String FILTER_CHANNEL = "notificationToSend.filter";
@@ -44,23 +49,24 @@ public class ChannelFilter {
   @Filter(inputChannel = FILTER_CHANNEL, outputChannel = READY_TO_SEND_CHANNEL)
   public boolean accept(@Header(RECIPIENT_HEADER) UUID recipient,
       @Header(CHANNEL_HEADER) NotificationChannel channel, @Header(TAG_HEADER) String messageTag) {
+    XLOGGER.entry(recipient, channel, messageTag);
 
-    return repository.getUserSubscriptions(recipient)
+    Optional<DigestSubscription> subscriptionForTag = repository.getUserSubscriptions(recipient)
         .stream()
         .filter(buildTagMatcher(messageTag))
-        .findFirst()
-        .map(buildPreferredChannelMatcher(channel))
-        .orElseGet(() -> NotificationChannel.EMAIL.equals(channel));
+        .findFirst();
+
+    if (subscriptionForTag.isPresent()) {
+      XLOGGER.exit(subscriptionForTag.get().getPreferredChannel().equals(channel));
+      return subscriptionForTag.get().getPreferredChannel().equals(channel);
+    }
+    XLOGGER.exit(NotificationChannel.EMAIL.equals(channel));
+    return NotificationChannel.EMAIL.equals(channel);
   }
 
   private Predicate<DigestSubscription> buildTagMatcher(String messageTag) {
     return digestSubscription -> digestSubscription.getDigestConfiguration().getTag()
       .equals(messageTag);
-  }
-
-  private Function<DigestSubscription, Boolean> buildPreferredChannelMatcher(
-      NotificationChannel channel) {
-    return subscription -> subscription.getPreferredChannel().equals(channel);
   }
 
 }
