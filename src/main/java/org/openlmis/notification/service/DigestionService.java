@@ -25,6 +25,7 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Table;
 import java.util.Map;
+import java.util.TimeZone;
 import java.util.UUID;
 import javax.persistence.EntityManager;
 import org.openlmis.notification.domain.DigestConfiguration;
@@ -38,6 +39,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.BeanFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.integration.annotation.MessageEndpoint;
 import org.springframework.integration.annotation.ServiceActivator;
 import org.springframework.integration.endpoint.AbstractEndpoint;
@@ -55,6 +57,9 @@ public class DigestionService {
   private static final Logger LOGGER = LoggerFactory.getLogger(DigestionService.class);
 
   static final String AGGREGATE_POSTPONE_CHANNEL = "notificationToSend.sendNow.postpone.aggregate";
+
+  @Value("${time.zoneId}")
+  private String timeZoneId;
 
   @Autowired
   private DigestConfigurationRepository digestConfigurationRepository;
@@ -130,7 +135,7 @@ public class DigestionService {
     adapter.setAdviceChain(Lists.newArrayList(new TransactionInterceptor(
         transactionManager, new MatchAlwaysTransactionAttributeSource())));
 
-    adapter.setTrigger(new CronTrigger(cronExpression));
+    adapter.setTrigger(new CronTrigger(cronExpression, TimeZone.getTimeZone(timeZoneId)));
     adapter.setBeanFactory(beanFactory);
 
     adapter.afterPropertiesSet();

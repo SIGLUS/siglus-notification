@@ -12,6 +12,7 @@ Bug fixes, security and performance improvements (backwards-compatible):
 * [OLMIS-5872](https://openlmis.atlassian.net/browse/OLMIS-5872): Added null checking for retrieving uuids in Search Params.
 * [OLMIS-5971](https://openlmis.atlassian.net/browse/OLMIS-5971): Introduced `Spring Integration` to handle notifications sending
 * [OLMIS-4531](https://openlmis.atlassian.net/browse/OLMIS-4531): Added compressing HTTP POST responses.
+* [OLMIS-6186](https://openlmis.atlassian.net/browse/OLMIS-6186): Added fix for creating digest configuration based on configuration time zone, not default system time zone.
 
 4.0.1 / 2018-12-12
 ==================
