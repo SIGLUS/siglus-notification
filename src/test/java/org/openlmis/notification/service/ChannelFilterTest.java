@@ -100,4 +100,9 @@ public class ChannelFilterTest {
     assertTrue(channelFilter.accept(userId, NotificationChannel.EMAIL, MESSAGE_TAG_THREE));
   }
 
+  @Test
+  public void acceptShouldReturnTrueIfMessageHasNoTagAndUsesEmailChannel() {
+    assertTrue(channelFilter.accept(userId, NotificationChannel.EMAIL, null));
+  }
+
 }

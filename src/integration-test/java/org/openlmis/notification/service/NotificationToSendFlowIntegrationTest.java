@@ -174,6 +174,39 @@ public class NotificationToSendFlowIntegrationTest {
   }
 
   @Test
+  public void shouldSendEmailWithoutTag() {
+    String subject = "Test Subject";
+    String body = "Test Body";
+
+    Notification notification = new NotificationDataBuilder()
+        .withUserId(userContactDetails.get(0).getReferenceDataUserId())
+        .withMessage(NotificationChannel.EMAIL, body, subject, null)
+        .build();
+
+    message = MessageBuilder.withPayload(notification)
+      .setHeader(RECIPIENT_HEADER, notification.getUserId())
+      .setHeader(IMPORTANT_HEADER, notification.getImportant())
+      .setHeader(CHANNEL_TO_USE_HEADER, notification.getMessages().get(0).getChannel())
+      .build();
+    // given
+    digestFeature.setEnabled(false);
+
+    // when
+    startChannel.send(message);
+
+    // then
+    verify(emailSender).sendMail(correctContactDetails.getEmailAddress(), subject, body);
+
+    assertThat(pendingNotificationRepository.exists(correctPendingNotification.getId())).isFalse();
+
+    assertThat(userContactDetailsRepository.count()).isEqualTo(userContactDetails.size());
+    assertThat(notificationRepository.count()).isEqualTo(emailNotifications.size());
+    assertThat(pendingNotificationRepository.count())
+      .isEqualTo(pendingEmailNotifications.size() - 1L);
+
+  }
+
+  @Test
   public void shouldSendDigestEmail() {
     // given
     digestFeature.setEnabled(true);

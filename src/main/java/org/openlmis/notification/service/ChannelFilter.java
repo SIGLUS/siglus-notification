@@ -48,7 +48,8 @@ public class ChannelFilter {
    */
   @Filter(inputChannel = FILTER_CHANNEL, outputChannel = READY_TO_SEND_CHANNEL)
   public boolean accept(@Header(RECIPIENT_HEADER) UUID recipient,
-      @Header(CHANNEL_HEADER) NotificationChannel channel, @Header(TAG_HEADER) String messageTag) {
+      @Header(CHANNEL_HEADER) NotificationChannel channel,
+      @Header(value = TAG_HEADER, required = false) String messageTag) {
     XLOGGER.entry(recipient, channel, messageTag);
 
     Optional<DigestSubscription> subscriptionForTag = repository.getUserSubscriptions(recipient)
