@@ -32,6 +32,7 @@ import org.mockito.junit.MockitoJUnit;
 import org.mockito.junit.MockitoRule;
 import org.openlmis.notification.domain.DigestConfiguration;
 import org.openlmis.notification.domain.PostponeMessage;
+import org.openlmis.notification.i18n.MessageService;
 import org.openlmis.notification.repository.DigestConfigurationRepository;
 import org.openlmis.notification.testutils.DigestConfigurationDataBuilder;
 import org.openlmis.notification.testutils.PostponeMessageDataBuilder;
@@ -51,6 +52,9 @@ public class DigestNotificationCreatorTest {
   @Mock
   private DigestConfigurationRepository digestConfigurationRepository;
 
+  @Mock
+  private MessageService messageService;
+
   @InjectMocks
   private DigestNotificationCreator creator;
 
@@ -64,9 +68,14 @@ public class DigestNotificationCreatorTest {
   private UUID configurationId = configuration.getId();
   private NotificationChannel channel = NotificationChannel.EMAIL;
 
+  private org.openlmis.notification.i18n.Message message =
+      new org.openlmis.notification.i18n.Message(MSG_TEMPLATE);
+
   @Before
   public void setUp() {
     given(digestConfigurationRepository.findOne(configurationId)).willReturn(configuration);
+    given(messageService.localize(message)).willReturn(message.localMessage(MSG_TEMPLATE));
+
     ReflectionTestUtils.setField(creator, "serviceUrl", SERVICE_URL);
   }
 

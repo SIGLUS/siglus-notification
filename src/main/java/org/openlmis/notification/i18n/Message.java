@@ -25,6 +25,7 @@ import org.springframework.context.MessageSource;
  * Immutable value object for a message that is localizable.
  */
 public class Message {
+
   private String key;
   private Object[] params;
 
@@ -60,7 +61,11 @@ public class Message {
    *                                                            messageSource.
    */
   public LocalizedMessage localMessage(MessageSource messageSource, Locale locale) {
-    return new LocalizedMessage(key, messageSource.getMessage(key, params, locale));
+    return localMessage(messageSource.getMessage(key, params, locale));
+  }
+
+  public LocalizedMessage localMessage(String message) {
+    return new LocalizedMessage(key, message);
   }
 
   @Override
@@ -99,6 +104,10 @@ public class Message {
     @Override
     public String toString() {
       return messageKey + ": " + message;
+    }
+
+    public String asMessage() {
+      return message;
     }
   }
 }

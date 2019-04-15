@@ -18,6 +18,7 @@ package org.openlmis.notification;
 import static java.lang.reflect.Modifier.isFinal;
 import static java.lang.reflect.Modifier.isPublic;
 import static java.lang.reflect.Modifier.isStatic;
+import static org.apache.commons.lang3.StringUtils.startsWith;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
@@ -25,6 +26,7 @@ import java.lang.reflect.Field;
 import java.util.HashSet;
 import java.util.Locale;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.openlmis.notification.i18n.ExposedMessageSource;
@@ -38,7 +40,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 @RunWith(SpringRunner.class)
 @ActiveProfiles("test")
-@SpringBootTest(properties = { "notificationToSend.autoStartup=false" })
+@SpringBootTest(properties = {"notificationToSend.autoStartup=false"})
 @Transactional
 public class ExposedMessageSourceIntegrationTest {
 
@@ -70,7 +72,11 @@ public class ExposedMessageSourceIntegrationTest {
   private Set<String> getPropertyKeys() {
     return new HashSet<>(exposedMessageSource
         .getAllMessages(Locale.ENGLISH)
-        .keySet());
+        .keySet())
+        .stream()
+        // those keys are saved in the database and they don't need constant values
+        .filter(key -> !startsWith(key, "notification.digestConfiguration.requisition."))
+        .collect(Collectors.toSet());
   }
 
   private Set<String> getConstantValues(Class clazz) throws IllegalAccessException {

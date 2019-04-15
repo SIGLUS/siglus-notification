@@ -30,6 +30,8 @@ import org.apache.commons.lang3.text.StrSubstitutor;
 import org.openlmis.notification.domain.DigestConfiguration;
 import org.openlmis.notification.domain.NotificationMessage;
 import org.openlmis.notification.domain.PostponeMessage;
+import org.openlmis.notification.i18n.Message;
+import org.openlmis.notification.i18n.MessageService;
 import org.openlmis.notification.repository.DigestConfigurationRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,7 +39,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.integration.annotation.MessageEndpoint;
 import org.springframework.integration.annotation.Transformer;
-import org.springframework.messaging.Message;
 import org.springframework.messaging.handler.annotation.Header;
 import org.springframework.messaging.support.MessageBuilder;
 
@@ -49,6 +50,9 @@ public class DigestNotificationCreator {
   @Autowired
   private DigestConfigurationRepository digestConfigurationRepository;
 
+  @Autowired
+  private MessageService messageService;
+
   @Value("${service.url}")
   private String serviceUrl;
 
@@ -56,7 +60,8 @@ public class DigestNotificationCreator {
    * Creates a digest message based on postpone messages.
    */
   @Transformer(inputChannel = AGGREGATE_POSTPONE_CHANNEL, outputChannel = SEND_NOW_PREPARE_CHANNEL)
-  public Message createDigestNotification(List<PostponeMessage> postponeMessages,
+  public org.springframework.messaging.Message createDigestNotification(
+      List<PostponeMessage> postponeMessages,
       @Header(RECIPIENT_HEADER) UUID recipient,
       @Header(CONFIGURATION_ID_HEADER) UUID configurationId,
       @Header(CHANNEL_HEADER) NotificationChannel channel) {
@@ -74,7 +79,11 @@ public class DigestNotificationCreator {
     StrSubstitutor sub = new StrSubstitutor(valuesMap);
 
     String subject = postponeMessages.get(0).getSubject();
-    String body = sub.replace(configuration.getMessage());
+
+    String messageKey = configuration.getMessage();
+    String messageBody = messageService.localize(new Message(messageKey)).asMessage();
+
+    String body = sub.replace(messageBody);
 
     NotificationMessage message = new NotificationMessage(channel, body, subject);
 
