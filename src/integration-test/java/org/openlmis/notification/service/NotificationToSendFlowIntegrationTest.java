@@ -54,6 +54,7 @@ import org.openlmis.notification.service.referencedata.TogglzFeatureDto;
 import org.openlmis.notification.service.referencedata.TogglzReferenceDataService;
 import org.openlmis.notification.testutils.DigestConfigurationDataBuilder;
 import org.openlmis.notification.testutils.DigestSubscriptionDataBuilder;
+import org.openlmis.notification.testutils.PendingNotificationDataBuilder;
 import org.openlmis.notification.util.NotificationDataBuilder;
 import org.openlmis.notification.util.UserContactDetailsDataBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -364,7 +365,8 @@ public class NotificationToSendFlowIntegrationTest {
     private void createPendingNotifications() {
       pendingEmailNotifications = emailNotifications
           .stream()
-          .map(notification -> new PendingNotification(notification, NotificationChannel.EMAIL))
+          .map(notification ->
+            new PendingNotificationDataBuilder().buildForEmailChannel(notification))
           .collect(Collectors.toList());
 
       pendingNotificationRepository.save(pendingEmailNotifications);

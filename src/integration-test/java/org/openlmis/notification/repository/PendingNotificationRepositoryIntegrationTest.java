@@ -29,6 +29,7 @@ import org.openlmis.notification.domain.Notification;
 import org.openlmis.notification.domain.PendingNotification;
 import org.openlmis.notification.domain.PendingNotification.PendingNotificationId;
 import org.openlmis.notification.service.NotificationChannel;
+import org.openlmis.notification.testutils.PendingNotificationDataBuilder;
 import org.openlmis.notification.util.NotificationDataBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.repository.CrudRepository;
@@ -62,7 +63,8 @@ public class PendingNotificationRepositoryIntegrationTest
 
     notificationRepository.saveAndFlush(notification);
 
-    return new PendingNotification(notification, NotificationChannel.EMAIL);
+    return new PendingNotificationDataBuilder()
+      .buildForEmailChannel(notification);
   }
 
   @Override
