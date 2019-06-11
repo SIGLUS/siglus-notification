@@ -4,6 +4,9 @@
 Improvements:
 * [OLMIS-4128](https://openlmis.atlassian.net/browse/OLMIS-4128): Change maximum page size to max integer.
 
+Bug fixes, security and performance improvements (backwards-compatible):
+* [OLMIS-6078](https://openlmis.atlassian.net/browse/OLMIS-6078): Added user contact details for admin
+
 4.1.0 / 2019-05-27
 ==================
 
