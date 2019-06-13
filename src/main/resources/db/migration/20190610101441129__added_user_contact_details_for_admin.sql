@@ -2,5 +2,9 @@
 -- Adding migrations out of order may cause this migration to never execute or behave in an unexpected way.
 -- Migrations should NOT BE EDITED. Add a new migration to apply changes.
 
-INSERT INTO user_contact_details (referencedatauserid, allownotify, email, emailVerified) VALUES
-                                 ('35316636-6264-6331-2d34-3933322d3462', true, 'example@mail.com', true);
+INSERT INTO user_contact_details (referencedatauserid, allownotify, email, emailVerified)
+    SELECT '35316636-6264-6331-2d34-3933322d3462', true, 'example@mail.com', true
+WHERE
+    NOT EXISTS (
+        SELECT referencedatauserid FROM user_contact_details WHERE referencedatauserid = '35316636-6264-6331-2d34-3933322d3462'
+    );
