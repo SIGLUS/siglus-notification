@@ -3,6 +3,7 @@
 
 Improvements:
 * [OLMIS-4128](https://openlmis.atlassian.net/browse/OLMIS-4128): Change maximum page size to max integer.
+* [OLMIS-6129](https://openlmis.atlassian.net/browse/OLMIS-6129): Added package-lock.json file and removed package-lock.json entry from .gitignore.
 
 Bug fixes, security and performance improvements (backwards-compatible):
 * [OLMIS-6078](https://openlmis.atlassian.net/browse/OLMIS-6078): Added user contact details for admin
