@@ -17,6 +17,7 @@ package org.openlmis.notification.web.errorhandler;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_CONSTRAINT;
@@ -66,7 +67,7 @@ public class WebErrorHandlingTest {
   public void setUp() {
     when(messageService.localize(any(Message.class)))
         .thenAnswer(invocation -> {
-          Message message = invocation.getArgumentAt(0, Message.class);
+          Message message = invocation.getArgument(0, Message.class);
           return message.localMessage(messageSource, ENGLISH_LOCALE);
         });
   }
@@ -79,7 +80,7 @@ public class WebErrorHandlingTest {
     when(exp.getResponseBodyAsString()).thenReturn("body");
 
     // when
-    mockMessage(ERROR_SEND_REQUEST, "400", "body");
+    mockMessage(ERROR_SEND_REQUEST, "400 BAD_REQUEST", "body");
     Message.LocalizedMessage message = errorHandler.handleHttpStatusCodeException(exp);
 
     // then
@@ -212,7 +213,7 @@ public class WebErrorHandlingTest {
     if (params.length == 0) {
       when(messageSource.getMessage(key, new Object[0], ENGLISH_LOCALE))
           .thenReturn(ERROR_MESSAGE);
-      when(messageSource.getMessage(key, null, ENGLISH_LOCALE))
+      lenient().when(messageSource.getMessage(key, null, ENGLISH_LOCALE))
           .thenReturn(ERROR_MESSAGE);
     } else {
       when(messageSource.getMessage(key, params, ENGLISH_LOCALE))

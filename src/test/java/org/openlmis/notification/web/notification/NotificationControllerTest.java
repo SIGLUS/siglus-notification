@@ -19,6 +19,7 @@ import static org.mockito.BDDMockito.given;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_USER_CONTACT_DETAILS_NOT_FOUND;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_USER_NOT_ACTIVE_OR_NOT_FOUND;
 
+import java.util.Optional;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -90,8 +91,8 @@ public class NotificationControllerTest {
   public void setUp() {
     notification.export(notificationDto);
 
-    given(userContactDetailsRepository.findOne(notification.getUserId()))
-        .willReturn(contactDetails);
+    given(userContactDetailsRepository.findById(notification.getUserId()))
+        .willReturn(Optional.of(contactDetails));
     given(userReferenceDataService.findOne(contactDetails.getReferenceDataUserId()))
         .willReturn(userDto);
   }
@@ -102,7 +103,8 @@ public class NotificationControllerTest {
     exception.expect(NotFoundException.class);
     exception.expectMessage(ERROR_USER_CONTACT_DETAILS_NOT_FOUND);
 
-    given(userContactDetailsRepository.findOne(notification.getUserId())).willReturn(null);
+    given(userContactDetailsRepository.findById(notification.getUserId()))
+        .willThrow(new NotFoundException(ERROR_USER_CONTACT_DETAILS_NOT_FOUND));
 
     // when
     controller.sendNotification(notificationDto, bindingResult);

@@ -168,7 +168,8 @@ public class NotificationToSendFlowIntegrationTest {
     // then
     verify(emailSender).sendMail(correctContactDetails.getEmailAddress(), SUBJECT, BODY);
 
-    assertThat(pendingNotificationRepository.exists(correctPendingNotification.getId())).isFalse();
+    assertThat(pendingNotificationRepository.existsById(correctPendingNotification.getId()))
+        .isFalse();
 
     assertThat(userContactDetailsRepository.count()).isEqualTo(userContactDetails.size());
     assertThat(notificationRepository.count()).isEqualTo(emailNotifications.size());
@@ -200,7 +201,8 @@ public class NotificationToSendFlowIntegrationTest {
     // then
     verify(emailSender).sendMail(correctContactDetails.getEmailAddress(), subject, body);
 
-    assertThat(pendingNotificationRepository.exists(correctPendingNotification.getId())).isFalse();
+    assertThat(pendingNotificationRepository.existsById(correctPendingNotification.getId()))
+        .isFalse();
 
     assertThat(userContactDetailsRepository.count()).isEqualTo(userContactDetails.size());
     assertThat(notificationRepository.count()).isEqualTo(emailNotifications.size());
@@ -229,7 +231,8 @@ public class NotificationToSendFlowIntegrationTest {
     // then
     verify(emailSender).sendMail(correctContactDetails.getEmailAddress(), SUBJECT, EXPECTED_MSG);
 
-    assertThat(pendingNotificationRepository.exists(correctPendingNotification.getId())).isFalse();
+    assertThat(pendingNotificationRepository.existsById(correctPendingNotification.getId()))
+        .isFalse();
 
     assertThat(userContactDetailsRepository.count())
             .isEqualTo(userContactDetails.size() + INITIAL_USER_CONTACT_DETAILS_COUNT);
@@ -286,7 +289,8 @@ public class NotificationToSendFlowIntegrationTest {
 
     verify(emailSender).sendMail(correctContactDetails.getEmailAddress(), subject, body);
 
-    assertThat(pendingNotificationRepository.exists(correctPendingNotification.getId())).isFalse();
+    assertThat(pendingNotificationRepository.existsById(correctPendingNotification.getId()))
+        .isFalse();
 
     assertThat(userContactDetailsRepository.count()).isEqualTo(userContactDetails.size());
     assertThat(notificationRepository.count()).isEqualTo(emailNotifications.size());
@@ -350,7 +354,7 @@ public class NotificationToSendFlowIntegrationTest {
               .buildAsNew())
           .collect(Collectors.toList());
 
-      digestSubscriptionRepository.save(subscriptions);
+      digestSubscriptionRepository.saveAll(subscriptions);
 
       entityManager.flush();
       entityManager.clear();
@@ -372,7 +376,7 @@ public class NotificationToSendFlowIntegrationTest {
             new PendingNotificationDataBuilder().buildForEmailChannel(notification))
           .collect(Collectors.toList());
 
-      pendingNotificationRepository.save(pendingEmailNotifications);
+      pendingNotificationRepository.saveAll(pendingEmailNotifications);
 
       entityManager.flush();
       entityManager.clear();
@@ -387,7 +391,7 @@ public class NotificationToSendFlowIntegrationTest {
               .buildAsNew())
           .collect(Collectors.toList());
 
-      notificationRepository.save(emailNotifications);
+      notificationRepository.saveAll(emailNotifications);
 
       entityManager.flush();
       entityManager.clear();
@@ -399,7 +403,7 @@ public class NotificationToSendFlowIntegrationTest {
           .mapToObj(idx -> new UserContactDetailsDataBuilder().build())
           .collect(Collectors.toList());
 
-      userContactDetailsRepository.save(userContactDetails);
+      userContactDetailsRepository.saveAll(userContactDetails);
 
       entityManager.flush();
       entityManager.clear();

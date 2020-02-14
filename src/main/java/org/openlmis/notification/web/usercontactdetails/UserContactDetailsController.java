@@ -130,11 +130,8 @@ public class UserContactDetailsController {
     permissionService.canManageUserContactDetails(referenceDataUserId);
 
     UserContactDetails userContactDetails = userContactDetailsRepository
-        .findOne(referenceDataUserId);
-
-    if (null == userContactDetails) {
-      throw new NotFoundException(ERROR_USER_CONTACT_DETAILS_NOT_FOUND);
-    }
+        .findById(referenceDataUserId)
+        .orElseThrow(() -> new NotFoundException(ERROR_USER_CONTACT_DETAILS_NOT_FOUND));
 
     return toDto(userContactDetails);
   }
@@ -179,11 +176,8 @@ public class UserContactDetailsController {
   @ResponseBody
   public EmailVerificationTokenDto getVerifications(@PathVariable("id") UUID userId) {
     permissionService.canManageUserContactDetails(userId);
-    UserContactDetails contactDetails = userContactDetailsRepository.findOne(userId);
-
-    if (null == contactDetails) {
-      throw new NotFoundException(ERROR_USER_CONTACT_DETAILS_NOT_FOUND);
-    }
+    UserContactDetails contactDetails = userContactDetailsRepository.findById(userId)
+        .orElseThrow(() -> new NotFoundException(ERROR_USER_CONTACT_DETAILS_NOT_FOUND));
 
     EmailVerificationToken token = emailVerificationTokenRepository
         .findOneByUserContactDetails(contactDetails);
@@ -206,11 +200,8 @@ public class UserContactDetailsController {
   public void sendVerification(@PathVariable("id") UUID userId) {
     permissionService.canManageUserContactDetails(userId);
 
-    UserContactDetails contactDetails = userContactDetailsRepository.findOne(userId);
-
-    if (null == contactDetails) {
-      throw new NotFoundException(ERROR_USER_CONTACT_DETAILS_NOT_FOUND);
-    }
+    UserContactDetails contactDetails = userContactDetailsRepository.findById(userId)
+        .orElseThrow(() -> new NotFoundException(ERROR_USER_CONTACT_DETAILS_NOT_FOUND));
 
     EmailVerificationToken token = emailVerificationTokenRepository
         .findOneByUserContactDetails(contactDetails);
@@ -235,11 +226,8 @@ public class UserContactDetailsController {
   @ResponseBody
   public LocalizedMessage verifyContactDetail(@PathVariable("id") UUID userId,
       @PathVariable("token") UUID token) {
-    EmailVerificationToken verificationToken = emailVerificationTokenRepository.findOne(token);
-
-    if (verificationToken == null) {
-      throw new ValidationException(ERROR_TOKEN_INVALID);
-    }
+    EmailVerificationToken verificationToken = emailVerificationTokenRepository.findById(token)
+        .orElseThrow(() -> new ValidationException(ERROR_TOKEN_INVALID));
 
     if (!userId.equals(verificationToken.getUserContactDetails().getReferenceDataUserId())) {
       throw new ValidationException(ERROR_VERIFICATIONS_ID_MISMATCH);
@@ -249,12 +237,13 @@ public class UserContactDetailsController {
       throw new ValidationException(ERROR_TOKEN_EXPIRED);
     }
 
-    UserContactDetails userContactDetails = userContactDetailsRepository.findOne(userId);
+    UserContactDetails userContactDetails = userContactDetailsRepository.findById(userId)
+        .orElseThrow(() -> new NotFoundException(ERROR_USER_CONTACT_DETAILS_NOT_FOUND));
     userContactDetails.setEmailDetails(new EmailDetails(verificationToken.getEmailAddress(), true));
     userContactDetails.setAllowNotify(true);
 
     userContactDetailsRepository.save(userContactDetails);
-    emailVerificationTokenRepository.delete(token);
+    emailVerificationTokenRepository.deleteById(token);
 
     return messageService
         .localize(new Message(EMAIL_VERIFICATION_SUCCESS, verificationToken.getEmailAddress()));

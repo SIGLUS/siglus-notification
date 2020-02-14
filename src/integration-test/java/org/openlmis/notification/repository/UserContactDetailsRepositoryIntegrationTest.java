@@ -108,7 +108,7 @@ public class UserContactDetailsRepositoryIntegrationTest
   @Test
   public void shouldFindByEmail() {
     UserContactDetails expected = repository.save(generateInstance());
-    Pageable pageable = new PageRequest(0, 1000);
+    Pageable pageable = PageRequest.of(0, 1000);
 
     IntStream
         .range(0, 20)
@@ -122,7 +122,7 @@ public class UserContactDetailsRepositoryIntegrationTest
   @Test
   public void shouldFindById() {
     UserContactDetails expected = repository.save(generateInstance());
-    Pageable pageable = new PageRequest(0, 1000);
+    Pageable pageable = PageRequest.of(0, 1000);
 
     IntStream
         .range(0, 20)
@@ -140,7 +140,7 @@ public class UserContactDetailsRepositoryIntegrationTest
         .range(0, 50)
         .mapToObj(idx -> repository.save(generateInstance(idx)))
         .collect(Collectors.toList());
-    Pageable pageable = new PageRequest(0, 1000);
+    Pageable pageable = PageRequest.of(0, 1000);
 
     // find test1, test10, test11, test12, etc.
     Page<UserContactDetails> actual = repository.search("test1", null, pageable);
@@ -182,7 +182,7 @@ public class UserContactDetailsRepositoryIntegrationTest
         .mapToObj(idx -> repository.save(generateInstance(idx)))
         .collect(Collectors.toList());
     List<UserContactDetails> firstThirty = contactDetails.subList(0, 30);
-    Pageable pageable = new PageRequest(0, 1000);
+    Pageable pageable = PageRequest.of(0, 1000);
 
     Page<UserContactDetails> actual = repository.search(
         "1@integration.test.org",
@@ -202,7 +202,7 @@ public class UserContactDetailsRepositoryIntegrationTest
     IntStream
         .range(0, 5)
         .forEach(idx -> repository.save(generateInstance(idx)));
-    Pageable pageable = new PageRequest(0, 1000);
+    Pageable pageable = PageRequest.of(0, 1000);
 
     Page<UserContactDetails> actual = repository
         .search("non.existing@email.address.org", null, pageable);
@@ -217,7 +217,7 @@ public class UserContactDetailsRepositoryIntegrationTest
         .range(100, 105)
         .forEach(idx -> repository.save(generateInstance(idx)));
 
-    Pageable pageable = new PageRequest(0, 10, Direction.ASC, "emailDetails.email");
+    Pageable pageable = PageRequest.of(0, 10, Direction.ASC, "emailDetails.email");
     Page<UserContactDetails> actual = repository.search(null, null, pageable);
 
     assertThat(actual.getTotalElements()).isEqualTo(5L);
@@ -227,7 +227,7 @@ public class UserContactDetailsRepositoryIntegrationTest
             "test102@integration.test.org", "test103@integration.test.org",
             "test104@integration.test.org");
 
-    pageable = new PageRequest(0, 10, Direction.DESC, "emailDetails.email");
+    pageable = PageRequest.of(0, 10, Direction.DESC, "emailDetails.email");
     actual = repository.search(null, null, pageable);
 
     assertThat(actual.getTotalElements()).isEqualTo(5L);

@@ -66,7 +66,6 @@ import org.junit.Test;
 import org.openlmis.notification.domain.EmailVerificationToken;
 import org.openlmis.notification.domain.UserContactDetails;
 import org.openlmis.notification.repository.EmailVerificationTokenRepository;
-import org.openlmis.notification.repository.UserContactDetailsRepository;
 import org.openlmis.notification.service.EmailVerificationNotifier;
 import org.openlmis.notification.service.PermissionService;
 import org.openlmis.notification.testutils.EmailVerificationTokenDataBuilder;
@@ -94,9 +93,6 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
 
 
   @MockBean
-  private UserContactDetailsRepository repository;
-
-  @MockBean
   private PermissionService permissionService;
 
   @MockBean
@@ -117,8 +113,8 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
         .withUnsetAllowNotifyFlag()
         .build();
 
-    given(repository.findOne(userContactDetails.getId()))
-        .willReturn(userContactDetails);
+    given(userContactDetailsRepository.findById(userContactDetails.getId()))
+        .willReturn(Optional.of(userContactDetails));
   }
 
   @Test
@@ -126,7 +122,7 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
     willDoNothing()
         .given(permissionService).canManageUserContactDetails(null);
 
-    given(repository.findAll(any(Pageable.class)))
+    given(userContactDetailsRepository.findAll(any(Pageable.class)))
         .willReturn(new PageImpl<>(ImmutableList.of(userContactDetails)));
 
     getAll(null)
@@ -145,7 +141,7 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
     willDoNothing()
         .given(permissionService).canManageUserContactDetails(null);
 
-    given(repository
+    given(userContactDetailsRepository
         .search(anyString(), anySetOf(UUID.class), any(Pageable.class)))
         .willReturn(new PageImpl<>(ImmutableList.of(userContactDetails)));
 
@@ -204,7 +200,7 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
 
-    verify(repository).findOne(userContactDetails.getReferenceDataUserId());
+    verify(userContactDetailsRepository).findById(userContactDetails.getReferenceDataUserId());
     verify(permissionService)
         .canManageUserContactDetails(userContactDetails.getReferenceDataUserId());
   }
@@ -214,7 +210,7 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
     willDoNothing()
         .given(permissionService).canManageUserContactDetails(null);
 
-    given(repository
+    given(userContactDetailsRepository
         .search(anyString(), eq(emptySet()), any(Pageable.class)))
         .willReturn(new PageImpl<>(ImmutableList.of(userContactDetails)));
 
@@ -231,8 +227,8 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
 
   @Test
   public void shouldReturnNotFoundWhenTryingToFetchNonExistentUserContactDetails() {
-    given(repository.findOne(userContactDetails.getReferenceDataUserId()))
-        .willReturn(null);
+    given(userContactDetailsRepository.findById(userContactDetails.getReferenceDataUserId()))
+        .willReturn(Optional.empty());
 
     get(userContactDetails.getReferenceDataUserId())
         .then()
@@ -240,7 +236,7 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
 
-    verify(repository).findOne(userContactDetails.getReferenceDataUserId());
+    verify(userContactDetailsRepository).findById(userContactDetails.getReferenceDataUserId());
     verify(permissionService)
         .canManageUserContactDetails(userContactDetails.getReferenceDataUserId());
   }
@@ -257,7 +253,7 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
 
-    verify(repository, never()).findOne(any(UUID.class));
+    verify(userContactDetailsRepository, never()).findById(any(UUID.class));
     verify(permissionService)
         .canManageUserContactDetails(userContactDetails.getReferenceDataUserId());    
   }
@@ -266,8 +262,9 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
   public void shouldCreateUserContactDetails() {
     UserContactDetailsDto request = toDto(userContactDetails);
 
-    given(repository.exists(any(UUID.class))).willReturn(false);
-    given(repository.save(any(UserContactDetails.class))).willReturn(userContactDetails);
+    given(userContactDetailsRepository.existsById(any(UUID.class))).willReturn(false);
+    given(userContactDetailsRepository.save(any(UserContactDetails.class)))
+        .willReturn(userContactDetails);
 
     UserContactDetailsDto response = put(request, request.getReferenceDataUserId())
         .then()
@@ -278,7 +275,7 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
     assertEquals(request, response);
 
-    verify(repository).save(userContactDetails);
+    verify(userContactDetailsRepository).save(userContactDetails);
   }
 
   @Test
@@ -288,9 +285,11 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
         .withEmailDetails(userContactDetails.getEmailDetails())
         .build();
 
-    given(repository.exists(any(UUID.class))).willReturn(true);
-    given(repository.findOne(userContactDetails.getReferenceDataUserId())).willReturn(existing);
-    given(repository.save(any(UserContactDetails.class))).willReturn(userContactDetails);
+    given(userContactDetailsRepository.existsById(any(UUID.class))).willReturn(true);
+    given(userContactDetailsRepository.findById(userContactDetails.getReferenceDataUserId()))
+        .willReturn(Optional.of(existing));
+    given(userContactDetailsRepository.save(any(UserContactDetails.class)))
+        .willReturn(userContactDetails);
 
     UserContactDetailsDto request = toDto(userContactDetails);
     UserContactDetailsDto response = put(request, request.getReferenceDataUserId())
@@ -302,8 +301,8 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
     assertEquals(request, response);
 
-    verify(repository).save(userContactDetails);
-    verify(repository).findOne(userContactDetails.getReferenceDataUserId());
+    verify(userContactDetailsRepository).save(userContactDetails);
+    verify(userContactDetailsRepository).findById(userContactDetails.getReferenceDataUserId());
   }
 
   @Test
@@ -319,16 +318,16 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
 
-    verify(repository, never()).save(any(UserContactDetails.class));
+    verify(userContactDetailsRepository, never()).save(any(UserContactDetails.class));
     verify(permissionService)
         .canManageUserContactDetails(userContactDetails.getReferenceDataUserId());
   }
 
   @Test
   public void shouldReturnBadRequestWhenTryingToChangeIsEmailVerifiedFlag() {
-    given(repository.exists(any(UUID.class))).willReturn(true);
-    given(repository.findOne(userContactDetails.getReferenceDataUserId()))
-        .willReturn(userContactDetails);
+    given(userContactDetailsRepository.existsById(any(UUID.class))).willReturn(true);
+    given(userContactDetailsRepository.findById(userContactDetails.getReferenceDataUserId()))
+        .willReturn(Optional.of(userContactDetails));
     markDtoAsInvalid(EMAIL_VERIFIED, ERROR_FIELD_IS_INVARIANT);
 
     UserContactDetailsDto request = toDto(userContactDetails);
@@ -343,7 +342,7 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
     assertThat(response, containsString(ERROR_FIELD_IS_INVARIANT));
 
-    verify(repository, never()).save(any(UserContactDetails.class));
+    verify(userContactDetailsRepository, never()).save(any(UserContactDetails.class));
     verify(permissionService)
         .canManageUserContactDetails(userContactDetails.getReferenceDataUserId());
   }
@@ -352,7 +351,7 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
   public void shouldReturnBadRequestWhenTryingToSetEmailThatIsAlreadyInUseByOtherUser() {
     willThrow(new DataIntegrityViolationException("",
         new ConstraintViolationException("", null, "unq_contact_details_email"))
-    ).given(repository).save(userContactDetails);
+    ).given(userContactDetailsRepository).save(userContactDetails);
 
     UserContactDetailsDto request = toDto(userContactDetails);
     String response = put(request, request.getReferenceDataUserId())
@@ -364,7 +363,7 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
     assertThat(response, containsString(ERROR_EMAIL_DUPLICATED));
 
-    verify(repository).save(userContactDetails);
+    verify(userContactDetailsRepository).save(userContactDetails);
     verify(permissionService)
         .canManageUserContactDetails(userContactDetails.getReferenceDataUserId());
   }
@@ -383,7 +382,7 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
     assertThat(response, containsString(ERROR_EMAIL_INVALID));
 
-    verify(repository, never()).save(any(UserContactDetails.class));
+    verify(userContactDetailsRepository, never()).save(any(UserContactDetails.class));
     verify(permissionService)
         .canManageUserContactDetails(userContactDetails.getReferenceDataUserId());
   }
@@ -404,8 +403,8 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
         .withContactDetails(userContactDetails)
         .build();
 
-    given(emailVerificationTokenRepository.findOne(token.getId()))
-        .willReturn(token);
+    given(emailVerificationTokenRepository.findById(token.getId()))
+        .willReturn(Optional.of(token));
 
     startRequest()
         .pathParam(ID, userContactDetails.getId())
@@ -420,16 +419,16 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
     assertThat(userContactDetails.isEmailAddressVerified(), is(true));
     assertThat(userContactDetails.isAllowNotify(), is(true));
 
-    verify(repository).save(userContactDetails);
-    verify(emailVerificationTokenRepository).delete(token.getId());
+    verify(userContactDetailsRepository).save(userContactDetails);
+    verify(emailVerificationTokenRepository).deleteById(token.getId());
 
     assertThat(RAML_ASSERT_MESSAGE, restAssured.getLastReport(), RamlMatchers.hasNoViolations());
   }
 
   @Test
   public void shouldReturnBadRequestIfTokenDoesNotExist() {
-    given(emailVerificationTokenRepository.findOne(any(UUID.class)))
-        .willReturn(null);
+    given(emailVerificationTokenRepository.findById(any(UUID.class)))
+        .willReturn(Optional.empty());
 
     startUserRequest()
         .pathParam(ID, userContactDetails.getId())
@@ -450,8 +449,8 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
         .withContactDetails(userContactDetails)
         .build();
 
-    given(emailVerificationTokenRepository.findOne(token.getId()))
-        .willReturn(token);
+    given(emailVerificationTokenRepository.findById(token.getId()))
+        .willReturn(Optional.of(token));
 
     startUserRequest()
         .pathParam(ID, userContactDetails.getId())
@@ -471,8 +470,8 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
         .withExpiredDate()
         .build();
 
-    given(emailVerificationTokenRepository.findOne(token.getId()))
-        .willReturn(token);
+    given(emailVerificationTokenRepository.findById(token.getId()))
+        .willReturn(Optional.of(token));
 
     startUserRequest()
         .pathParam(ID, UUID.randomUUID())
@@ -522,7 +521,7 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
 
   @Test
   public void shouldReturnNotFoundIfContactDetailsDoesNotExist() {
-    given(repository.findOne(any(UUID.class))).willReturn(null);
+    given(userContactDetailsRepository.findById(any(UUID.class))).willReturn(Optional.empty());
 
     startUserRequest()
         .pathParam(ID, userContactDetails.getId())
@@ -662,7 +661,7 @@ public class UserContactDetailsControllerIntegrationTest extends BaseWebIntegrat
 
   private void markDtoAsInvalid(String field, String message) {
     willAnswer(invocation -> {
-      Errors errors = invocation.getArgumentAt(1, Errors.class);
+      Errors errors = invocation.getArgument(1, Errors.class);
       errors.rejectValue(field, message, message);
 
       return null;

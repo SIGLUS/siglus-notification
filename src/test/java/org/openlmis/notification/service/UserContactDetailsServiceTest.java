@@ -22,6 +22,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.mockito.Mockito.when;
 
+import java.util.Optional;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -64,7 +65,7 @@ public class UserContactDetailsServiceTest {
 
   @Test
   public void shouldAddContactDetails() {
-    when(repository.exists(contactDetails.getId())).thenReturn(false);
+    when(repository.existsById(contactDetails.getId())).thenReturn(false);
 
     UserContactDetails saved = service.addOrUpdate(contactDetails);
 
@@ -79,7 +80,7 @@ public class UserContactDetailsServiceTest {
 
   @Test
   public void shouldNotSendVerificationIfNewContactDetailsDoesNotHaveEmailAddress() {
-    when(repository.exists(contactDetails.getId())).thenReturn(false);
+    when(repository.existsById(contactDetails.getId())).thenReturn(false);
 
     contactDetails.setEmailDetails(null);
     service.addOrUpdate(contactDetails);
@@ -163,12 +164,6 @@ public class UserContactDetailsServiceTest {
   @Test
   public void shouldNotSendVerificationIfEmailWasSetToNull() {
     prepareForUpdate();
-    EmailVerificationToken token = new EmailVerificationTokenDataBuilder()
-        .withContactDetails(contactDetails)
-        .build();
-
-    when(verificationRepository.findOneByUserContactDetails(contactDetails))
-        .thenReturn(token);
 
     contactDetails.setEmailDetails(null);
 
@@ -185,8 +180,8 @@ public class UserContactDetailsServiceTest {
             .build())
         .build();
 
-    when(repository.exists(contactDetails.getId())).thenReturn(true);
-    when(repository.findOne(contactDetails.getId())).thenReturn(existing);
+    when(repository.existsById(contactDetails.getId())).thenReturn(true);
+    when(repository.findById(contactDetails.getId())).thenReturn(Optional.of(existing));
 
     return existing;
   }

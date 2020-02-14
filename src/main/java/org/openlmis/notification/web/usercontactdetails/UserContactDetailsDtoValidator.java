@@ -123,7 +123,8 @@ public class UserContactDetailsDtoValidator implements BaseValidator {
   }
 
   private void verifyInvariants(UserContactDetailsDto contactDetails, Errors errors) {
-    UserContactDetails existing = repository.findOne(contactDetails.getReferenceDataUserId());
+    UserContactDetails existing = repository.findById(contactDetails.getReferenceDataUserId())
+        .orElse(null);
 
     if (null == existing) {
       return;

@@ -28,6 +28,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import org.openlmis.notification.service.PageDto;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.util.CollectionUtils;
 
 @Getter(AccessLevel.PACKAGE)
@@ -132,7 +133,7 @@ public abstract class Merger<T> {
           .distinct()
           .collect(Collectors.toList());
 
-      Page<T> page = Pagination.getPage(content);
+      Page<T> page = Pagination.getPage(content, PageRequest.of(0, content.size()));
       return new PageDto<>(page);
     }
   }

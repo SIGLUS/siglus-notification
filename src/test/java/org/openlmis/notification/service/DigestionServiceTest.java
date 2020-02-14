@@ -172,8 +172,8 @@ public class DigestionServiceTest {
 
     @Override
     public Object answer(InvocationOnMock invocation) {
-      UUID recipient = invocation.getArgumentAt(2, UUID.class);
-      DigestConfiguration configuration = invocation.getArgumentAt(1, DigestConfiguration.class);
+      UUID recipient = invocation.getArgument(2, UUID.class);
+      DigestConfiguration configuration = invocation.getArgument(1, DigestConfiguration.class);
       SourcePollingChannelAdapter adapter = mock(SourcePollingChannelAdapter.class);
 
       ADAPTERS.put(recipient, configuration.getTag(), adapter);

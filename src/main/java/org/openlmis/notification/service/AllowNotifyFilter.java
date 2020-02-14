@@ -46,7 +46,8 @@ public class AllowNotifyFilter {
   @Filter(inputChannel = START_CHANNEL, outputChannel = ALLOW_NOTIFY_CHANNEL)
   public boolean accept(@Header(RECIPIENT_HEADER) UUID recipient,
       @Header(value = IMPORTANT_HEADER, required = false) Boolean important) {
-    UserContactDetails userContactDetails = userContactDetailsRepository.findOne(recipient);
+    UserContactDetails userContactDetails = userContactDetailsRepository.findById(recipient)
+        .orElse(null);
 
     if (null == userContactDetails) {
       LOGGER.error("Can't send notification to a user with id {}"

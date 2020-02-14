@@ -28,6 +28,7 @@ import static org.springframework.http.MediaType.APPLICATION_JSON_VALUE;
 
 import com.jayway.restassured.response.Response;
 import guru.nidi.ramltester.junit.RamlMatchers;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
@@ -68,7 +69,7 @@ public class NotificationControllerIntegrationTest extends BaseWebIntegrationTes
   private UserDto user = new UserDataBuilder().build();
   private Notification notification;
 
-  private Pageable pageRequest = new PageRequest(
+  private Pageable pageRequest = PageRequest.of(
       Pagination.DEFAULT_PAGE_NUMBER, Pagination.NO_PAGINATION);
 
   @Before
@@ -78,7 +79,8 @@ public class NotificationControllerIntegrationTest extends BaseWebIntegrationTes
         .withMessage(NotificationChannel.EMAIL, CONTENT, SUBJECT)
         .build();
     
-    given(userContactDetailsRepository.findOne(USER_ID)).willReturn(contactDetails);
+    given(userContactDetailsRepository.findById(USER_ID))
+        .willReturn(Optional.of(contactDetails));
     given(userReferenceDataService.findOne(USER_ID)).willReturn(user);
   }
 
@@ -146,7 +148,7 @@ public class NotificationControllerIntegrationTest extends BaseWebIntegrationTes
 
   @Test(expected = IllegalArgumentException.class)
   public void shouldNotAllowPaginationWithZeroSize() {
-    Pageable page = new PageRequest(0, 0);
+    Pageable page = PageRequest.of(0, 0);
     restAssured.given()
             .header(HttpHeaders.AUTHORIZATION, USER_ACCESS_TOKEN_HEADER)
             .contentType(MediaType.APPLICATION_JSON_VALUE)
@@ -160,7 +162,7 @@ public class NotificationControllerIntegrationTest extends BaseWebIntegrationTes
 
   @Test(expected = IllegalArgumentException.class)
   public void shouldNotAllowPaginationWithoutSize() {
-    Pageable page = new PageRequest(0, 0);
+    Pageable page = PageRequest.of(0, 0);
     restAssured.given()
             .header(HttpHeaders.AUTHORIZATION, USER_ACCESS_TOKEN_HEADER)
             .contentType(MediaType.APPLICATION_JSON_VALUE)

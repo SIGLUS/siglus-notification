@@ -16,7 +16,6 @@
 package org.openlmis.notification.web.digestconfiguration;
 
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_DIGEST_CONFIGURATION_NOT_FOUND;
-import static org.openlmis.notification.web.BaseController.API_PREFIX;
 import static org.openlmis.notification.web.digestconfiguration.DigestConfigurationController.RESOURCE_URL;
 
 import java.util.List;
@@ -79,7 +78,7 @@ public class DigestConfigurationController extends BaseController {
     Profiler profiler = getProfiler("GET_DIGEST_CONFIGURATION", id);
 
     profiler.start("CALL_DB");
-    DigestConfiguration configuration = digestConfigurationRepository.findOne(id);
+    DigestConfiguration configuration = digestConfigurationRepository.findById(id).orElse(null);
 
     if (null == configuration) {
       NotFoundException exception = new NotFoundException(ERROR_DIGEST_CONFIGURATION_NOT_FOUND);

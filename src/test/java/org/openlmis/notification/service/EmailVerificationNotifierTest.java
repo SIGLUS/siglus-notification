@@ -76,7 +76,7 @@ public class EmailVerificationNotifierTest {
     when(userReferenceDataService.findOne(any(UUID.class)))
         .thenReturn(user);
     when(messageSource.getMessage(anyString(), any(String[].class), any(Locale.class)))
-        .thenAnswer(invocation -> invocation.getArgumentAt(0, String.class));
+        .thenAnswer(invocation -> invocation.getArgument(0, String.class));
 
     when(emailVerificationTokenRepository.findOneByUserContactDetails(userContactDetails))
         .thenReturn(null);

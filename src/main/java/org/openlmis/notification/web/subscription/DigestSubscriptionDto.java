@@ -16,6 +16,7 @@
 package org.openlmis.notification.web.subscription;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.AccessLevel;
@@ -46,7 +47,8 @@ public final class DigestSubscriptionDto
   @JsonIgnore
   private String serviceUrl;
 
-  private ObjectReferenceDto digestConfiguration;
+  @JsonProperty("digestConfiguration")
+  private ObjectReferenceDto digestConfigurationRef;
   private String cronExpression;
   private Boolean useDigest;
   private NotificationChannel preferredChannel;
@@ -54,7 +56,7 @@ public final class DigestSubscriptionDto
   @Override
   @JsonIgnore
   public void setDigestConfiguration(DigestConfiguration configuration) {
-    this.digestConfiguration = new ObjectReferenceDto(
+    this.digestConfigurationRef = new ObjectReferenceDto(
         serviceUrl, DigestConfigurationController.RESOURCE_URL, configuration.getId());
   }
 
@@ -62,7 +64,7 @@ public final class DigestSubscriptionDto
   @JsonIgnore
   public UUID getDigestConfigurationId() {
     return Optional
-        .ofNullable(digestConfiguration)
+        .ofNullable(digestConfigurationRef)
         .map(BaseDto::getId)
         .orElse(null);
   }

@@ -26,6 +26,7 @@ import static org.openlmis.notification.web.usercontactdetails.UserContactDetail
 import static org.openlmis.notification.web.usercontactdetails.UserContactDetailsDtoValidator.EMAIL_VERIFIED;
 import static org.openlmis.notification.web.usercontactdetails.UserContactDetailsDtoValidator.REFERENCE_DATA_USER_ID;
 
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
@@ -109,8 +110,8 @@ public class UserContactDetailsDtoValidatorTest extends BaseValidatorTest {
 
   @Test
   public void shouldNotRejectIfEmailDetailsNotExistsOnUpdate() {
-    when(repository.findOne(contactDetails.getReferenceDataUserId()))
-        .thenReturn(contactDetails);
+    when(repository.findById(contactDetails.getReferenceDataUserId()))
+        .thenReturn(Optional.of(contactDetails));
 
     dto.setEmailDetails((EmailDetailsDto) null);
 
@@ -120,8 +121,8 @@ public class UserContactDetailsDtoValidatorTest extends BaseValidatorTest {
 
   @Test
   public void shouldRejectIfEmailVerifiedFlagWasChanged() {
-    when(repository.findOne(contactDetails.getReferenceDataUserId()))
-        .thenReturn(contactDetails);
+    when(repository.findById(contactDetails.getReferenceDataUserId()))
+        .thenReturn(Optional.of(contactDetails));
 
     dto.getEmailDetails().setEmailVerified(!contactDetails.isEmailAddressVerified());
 

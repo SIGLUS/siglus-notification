@@ -74,7 +74,7 @@ public class NotificationRepositoryIntegrationTest
   @Before
   public void setUp() throws InterruptedException {
     notifications = new Notification[25];
-    pageable = new PageRequest(0, notifications.length);
+    pageable = PageRequest.of(0, notifications.length);
 
     for (int i = 0; i < notifications.length; ++i) {
       // we want to create ten (0..9) notifications for the first user,

@@ -72,11 +72,11 @@ public class PostponeMessageRepositoryIntegrationTest
     UUID configurationId = message.getConfiguration().getId();
 
     // when
-    repository.delete(message.getId());
+    repository.deleteById(message.getId());
     entityManager.flush();
 
     // then
-    boolean configurationExists = digestConfigurationRepository.exists(configurationId);
+    boolean configurationExists = digestConfigurationRepository.existsById(configurationId);
 
     assertThat(configurationExists).isTrue();
   }

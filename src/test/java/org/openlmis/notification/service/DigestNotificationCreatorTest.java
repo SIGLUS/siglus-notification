@@ -21,6 +21,7 @@ import static org.openlmis.notification.service.NotificationToSendRetriever.RECI
 import static org.openlmis.notification.service.NotificationTransformer.CHANNEL_HEADER;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.assertj.core.util.Lists;
 import org.junit.Before;
@@ -73,7 +74,8 @@ public class DigestNotificationCreatorTest {
 
   @Before
   public void setUp() {
-    given(digestConfigurationRepository.findOne(configurationId)).willReturn(configuration);
+    given(digestConfigurationRepository.findById(configurationId))
+        .willReturn(Optional.of(configuration));
     given(messageService.localize(message)).willReturn(message.localMessage(MSG_TEMPLATE));
 
     ReflectionTestUtils.setField(creator, "serviceUrl", SERVICE_URL);
@@ -82,7 +84,7 @@ public class DigestNotificationCreatorTest {
   @Test
   public void shouldReturnNullIfConfigurationDoesNotExist() {
     // given
-    given(digestConfigurationRepository.findOne(configurationId)).willReturn(null);
+    given(digestConfigurationRepository.findById(configurationId)).willReturn(Optional.empty());
 
     // when
     Message message = creator

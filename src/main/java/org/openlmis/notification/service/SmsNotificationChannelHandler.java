@@ -47,9 +47,10 @@ public class SmsNotificationChannelHandler {
   @ServiceActivator(inputChannel = SMS_SEND_NOW_CHANNEL)
   public void handle(NotificationMessage payload,
       @Header(RECIPIENT_HEADER) UUID recipient) {
-    UserContactDetails contactDetails = userContactDetailsRepository.findOne(recipient);
+    UserContactDetails contactDetails = userContactDetailsRepository.findById(recipient)
+        .orElse(null);
 
-    if (shouldSendMessage(contactDetails)) {
+    if (null != contactDetails && shouldSendMessage(contactDetails)) {
       smsSender.sendMessage(contactDetails.getPhoneNumber(), payload.getBody());
     }
   }

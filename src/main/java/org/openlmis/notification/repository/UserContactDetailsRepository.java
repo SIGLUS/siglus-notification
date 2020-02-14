@@ -33,7 +33,7 @@ public interface UserContactDetailsRepository
    * no such row, the null value will be returned.
    */
   default UserContactDetails findOneByEmailAddress(String email) {
-    Pageable pageable = new PageRequest(Pagination.DEFAULT_PAGE_NUMBER, Pagination.NO_PAGINATION);
+    Pageable pageable = PageRequest.of(Pagination.DEFAULT_PAGE_NUMBER, Pagination.NO_PAGINATION);
     Page<UserContactDetails> page = search(email, null, pageable);
 
     return page.hasContent() ? page.getContent().get(0) : null;

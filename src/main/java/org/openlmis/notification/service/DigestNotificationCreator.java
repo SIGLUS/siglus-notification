@@ -65,7 +65,8 @@ public class DigestNotificationCreator {
       @Header(RECIPIENT_HEADER) UUID recipient,
       @Header(CONFIGURATION_ID_HEADER) UUID configurationId,
       @Header(CHANNEL_HEADER) NotificationChannel channel) {
-    DigestConfiguration configuration = digestConfigurationRepository.findOne(configurationId);
+    DigestConfiguration configuration = digestConfigurationRepository.findById(configurationId)
+        .orElse(null);
 
     if (Objects.isNull(configuration)) {
       LOGGER.error("Can't find digest configuration with id: {}", configurationId);

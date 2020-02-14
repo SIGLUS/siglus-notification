@@ -31,6 +31,7 @@ import static org.openlmis.notification.i18n.MessageKeys.PERMISSION_MISSING;
 import com.google.common.collect.Sets;
 import guru.nidi.ramltester.junit.RamlMatchers;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.apache.http.HttpStatus;
 import org.assertj.core.util.Lists;
@@ -69,12 +70,13 @@ public class DigestSubscriptionControllerIntegrationTest extends BaseWebIntegrat
   public void setUp() {
     subscription.export(subscriptionDto);
 
-    given(userContactDetailsRepository.findOne(userId)).willReturn(userContactDetails);
-    given(userContactDetailsRepository.exists(userId)).willReturn(true);
-    given(digestConfigurationRepository.findAll(Sets.newHashSet(configurationId)))
+    given(userContactDetailsRepository.findById(userId))
+        .willReturn(Optional.of(userContactDetails));
+    given(userContactDetailsRepository.existsById(userId)).willReturn(true);
+    given(digestConfigurationRepository.findAllById(Sets.newHashSet(configurationId)))
         .willReturn(Lists.newArrayList(configuration));
 
-    given(digestSubscriptionRepository.save(anyListOf(DigestSubscription.class)))
+    given(digestSubscriptionRepository.saveAll(anyListOf(DigestSubscription.class)))
         .willAnswer(invocation -> {
           List<DigestSubscription> list = (List<DigestSubscription>) invocation.getArguments()[0];
           list.forEach(item -> item.setId(UUID.randomUUID()));
@@ -139,7 +141,7 @@ public class DigestSubscriptionControllerIntegrationTest extends BaseWebIntegrat
   @Test
   public void shouldReturnNotFoundForGetUserSubscriptionsIfUserDoesNotExist() {
     // given
-    given(userContactDetailsRepository.exists(userId)).willReturn(false);
+    given(userContactDetailsRepository.existsById(userId)).willReturn(false);
 
     // when
     startUserRequest()
@@ -175,7 +177,7 @@ public class DigestSubscriptionControllerIntegrationTest extends BaseWebIntegrat
   @Test
   public void shouldReturnBadRequestForCreateUserSubscriptionsIfRequestBodyIsInvalid() {
     // given
-    given(digestConfigurationRepository.findAll(anySetOf(UUID.class)))
+    given(digestConfigurationRepository.findAllById(anySetOf(UUID.class)))
         .willReturn(Lists.newArrayList());
 
     // when
@@ -233,7 +235,7 @@ public class DigestSubscriptionControllerIntegrationTest extends BaseWebIntegrat
   @Test
   public void shouldReturnNotFoundForCreateUserSubscriptionsIfUserDoesNotExist() {
     // given
-    given(userContactDetailsRepository.findOne(userId)).willReturn(null);
+    given(userContactDetailsRepository.findById(userId)).willReturn(Optional.empty());
 
     // when
     startUserRequest()

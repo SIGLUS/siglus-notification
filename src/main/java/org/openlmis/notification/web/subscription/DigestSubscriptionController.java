@@ -86,7 +86,7 @@ public class DigestSubscriptionController extends BaseController {
     checkPermission(userId, profiler);
 
     profiler.start("CHECK_IF_USER_CONTACT_DETAILS");
-    boolean exists = userContactDetailsRepository.exists(userId);
+    boolean exists = userContactDetailsRepository.existsById(userId);
 
     if (!exists) {
       NotFoundException exception = new NotFoundException(ERROR_USER_CONTACT_DETAILS_NOT_FOUND);
@@ -117,7 +117,7 @@ public class DigestSubscriptionController extends BaseController {
     checkPermission(userId, profiler);
 
     profiler.start("GET_USER_CONTACT_DETAILS");
-    UserContactDetails contactDetails = userContactDetailsRepository.findOne(userId);
+    UserContactDetails contactDetails = userContactDetailsRepository.findById(userId).orElse(null);
 
     if (Objects.isNull(contactDetails)) {
       NotFoundException exception = new NotFoundException(ERROR_USER_CONTACT_DETAILS_NOT_FOUND);
@@ -131,7 +131,7 @@ public class DigestSubscriptionController extends BaseController {
         subscriptions, profiler);
 
     profiler.start("SAVE_USER_SUBSCRIPTIONS");
-    digestSubscriptions = digestSubscriptionRepository.save(digestSubscriptions);
+    digestSubscriptions = digestSubscriptionRepository.saveAll(digestSubscriptions);
 
     profiler.start("STOP_EXISTING_MESSAGE_SOURCES");
     digestionService.dropExistingPollingAdapters(userId);
@@ -155,7 +155,7 @@ public class DigestSubscriptionController extends BaseController {
 
     profiler.start("GET_DIGEST_CONFIGURATIONS");
     Map<UUID, DigestConfiguration> configurations = digestConfigurationRepository
-        .findAll(ids)
+        .findAllById(ids)
         .stream()
         .collect(Collectors.toMap(DigestConfiguration::getId, Function.identity()));
 

@@ -36,7 +36,7 @@ public class PaginationTest {
 
   @Test
   public void shouldReturnPageNumberIfPageableIsGiven() {
-    PageRequest page = new PageRequest(1, 10);
+    PageRequest page = PageRequest.of(1, 10);
 
     assertThat(Pagination.getPageNumber(page), is(1));
   }
@@ -48,7 +48,7 @@ public class PaginationTest {
 
   @Test
   public void shouldReturnPageSizeIfPageableIsGiven() {
-    PageRequest page = new PageRequest(1, 10);
+    PageRequest page = PageRequest.of(1, 10);
 
     assertThat(Pagination.getPageSize(page), is(10));
   }
@@ -56,7 +56,7 @@ public class PaginationTest {
   @Test
   public void shouldReturnEmptyPageIfTryingToFetchNonExistentPage() {
     List<Integer> items = IntStream.range(0, 15).boxed().collect(Collectors.toList());
-    PageRequest pageRequest = new PageRequest(3, 5);
+    PageRequest pageRequest = PageRequest.of(3, 5);
 
     Page result = Pagination.getPage(items, pageRequest);
 
@@ -69,7 +69,7 @@ public class PaginationTest {
   @Test
   public void shouldReturnPage() {
     List<Integer> items = IntStream.range(0, 15).boxed().collect(Collectors.toList());
-    PageRequest pageRequest = new PageRequest(1, 5);
+    PageRequest pageRequest = PageRequest.of(1, 5);
 
     Page result = Pagination.getPage(items, pageRequest);
 
@@ -82,7 +82,7 @@ public class PaginationTest {
   public void shouldGetPageFromIterable() {
     Iterable items = Arrays.asList(IntStream.range(0, 15).boxed().toArray());
 
-    PageRequest pageRequest = new PageRequest(1, 5);
+    PageRequest pageRequest = PageRequest.of(1, 5);
 
     Page result = Pagination.getPage(items, pageRequest);
 

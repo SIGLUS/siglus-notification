@@ -69,7 +69,7 @@ public abstract class BaseCrudRepositoryIntegrationTest
 
     I id = instance.getId();
 
-    Assert.assertTrue(repository.exists(id));
+    Assert.assertTrue(repository.existsById(id));
   }
 
   @Test
@@ -83,7 +83,7 @@ public abstract class BaseCrudRepositoryIntegrationTest
 
     I id = instance.getId();
 
-    instance = repository.findOne(id);
+    instance = repository.findById(id).orElse(null);
     assertInstance(instance);
     Assert.assertEquals(id, instance.getId());
   }
@@ -100,7 +100,7 @@ public abstract class BaseCrudRepositoryIntegrationTest
 
     I id = instance.getId();
 
-    repository.delete(id);
-    Assert.assertFalse(repository.exists(id));
+    repository.deleteById(id);
+    Assert.assertFalse(repository.existsById(id));
   }
 }

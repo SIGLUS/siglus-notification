@@ -20,6 +20,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyZeroInteractions;
 import static org.openlmis.notification.service.NotificationChannel.SMS;
 
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.Before;
 import org.junit.Test;
@@ -56,7 +57,8 @@ public class SmsNotificationChannelHandlerTest {
 
   @Before
   public void setUp() {
-    given(userContactDetailsRepository.findOne(userId)).willReturn(contactDetails);
+    given(userContactDetailsRepository.findById(userId))
+        .willReturn(Optional.of(contactDetails));
   }
 
   @Test

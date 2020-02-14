@@ -18,6 +18,7 @@ package org.openlmis.notification.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.BDDMockito.given;
 
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.Before;
 import org.junit.Rule;
@@ -49,8 +50,8 @@ public class AllowNotifyFilterTest {
 
   @Before
   public void setUp() {
-    given(userContactDetailsRepository.findOne(contactDetails.getId()))
-        .willReturn(contactDetails);
+    given(userContactDetailsRepository.findById(contactDetails.getId()))
+        .willReturn(Optional.of(contactDetails));
   }
 
   @Test
@@ -89,7 +90,8 @@ public class AllowNotifyFilterTest {
   @Test
   public void shouldDeclineStandardMessageWhenUserDoesNotExist() {
     // given
-    given(userContactDetailsRepository.findOne(contactDetails.getId())).willReturn(null);
+    given(userContactDetailsRepository.findById(contactDetails.getId()))
+        .willReturn(Optional.empty());
 
     // when
     boolean accepted = filter.accept(recipient, UNIMPORTANT);

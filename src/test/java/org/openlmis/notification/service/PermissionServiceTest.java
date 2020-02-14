@@ -101,11 +101,7 @@ public class PermissionServiceTest {
 
   @Test
   public void shouldAllowUserWithoutUsersManageRightToGetOwnUserContactDetails() {
-    when(securityContext.getAuthentication()).thenReturn(userAuthentication);
     when(authenticationHelper.getCurrentUser()).thenReturn(userDto);
-    when(authenticationHelper.getRight(eq(USERS_MANAGE))).thenReturn(rightDto);
-    when(userReferenceDataService.hasRight(userDto.getId(), rightDto.getId(), null, null, null))
-        .thenReturn(new ResultDto<>(false));
 
     permissionService.canManageUserContactDetails(userDto.getId());
   }
@@ -143,11 +139,7 @@ public class PermissionServiceTest {
 
   @Test
   public void shouldAllowUserWithoutUsersManageRightToManageOwnUserSubscriptions() {
-    when(securityContext.getAuthentication()).thenReturn(userAuthentication);
     when(authenticationHelper.getCurrentUser()).thenReturn(userDto);
-    when(authenticationHelper.getRight(eq(USERS_MANAGE))).thenReturn(rightDto);
-    when(userReferenceDataService.hasRight(userDto.getId(), rightDto.getId(), null, null, null))
-        .thenReturn(new ResultDto<>(false));
 
     permissionService.canManageUserSubscriptions(userDto.getId());
   }

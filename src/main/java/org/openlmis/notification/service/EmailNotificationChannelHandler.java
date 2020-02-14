@@ -49,9 +49,10 @@ public class EmailNotificationChannelHandler {
   public void handle(NotificationMessage payload,
       @Header(RECIPIENT_HEADER) UUID recipient,
       @Header(value = IMPORTANT_HEADER, required = false) Boolean important) {
-    UserContactDetails contactDetails = userContactDetailsRepository.findOne(recipient);
+    UserContactDetails contactDetails = userContactDetailsRepository.findById(recipient)
+        .orElse(null);
 
-    if (shouldSendMessage(contactDetails, important)) {
+    if (null != contactDetails && shouldSendMessage(contactDetails, important)) {
       emailSender.sendMail(contactDetails.getEmailAddress(),
           payload.getSubject(), payload.getBody());
     }

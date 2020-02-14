@@ -88,10 +88,10 @@ public class PendingNotificationRepositoryIntegrationTest
     PendingNotification pending = pendingNotifications.get(0);
     UUID notificationId = pending.getNotificationId();
 
-    repository.delete(pending.getId());
+    repository.deleteById(pending.getId());
     entityManager.flush();
 
-    boolean notificationExists = notificationRepository.exists(notificationId);
+    boolean notificationExists = notificationRepository.existsById(notificationId);
     assertThat(notificationExists).isTrue();
   }
 

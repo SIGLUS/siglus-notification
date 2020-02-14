@@ -107,11 +107,8 @@ public class NotificationController {
 
     profiler.start("FIND_USER_CONTACT_DETAILS_BY_ID");
     UserContactDetails contactDetails = userContactDetailsRepository
-        .findOne(notificationDto.getUserId());
-
-    if (null == contactDetails) {
-      throw new NotFoundException(ERROR_USER_CONTACT_DETAILS_NOT_FOUND);
-    }
+        .findById(notificationDto.getUserId())
+        .orElseThrow(() -> new NotFoundException(ERROR_USER_CONTACT_DETAILS_NOT_FOUND));
 
     profiler.start("FIND_USER_BY_ID");
     UserDto user = userReferenceDataService.findOne(contactDetails.getReferenceDataUserId());
@@ -132,7 +129,7 @@ public class NotificationController {
         .map(message -> new PendingNotification(notification, message.getChannel()))
         .collect(Collectors.toSet());
 
-    pendingNotificationRepository.save(pendingNotifications);
+    pendingNotificationRepository.saveAll(pendingNotifications);
 
     profiler.stop().log();
     XLOGGER.exit();

@@ -15,11 +15,14 @@
 
 package org.openlmis.notification.service;
 
+import static org.openlmis.notification.i18n.MessageKeys.ERROR_USER_CONTACT_DETAILS_NOT_FOUND;
+
 import org.openlmis.notification.domain.EmailDetails;
 import org.openlmis.notification.domain.EmailVerificationToken;
 import org.openlmis.notification.domain.UserContactDetails;
 import org.openlmis.notification.repository.EmailVerificationTokenRepository;
 import org.openlmis.notification.repository.UserContactDetailsRepository;
+import org.openlmis.notification.web.NotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.stereotype.Service;
@@ -40,7 +43,7 @@ public class UserContactDetailsService {
    * Adds a new or updates existing user's contact details.
    */
   public UserContactDetails addOrUpdate(UserContactDetails details) {
-    return userContactDetailsRepository.exists(details.getReferenceDataUserId())
+    return userContactDetailsRepository.existsById(details.getReferenceDataUserId())
         ? updateUserContactDetails(details)
         : addUserContactDetails(details);
   }
@@ -75,7 +78,8 @@ public class UserContactDetailsService {
   }
 
   private EmailDetails checkIfEmailAddressHasBeenChanged(UserContactDetails toUpdate) {
-    UserContactDetails existing = userContactDetailsRepository.findOne(toUpdate.getId());
+    UserContactDetails existing = userContactDetailsRepository.findById(toUpdate.getId())
+        .orElseThrow(() -> new NotFoundException(ERROR_USER_CONTACT_DETAILS_NOT_FOUND));
     EmailDetails newEmailDetails = null;
 
     boolean hasEmailAddress = toUpdate.hasEmailAddress();

@@ -24,6 +24,7 @@ import static org.mockito.Matchers.any;
 import static org.openlmis.notification.i18n.MessageKeys.ERROR_DIGEST_CONFIGURATION_NOT_FOUND;
 
 import guru.nidi.ramltester.junit.RamlMatchers;
+import java.util.Optional;
 import java.util.UUID;
 import org.apache.http.HttpStatus;
 import org.assertj.core.util.Lists;
@@ -47,7 +48,8 @@ public class DigestConfigurationControllerIntegrationTest extends BaseWebIntegra
   public void setUp() {
     given(digestConfigurationRepository.findAll(any(Pageable.class)))
         .willReturn(new PageImpl<>(Lists.newArrayList(configuration)));
-    given(digestConfigurationRepository.findOne(configurationId)).willReturn(configuration);
+    given(digestConfigurationRepository.findById(configurationId))
+        .willReturn(Optional.of(configuration));
   }
 
   @Test
@@ -110,7 +112,7 @@ public class DigestConfigurationControllerIntegrationTest extends BaseWebIntegra
   @Test
   public void shouldReturnNotFoundForGetDigestConfigurationIfItDoesNotExist() {
     // given
-    given(digestConfigurationRepository.findOne(configurationId)).willReturn(null);
+    given(digestConfigurationRepository.findById(configurationId)).willReturn(Optional.empty());
 
     // when
     startUserRequest()
