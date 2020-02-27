@@ -16,7 +16,6 @@
 package org.openlmis.notification;
 
 import java.util.List;
-
 import org.openlmis.notification.interceptor.MvcInterceptor;
 import org.openlmis.notification.util.Pagination;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,10 +27,10 @@ import org.springframework.web.method.support.HandlerMethodArgumentResolver;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.ViewControllerRegistry;
-import org.springframework.web.servlet.config.annotation.WebMvcConfigurerAdapter;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
-public class CustomWebMvcConfigurerAdapter extends WebMvcConfigurerAdapter {
+public class CustomWebMvcConfigurerAdapter implements WebMvcConfigurer {
 
   @Value("${service.url}")
   private String serviceUrl;
@@ -46,14 +45,12 @@ public class CustomWebMvcConfigurerAdapter extends WebMvcConfigurerAdapter {
         .setViewName("redirect:" + serviceUrl + "/notification/docs/");
     registry.addViewController("/notification/docs/")
         .setViewName("forward:/notification/docs/index.html");
-    super.addViewControllers(registry);
   }
 
   @Override
   public void addResourceHandlers(ResourceHandlerRegistry registry) {
     registry.addResourceHandler("/notification/webjars/**")
         .addResourceLocations("classpath:/META-INF/resources/webjars/");
-    super.addResourceHandlers(registry);
   }
 
   @Override
@@ -64,7 +61,6 @@ public class CustomWebMvcConfigurerAdapter extends WebMvcConfigurerAdapter {
         Pagination.DEFAULT_PAGE_NUMBER,
         Pagination.NO_PAGINATION));
     argumentResolvers.add(resolver);
-    super.addArgumentResolvers(argumentResolvers);
   }
 
   @Override

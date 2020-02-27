@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
-import org.apache.commons.lang3.text.StrSubstitutor;
+import org.apache.commons.text.StringSubstitutor;
 import org.openlmis.notification.domain.DigestConfiguration;
 import org.openlmis.notification.domain.NotificationMessage;
 import org.openlmis.notification.domain.PostponeMessage;
@@ -77,7 +77,7 @@ public class DigestNotificationCreator {
     valuesMap.put("serviceUrl", serviceUrl);
     valuesMap.put("count", String.valueOf(postponeMessages.size()));
 
-    StrSubstitutor sub = new StrSubstitutor(valuesMap);
+    StringSubstitutor sub = new StringSubstitutor(valuesMap);
 
     String subject = postponeMessages.get(0).getSubject();
 

@@ -38,7 +38,7 @@ public class CustomSortSerializer extends JsonSerializer<Sort> {
       try {
         gen.writeObject(v);
       } catch (IOException e) {
-        XLOGGER.warn(e.getLocalizedMessage());
+        XLOGGER.warn("Could not serialize sort", e);
       }
     });
 
