@@ -9,6 +9,10 @@ New functionality added in a backwards-compatible manner:
   * Fix unit tests.
   * Fix integration tests.
   * API definitions require "Keep-Alive" header for web integration tests.
+  
+Improvements:
+* [OLMIS-6776](https://openlmis.atlassian.net/browse/OLMIS-6776): Fixed the issue with invalid token error:
+  * A mechanism to retry authentication load after encountering the error was introduced.
 
 4.2.0 / 2019-10-17
 =================
