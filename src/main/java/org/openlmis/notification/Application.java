@@ -57,6 +57,7 @@ public class Application {
   private Locale locale;
 
   public static void main(String[] args) {
+    System.setProperty("mail.mime.splitlongparameters", "false");
     SpringApplication.run(Application.class, args);
   }
 

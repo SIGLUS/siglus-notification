@@ -53,6 +53,7 @@ public class EmailNotificationChannelHandlerTest {
   private UserContactDetails contactDetails = new UserContactDetailsDataBuilder().build();
   private Notification notification = new NotificationDataBuilder()
       .withMessage(EMAIL, "body", "subject")
+      .withMessage(EMAIL, "bodyToSimam", "subject", "simam")
       .buildAsNew();
   private NotificationMessage message = notification.getMessages().get(0);
 
@@ -71,7 +72,8 @@ public class EmailNotificationChannelHandlerTest {
 
     // then
     verify(emailSender)
-        .sendMail(contactDetails.getEmailAddress(), message.getSubject(), message.getBody());
+        .sendMail(contactDetails.getEmailAddress(), message.getSubject(), message.getBody(),
+            false, null);
   }
 
   @Test
@@ -108,7 +110,21 @@ public class EmailNotificationChannelHandlerTest {
 
     // then
     verify(emailSender)
-        .sendMail(contactDetails.getEmailAddress(), message.getSubject(), message.getBody());
+        .sendMail(contactDetails.getEmailAddress(), message.getSubject(), message.getBody(),
+            false, null);
+  }
+
+  @Test
+  public void shouldSendMessageWithHtmlBodyWhenItIsSimamTag() {
+
+    message = notification.getMessages().get(1);
+    // when
+    handler.handle(message, recipient, false);
+
+    // then
+    verify(emailSender)
+        .sendMail(contactDetails.getEmailAddress(), message.getSubject(), message.getBody(),
+            true, null);
   }
 
 }
