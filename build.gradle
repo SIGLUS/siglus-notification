@@ -9,7 +9,7 @@ buildscript {
 
 plugins {
     id "org.flywaydb.flyway" version "6.0.8"
-    id "org.sonarqube" version "2.6.2"
+    id "org.sonarqube" version "2.7"
     id "com.moowork.node" version "1.2.0"
 }
 
@@ -165,30 +165,6 @@ checkstyle {
     toolVersion = "8.12"
 }
 
-//Usage: gradle sonarqube
-sonarqube {
-    properties {
-        def branch = System.getenv("SONAR_BRANCH")
-        if (branch && branch != 'master') {
-            property "sonar.branch", branch
-        }
-        property "sonar.projectName", "OpenLMIS Notification Service"
-        property "sonar.projectKey", "org.sonarqube:$rootProject.name"
-        property "sonar.host.url", "http://sonar.openlmis.org"
-        property "sonar.projectVersion", version
-        property "sonar.login", System.getenv("SONAR_LOGIN")
-        property "sonar.password", System.getenv("SONAR_PASSWORD")
-        property "sonar.java.coveragePlugin", "jacoco"
-        //Tells SonarQube where the unit tests execution reports are
-        property "sonar.junit.reportsPath", "build/test-results/test"
-        //Tells SonarQube where the code coverage reports are
-        property "sonar.jacoco.reportPaths", "build/jacoco/test.exec,build/jacoco/integrationTest.exec"
-        properties["sonar.tests"] += sourceSets.integrationTest.java
-    }
-}
-
-project.tasks["sonarqube"].dependsOn integrationTest
-
 pmd {
     toolVersion = '5.4.0'
     consoleOutput= true
@@ -230,9 +206,6 @@ test {
 }
 
 apply from: "documentation.gradle"
-integrationTest {
-    dependsOn ramlToHtml
-}
 
 processResources {
     // we want the generated HTML spec file included in the output jar
@@ -242,10 +215,6 @@ processResources {
         expand(project.properties)
     }
 }
-
-//check {
-//    dependsOn integrationTest
-//}
 
 apply from: "registration.gradle"
 

@@ -1,303 +1,147 @@
-#!/usr/bin/env groovy
-import hudson.tasks.test.AbstractTestResultAction
-
-properties([
-  [
-    $class: 'ThrottleJobProperty',
-    categories: ['pipeline'],
-    throttleEnabled: true,
-    throttleOption: 'category'
-  ]
-])
 pipeline {
-    agent none
+    agent any
     options {
-        buildDiscarder(logRotator(
-            numToKeepStr: env.BRANCH_NAME.equals("master") ? '15' : '3',
-            daysToKeepStr: env.BRANCH_NAME.equals("master") || env.BRANCH_NAME.startsWith("rel-") ? '' : '7',
-            artifactDaysToKeepStr: env.BRANCH_NAME.equals("master") || env.BRANCH_NAME.startsWith("rel-") ? '' : '3',
-            artifactNumToKeepStr: env.BRANCH_NAME.equals("master") || env.BRANCH_NAME.startsWith("rel-") ? '' : '1'
-        ))
-        disableConcurrentBuilds()
-        skipStagesAfterUnstable()
-    }
-    environment {
-        COMPOSE_PROJECT_NAME = "notification${BRANCH_NAME}"
-    }
-    parameters {
-        string(name: 'contractTestsBranch', defaultValue: 'master', description: 'The branch of contract tests to checkout')
+        buildDiscarder(logRotator(numToKeepStr: '50'))
     }
     stages {
-        stage('Preparation') {
-            agent any
-            steps {
-                withCredentials([usernamePassword(
-                  credentialsId: "cad2f741-7b1e-4ddd-b5ca-2959d40f62c2",
-                  usernameVariable: "USER",
-                  passwordVariable: "PASS"
-                )]) {
-                    sh 'set +x'
-                    sh 'docker login -u $USER -p $PASS'
-                }
-                script {
-                    CURRENT_BRANCH = env.GIT_BRANCH // needed for agent-less stages
-                    def properties = readProperties file: 'gradle.properties'
-                    if (!properties.serviceVersion) {
-                        error("serviceVersion property not found")
-                    }
-                    VERSION = properties.serviceVersion
-                    STAGING_VERSION = properties.serviceVersion
-                    if (CURRENT_BRANCH != 'master' || (CURRENT_BRANCH == 'master' && !VERSION.endsWith("SNAPSHOT"))) {
-                        STAGING_VERSION += "-STAGING"
-                    }
-                    currentBuild.displayName += " - " + VERSION
-                }
-            }
-            post {
-                failure {
-                    script {
-                        notifyAfterFailure()
-                    }
-                }
-            }
-        }
         stage('Build') {
-            agent any
-            environment {
-                PATH = "/usr/local/bin/:$PATH"
-                STAGING_VERSION = "${STAGING_VERSION}"
-            }
             steps {
-                withCredentials([file(credentialsId: '8da5ba56-8ebb-4a6a-bdb5-43c9d0efb120', variable: 'ENV_FILE')]) {
-                    script {
-                        try {
-                            sh( script: "./ci-buildImage.sh" )
-                            currentBuild.result = processTestResults('SUCCESS')
-                        }
-                        catch (exc) {
-                            currentBuild.result = processTestResults('FAILURE')
-                            if (currentBuild.result == 'FAILURE') {
-                                error(exc.toString())
-                            }
-                        }
-                    }
+                fetch_setting_env()
+                ansiColor('xterm') {
+                    println "gradle: build()"
+                    sh 'mkdir -p /ebs2/gradle-caches/${JOB_NAME}'
+                    sh 'mkdir -p /ebs2/node-caches/${JOB_NAME}'
+                    sh 'pwd && ls -l'
+                    sh 'docker run --rm --env-file .env --add-host=log:127.0.0.1 -v ${PWD}:/app -w /app siglusdevops/gradle:4.10.3 gradle clean build'
                 }
-            }
-            post {
-                success {
-                    archive 'build/libs/*.jar,build/resources/main/api-definition.html, build/resources/main/  version.properties'
-                }
-                unstable {
-                    script {
-                        notifyAfterFailure()
-                    }
-                }
-                failure {
-                    script {
-                        notifyAfterFailure()
-                    }
-                }
-                cleanup {
-                    script {
-                        sh "sudo rm -rf ${WORKSPACE}/{*,.*} || true"
-                    }
-                }
+                checkstyle pattern: '**/build/reports/checkstyle/*.xml'
+                pmd pattern: '**/build/reports/pmd/*.xml'
+                junit '**/build/test-results/*/*.xml'
             }
         }
-        stage('Build demo-data') {
+        stage('SonarQube Analysis') {
             when {
-                expression {
-                    return CURRENT_BRANCH == 'master'
-                }
+                branch 'master'
             }
             steps {
-                build job: "OpenLMIS-3.x-build-demo-data-pipeline"
-            }
-            post {
-                failure {
-                    script {
-                        notifyAfterFailure()
-                    }
+                withCredentials([string(credentialsId: 'sonarqube_token', variable: 'SONARQUBE_TOKEN')]) {
+                    sh 'docker run --rm -v ${PWD}:/app -w /app siglusdevops/gradle:4.10.3 gradle sonarqube -Dsonar.projectKey=siglus-notification -Dsonar.host.url=http://13.234.176.65:9000 -Dsonar.login=$SONARQUBE_TOKEN'
                 }
             }
         }
-        stage('Deploy to test') {
+        stage('Push Image') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: "cad2f741-7b1e-4ddd-b5ca-2959d40f62c2", usernameVariable: "USER", passwordVariable: "PASS")]) {
+                    sh '''
+                        set +x
+                        docker login -u $USER -p $PASS
+                        IMAGE_TAG=${BRANCH_NAME}-$(git rev-parse HEAD)
+                        IMAGE_REPO=siglusdevops/notification
+                        IMAGE_NAME=${IMAGE_REPO}:${IMAGE_TAG}
+                        docker build -t ${IMAGE_NAME} .
+                        docker tag ${IMAGE_NAME} ${IMAGE_REPO}:latest
+                        docker push ${IMAGE_NAME}
+                        docker push ${IMAGE_REPO}:latest
+                        docker rmi ${IMAGE_NAME} ${IMAGE_REPO}:latest
+                    '''
+                }
+            }
+        }
+        stage('Deploy To Dev') {
             when {
-                expression {
-                    return CURRENT_BRANCH == 'master' && VERSION.endsWith("SNAPSHOT")
-                }
+                branch 'master'
             }
             steps {
-                build job: 'OpenLMIS-notification-deploy-to-test', wait: false
-            }
-            post {
-                failure {
-                    script {
-                        notifyAfterFailure()
-                    }
-                }
+                deploy "dev"
             }
         }
-        stage('Parallel: Sonar analysis and contract tests') {
-            parallel {
-                stage('Sonar analysis') {
-                    agent any
-                    environment {
-                        PATH = "/usr/local/bin/:$PATH"
-                    }
-                    steps {
-                        withSonarQubeEnv('Sonar OpenLMIS') {
-                            withCredentials([string(credentialsId: 'SONAR_LOGIN', variable: 'SONAR_LOGIN'), string(credentialsId: 'SONAR_PASSWORD', variable: 'SONAR_PASSWORD')]) {
-                                script {
-                                    sh(script: "./ci-sonarAnalysis.sh")
-
-                                    // workaround: Sonar plugin retrieves the path directly from the output
-                                    sh 'echo "Working dir: ${WORKSPACE}/build/sonar"'
-                                }
-                            }
-                        }
-                        timeout(time: 1, unit: 'HOURS') {
-                            script {
-                                def gate = waitForQualityGate()
-                                if (gate.status != 'OK') {
-                                    echo 'Quality Gate FAILED'
-                                    currentBuild.result = 'UNSTABLE'
-                                }
-                            }
-                        }
-                    }
-                    post {
-                        unstable {
-                            script {
-                                notifyAfterFailure()
-                            }
-                        }
-                        failure {
-                            script {
-                                notifyAfterFailure()
-                            }
-                        }
-                        cleanup {
-                            script {
-                                sh "sudo rm -rf ${WORKSPACE}/{*,.*} || true"
-                            }
-                        }
-                    }
-                }
-                stage('Contract tests') {
-                    steps {
-                        build job: "OpenLMIS-contract-tests-pipeline/${params.contractTestsBranch}", propagate: true, wait: true,
-                        parameters: [
-                            string(name: 'serviceName', value: 'notification'),
-                            text(name: 'customEnv', value: "OL_NOTIFICATION_VERSION=${STAGING_VERSION}")
-                        ]
-                        build job: "OpenLMIS-contract-tests-pipeline/${params.contractTestsBranch}", propagate: true, wait: true,
-                        parameters: [
-                            string(name: 'serviceName', value: 'cce'),
-                            text(name: 'customEnv', value: "OL_NOTIFICATION_VERSION=${STAGING_VERSION}")
-                        ]
-                    }
-                    post {
-                        failure {
-                            script {
-                                notifyAfterFailure()
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        stage('ERD generation') {
-            agent {
-                node {
-                    label 'master'
-                }
-            }
-            environment {
-                PATH = "/usr/local/bin/:$PATH"
-            }
-            steps {
-                dir('erd') {
-                    sh(script: "../ci-erdGeneration.sh")
-                    archiveArtifacts artifacts: 'erd-notification.zip'
-                }
-            }
-            post {
-                failure {
-                    script {
-                        notifyAfterFailure()
-                    }
-                }
-            }
-        }
-        stage('Push image') {
-            agent any
+        stage('Deploy To QA') {
             when {
-                expression {
-                    env.GIT_BRANCH =~ /rel-.+/ || (env.GIT_BRANCH == 'master' && !VERSION.endsWith("SNAPSHOT"))
-                }
+                branch 'master'
             }
             steps {
-                sh "docker pull openlmis/notification:${STAGING_VERSION}"
-                sh "docker tag openlmis/notification:${STAGING_VERSION} openlmis/notification:${VERSION}"
-                sh "docker push openlmis/notification:${VERSION}"
-            }
-            post {
-                success {
-                    script {
-                        if (!VERSION.endsWith("SNAPSHOT")) {
-                            currentBuild.setKeepLog(true)
+                script {
+                    try {
+                        timeout (time: 30, unit: "MINUTES") {
+                            input message: "Do you want to proceed for QA deployment?"
                         }
+                        deploy "qa"
                     }
-                }
-                failure {
-                    script {
-                        notifyAfterFailure()
+                    catch (err) {
+                        def user = err.getCauses()[0].getUser()
+                        if ('SYSTEM' == user.toString()) { // timeout
+                            currentBuild.result = "SUCCESS"
+                        }
                     }
                 }
             }
         }
-    }
-    post {
-        fixed {
-            script {
-                BRANCH = "${BRANCH_NAME}"
-                if (BRANCH.equals("master") || BRANCH.startsWith("rel-")) {
-                    slackSend color: 'good', message: "${env.JOB_NAME} - #${env.BUILD_NUMBER} Back to normal"
+        stage('Deploy To Integ') {
+            when {
+                branch 'release-1.0'
+            }
+            steps {
+                deploy "integ"
+            }
+        }
+        stage('Deploy To UAT') {
+            when {
+                branch 'release-1.0'
+            }
+            steps {
+                script {
+                    try {
+                        timeout (time: 30, unit: "MINUTES") {
+                            input message: "Do you want to proceed for UAT deployment?"
+                        }
+                        deploy "uat"
+                    }
+                    catch (err) {
+                        def user = err.getCauses()[0].getUser()
+                        if ('SYSTEM' == user.toString()) { // timeout
+                            currentBuild.result = "SUCCESS"
+                        }
+                    }
                 }
             }
         }
     }
 }
 
-def notifyAfterFailure() {
-    messageColor = 'danger'
-    if (currentBuild.result == 'UNSTABLE') {
-        messageColor = 'warning'
+
+def fetch_setting_env() {
+    withCredentials([file(credentialsId: 'setting_env', variable: 'SETTING_ENV')]) {
+        sh '''
+            rm -f .env
+            cp $SETTING_ENV .env
+        '''
     }
-    BRANCH = "${BRANCH_NAME}"
-    if (BRANCH.equals("master") || BRANCH.startsWith("rel-")) {
-        slackSend color: "${messageColor}", message: "${env.JOB_NAME} - #${env.BUILD_NUMBER} ${env.STAGE_NAME} ${currentBuild.result} (<${env.BUILD_URL}|Open>)"
-    }
-    emailext subject: "${env.JOB_NAME} - #${env.BUILD_NUMBER} ${env.STAGE_NAME} ${currentBuild.result}",
-        body: """<p>${env.JOB_NAME} - #${env.BUILD_NUMBER} ${env.STAGE_NAME} ${currentBuild.result}</p><p>Check console <a href="${env.BUILD_URL}">output</a> to view the results.</p>""",
-        recipientProviders: [[$class: 'CulpritsRecipientProvider'], [$class: 'DevelopersRecipientProvider']]
 }
 
-def processTestResults(status) {
-    checkstyle pattern: '**/build/reports/checkstyle/*.xml'
-    pmd pattern: '**/build/reports/pmd/*.xml'
-    junit '**/build/test-results/*/*.xml'
+def deploy(app_env) {
+    withCredentials([file(credentialsId: "setting_env_${app_env}", variable: 'SETTING_ENV')]) {
+        withEnv(["APP_ENV=${app_env}", "CONSUL_HOST=${app_env}.siglus.us.internal:8500", "DOCKER_HOST=tcp://${app_env}.siglus.us.internal:2376"]) {
+            sh '''
+                rm -f docker-compose*
+                rm -f .env
+                rm -f settings.env
+                wget https://raw.githubusercontent.com/SIGLUS/siglus-ref-distro/master/docker-compose.yml
 
-    AbstractTestResultAction testResultAction = currentBuild.rawBuild.getAction(AbstractTestResultAction.class)
-    if (testResultAction != null) {
-        failuresCount = testResultAction.failCount
-        echo "Failed tests count: ${failuresCount}"
-        if (failuresCount > 0) {
-            echo "Setting build unstable due to test failures"
-            status = 'UNSTABLE'
+                IMAGE_TAG=${BRANCH_NAME}-$(git rev-parse HEAD)
+                SERVICE_NAME=notification
+
+                cp $SETTING_ENV settings.env
+                sed -i "s#<APP_ENV>#${APP_ENV}#g" settings.env
+                echo "OL_NOTIFICATION_VERSION=${IMAGE_TAG}" > .env
+
+                echo "deregister ${SERVICE_NAME} on ${APP_ENV} consul"
+                curl -s http://${CONSUL_HOST}/v1/health/service/${SERVICE_NAME} | \
+                jq -r '.[] | "curl -XPUT http://${CONSUL_HOST}/v1/agent/service/deregister/" + .Service.ID' > clear.sh
+                chmod a+x clear.sh && ./clear.sh
+
+                echo "deploy ${SERVICE_NAME} on ${APP_ENV}"
+                docker-compose -H ${DOCKER_HOST} -f docker-compose.yml -p siglus-ref-distro up --no-deps --force-recreate -d ${SERVICE_NAME}
+            '''
         }
     }
-
-    return status
 }
