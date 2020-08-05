@@ -64,7 +64,7 @@ class EmailSender {
       helper.setFrom(from);
       helper.setTo(to);
       helper.setSubject(subject);
-      helper.setText(body);
+      helper.setText(body, isHtml);
 
       if (!isEmpty(emailAttachments)) {
         XLOGGER.info("start to generate email attachments");
