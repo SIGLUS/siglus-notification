@@ -21,7 +21,7 @@ pipeline {
         }
         stage('SonarQube Analysis') {
             when {
-                branch 'master'
+                branch 'dev'
             }
             steps {
                 withCredentials([string(credentialsId: 'sonarqube_token', variable: 'SONARQUBE_TOKEN')]) {
@@ -49,7 +49,7 @@ pipeline {
         }
         stage('Deploy To Dev') {
             when {
-                branch 'master'
+                branch 'dev'
             }
             steps {
                 deploy "dev"
