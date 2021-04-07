@@ -2,45 +2,43 @@ pipeline {
     agent any
     options {
         buildDiscarder(logRotator(numToKeepStr: '50'))
+        timestamps ()
+    }
+    parameters {
+        string(name: 'DEPLOY_UAT', defaultValue: 'YES')
+        string(name: 'DEPLOY_PROD', defaultValue: 'YES')
+    }
+    environment {
+        IMAGE_REPO = "siglusdevops/notification"
+        SERVICE_NAME = "notification"
     }
     stages {
         stage('Build') {
             steps {
-                fetch_setting_env()
-                ansiColor('xterm') {
-                    println "gradle: build()"
-                    sh 'mkdir -p /ebs2/gradle-caches/${JOB_NAME}'
-                    sh 'mkdir -p /ebs2/node-caches/${JOB_NAME}'
-                    sh 'pwd && ls -l'
-                    sh 'docker run --rm --env-file .env --add-host=log:127.0.0.1 -v ${PWD}:/app -w /app siglusdevops/gradle:4.10.3 gradle clean build'
+                println "gradle: build"
+                sh '''
+                    pwd && ls -l
+                    npm install
+                    ./gradlew clean build
+                '''
+                println "sonarqube: analysis"
+                withCredentials([string(credentialsId: 'sonar-token', variable: 'SONARQUBE_TOKEN')]) {
+                    sh '''
+                        if [ "$GIT_BRANCH" = "master" ]; then
+                            ./gradlew sonarqube -x test -Dsonar.projectKey=siglus-notification -Dsonar.host.url=http://10.0.0.91:9000 -Dsonar.login=$SONARQUBE_TOKEN
+                        fi
+                    '''
                 }
-                checkstyle pattern: '**/build/reports/checkstyle/*.xml'
-                pmd pattern: '**/build/reports/pmd/*.xml'
-                junit '**/build/test-results/*/*.xml'
-            }
-        }
-        stage('SonarQube Analysis') {
-            when {
-                branch 'dev'
-            }
-            steps {
-                withCredentials([string(credentialsId: 'sonarqube_token', variable: 'SONARQUBE_TOKEN')]) {
-                    sh 'docker run --rm -v ${PWD}:/app -w /app siglusdevops/gradle:4.10.3 gradle sonarqube -Dsonar.projectKey=siglus-notification -Dsonar.host.url=http://13.234.176.65:9000 -Dsonar.login=$SONARQUBE_TOKEN'
-                }
-            }
-        }
-        stage('Push Image') {
-            steps {
-                withCredentials([usernamePassword(credentialsId: "cad2f741-7b1e-4ddd-b5ca-2959d40f62c2", usernameVariable: "USER", passwordVariable: "PASS")]) {
+                println "docker: push image"
+                withCredentials([usernamePassword(credentialsId: "docker-hub", usernameVariable: "USER", passwordVariable: "PASS")]) {
                     sh '''
                         set +x
-                        docker login -u $USER -p $PASS
                         IMAGE_TAG=${BRANCH_NAME}-$(git rev-parse HEAD)
-                        IMAGE_REPO=siglusdevops/notification
                         IMAGE_NAME=${IMAGE_REPO}:${IMAGE_TAG}
+                        docker login -u $USER -p $PASS
                         docker build -t ${IMAGE_NAME} .
                         docker push ${IMAGE_NAME}
-                        if [ "$GIT_BRANCH" = "release-1.2" ]; then
+                        if [ "$GIT_BRANCH" = "release" ]; then
                           echo "push latest tag for release branch"
                           docker build -t ${IMAGE_REPO}:latest .
                           docker push ${IMAGE_REPO}:latest
@@ -51,100 +49,112 @@ pipeline {
                 }
             }
         }
-        stage('Deploy To Dev') {
-            when {
-                branch 'dev'
-            }
-            steps {
-                deploy "dev"
-            }
-        }
         stage('Deploy To QA') {
             when {
                 branch 'master'
             }
             steps {
-                script {
-                    try {
-                        timeout (time: 30, unit: "MINUTES") {
-                            input message: "Do you want to proceed for QA deployment?"
-                        }
-                        deploy "qa"
-                    }
-                    catch (err) {
-                        def user = err.getCauses()[0].getUser()
-                        if ('SYSTEM' == user.toString()) { // timeout
-                            currentBuild.result = "SUCCESS"
-                        }
-                    }
-                }
+                deploy "qa"
             }
         }
         stage('Deploy To Integ') {
             when {
-                branch 'release-1.2'
+                branch 'release'
             }
             steps {
                 deploy "integ"
             }
         }
-        stage('Deploy To UAT') {
+        stage('Approval of deploy to UAT') {
             when {
-                branch 'release-1.2'
+                branch 'release'
             }
             steps {
                 script {
                     try {
-                        timeout (time: 30, unit: "MINUTES") {
+                        timeout (time: 5, unit: "MINUTES") {
                             input message: "Do you want to proceed for UAT deployment?"
                         }
-                        deploy "uat"
                     }
-                    catch (err) {
-                        def user = err.getCauses()[0].getUser()
-                        if ('SYSTEM' == user.toString()) { // timeout
-                            currentBuild.result = "SUCCESS"
+                    catch (error) {
+                        if ("${error}".startsWith('org.jenkinsci.plugins.workflow.steps.FlowInterruptedException')) {
+                            currentBuild.result = "SUCCESS" // Build was aborted
                         }
+                        env.DEPLOY_UAT = 'NO'
                     }
                 }
+            }
+        }
+        stage('Deploy To UAT') {
+            when {
+                allOf{
+                    branch 'release'
+                    environment name: 'DEPLOY_UAT', value: 'YES'
+                }
+            }
+            steps {
+                deploy "uat"
+            }
+        }
+        stage('Approval of deploy to Production') {
+            when {
+                branch 'release'
+            }
+            steps {
+                script {
+                    try {
+                        timeout (time: 5, unit: "MINUTES") {
+                            input message: "Do you want to proceed for Production deployment?"
+                        }
+                    }
+                    catch (error) {
+                        if ("${error}".startsWith('org.jenkinsci.plugins.workflow.steps.FlowInterruptedException')) {
+                            currentBuild.result = "SUCCESS" // Build was aborted
+                        }
+                        env.DEPLOY_PROD = 'NO'
+                    }
+                }
+            }
+        }
+        stage('Deploy To Production') {
+            when {
+                allOf{
+                    branch 'release'
+                    environment name: 'DEPLOY_PROD', value: 'YES'
+                }
+            }
+            steps {
+                deploy "prod"
             }
         }
     }
 }
 
 
-def fetch_setting_env() {
-    withCredentials([file(credentialsId: 'setting_env', variable: 'SETTING_ENV')]) {
-        sh '''
-            rm -f .env
-            cp $SETTING_ENV .env
-        '''
-    }
-}
-
 def deploy(app_env) {
-    withCredentials([file(credentialsId: "setting_env_${app_env}", variable: 'SETTING_ENV')]) {
-        withEnv(["APP_ENV=${app_env}", "CONSUL_HOST=${app_env}.siglus.us.internal:8500", "DOCKER_HOST=tcp://${app_env}.siglus.us.internal:2376"]) {
+    withCredentials([file(credentialsId: "settings.${app_env}.env", variable: 'SETTING_ENV')]) {
+        withEnv(["APP_ENV=${app_env}", "CONSUL_HOST=${app_env}.siglus.us.internal:8500"]) {
             sh '''
-                rm -f docker-compose*
-                rm -f .env
-                rm -f settings.env
-                wget https://raw.githubusercontent.com/SIGLUS/siglus-ref-distro/master/docker-compose.yml
-
                 IMAGE_TAG=${BRANCH_NAME}-$(git rev-parse HEAD)
-                SERVICE_NAME=notification
-
-                cp $SETTING_ENV settings.env
-                sed -i "s#<APP_ENV>#${APP_ENV}#g" settings.env
+                rm -f docker-compose.${APP_ENV}.yml .env settings.${APP_ENV}.env
+                wget https://raw.githubusercontent.com/SIGLUS/siglus-ref-distro/master/docker-compose.${APP_ENV}.yml
                 echo "OL_NOTIFICATION_VERSION=${IMAGE_TAG}" > .env
+                cp $SETTING_ENV settings.${APP_ENV}.env
 
                 echo "deregister ${SERVICE_NAME} on ${APP_ENV} consul"
-                curl -s http://${CONSUL_HOST}/v1/health/service/${SERVICE_NAME} | \
-                jq -r '.[] | "curl -XPUT http://${CONSUL_HOST}/v1/agent/service/deregister/" + .Service.ID' > clear.sh
+                curl -s http://${CONSUL_HOST}/v1/health/service/${SERVICE_NAME} | jq -r '.[] | "curl -XPUT http://${CONSUL_HOST}/v1/agent/service/deregister/" + .Service.ID' > clear.sh
                 chmod a+x clear.sh && ./clear.sh
 
                 echo "deploy ${SERVICE_NAME} on ${APP_ENV}"
-                docker-compose -H ${DOCKER_HOST} -f docker-compose.yml -p siglus-ref-distro up --no-deps --force-recreate -d ${SERVICE_NAME}
+                if [ "${APP_ENV}" = "prod" ]; then
+                    eval $(docker-machine env manager)
+                    docker-machine ls
+                    docker service update --force --image ${IMAGE_REPO}:${IMAGE_TAG} siglus_${SERVICE_NAME}
+                else
+                    eval $(docker-machine env ${APP_ENV})
+                    docker-machine ls
+                    docker-compose -f docker-compose.${APP_ENV}.yml -p siglus-ref-distro up --no-deps --force-recreate -d ${SERVICE_NAME}
+                fi
             '''
         }
     }
