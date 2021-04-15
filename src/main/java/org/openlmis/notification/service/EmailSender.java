@@ -48,6 +48,9 @@ class EmailSender {
   @Value("${email.noreply}")
   private String from;
 
+  @Value("${email.senderName}")
+  private String senderName;
+
   void sendMail(String to, String subject, String body, Boolean isHtml,
       List<EmailAttachment> emailAttachments) {
     XLOGGER.entry(to, subject, body, isHtml);
@@ -61,7 +64,7 @@ class EmailSender {
       profiler.start("CREATE_MESSAGE_HELPER");
       boolean multipart = !isEmpty(emailAttachments);
       MimeMessageHelper helper = new MimeMessageHelper(mailMessage, multipart);
-      helper.setFrom(from);
+      helper.setFrom(from, senderName);
       helper.setTo(to);
       helper.setSubject(subject);
       helper.setText(body, isHtml);
