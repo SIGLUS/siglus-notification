@@ -5,6 +5,7 @@ pipeline {
         timestamps ()
     }
     parameters {
+        string(name: 'DEPLOY_INTEG', defaultValue: 'YES')
         string(name: 'DEPLOY_UAT', defaultValue: 'YES')
         string(name: 'DEPLOY_PROD', defaultValue: 'YES')
     }
@@ -15,21 +16,26 @@ pipeline {
     stages {
         stage('Build') {
             steps {
-                println "gradle: build"
                 sh '''
                     pwd && ls -l
                     npm install
                     ./gradlew clean build
                 '''
-                println "sonarqube: analysis"
+            }
+        }
+        stage('SonarQube Analysis') {
+            steps {
                 withCredentials([string(credentialsId: 'sonar-token', variable: 'SONARQUBE_TOKEN')]) {
                     sh '''
                         if [ "$GIT_BRANCH" = "master" ]; then
-                            ./gradlew sonarqube -x test -Dsonar.projectKey=siglus-notification -Dsonar.host.url=http://10.0.0.91:9000 -Dsonar.login=$SONARQUBE_TOKEN
+                            ./gradlew sonarqube -x test -Dsonar.projectKey=siglus-notification -Dsonar.host.url=http://localhost:9000 -Dsonar.login=$SONARQUBE_TOKEN
                         fi
                     '''
                 }
-                println "docker: push image"
+            }
+        }
+        stage('Push Image') {
+            steps {
                 withCredentials([usernamePassword(credentialsId: "docker-hub", usernameVariable: "USER", passwordVariable: "PASS")]) {
                     sh '''
                         set +x
@@ -57,9 +63,32 @@ pipeline {
                 deploy "qa"
             }
         }
+        stage('Approval of deploy to Integ') {
+            when {
+                branch 'master'
+            }
+            steps {
+                script {
+                    try {
+                        timeout (time: 5, unit: "MINUTES") {
+                            input message: "Do you want to proceed for Integ deployment?"
+                        }
+                    }
+                    catch (error) {
+                        if ("${error}".startsWith('org.jenkinsci.plugins.workflow.steps.FlowInterruptedException')) {
+                            currentBuild.result = "SUCCESS" // Build was aborted
+                        }
+                        env.DEPLOY_INTEG = 'NO'
+                    }
+                }
+            }
+        }
         stage('Deploy To Integ') {
             when {
-                branch 'release'
+                allOf{
+                    branch 'master'
+                    environment name: 'DEPLOY_INTEG', value: 'YES'
+                }
             }
             steps {
                 deploy "integ"
@@ -137,9 +166,9 @@ def deploy(app_env) {
             sh '''
                 IMAGE_TAG=${BRANCH_NAME}-$(git rev-parse HEAD)
                 rm -f docker-compose.${APP_ENV}.yml .env settings.${APP_ENV}.env
-                wget https://raw.githubusercontent.com/SIGLUS/siglus-ref-distro/master/docker-compose.${APP_ENV}.yml
                 echo "OL_NOTIFICATION_VERSION=${IMAGE_TAG}" > .env
                 cp $SETTING_ENV settings.${APP_ENV}.env
+                cp ../siglus-ref-distro_master/docker-compose.${APP_ENV}.yml ./
 
                 echo "deregister ${SERVICE_NAME} on ${APP_ENV} consul"
                 curl -s http://${CONSUL_HOST}/v1/health/service/${SERVICE_NAME} | jq -r '.[] | "curl -XPUT http://${CONSUL_HOST}/v1/agent/service/deregister/" + .Service.ID' > clear.sh
@@ -147,11 +176,11 @@ def deploy(app_env) {
 
                 echo "deploy ${SERVICE_NAME} on ${APP_ENV}"
                 if [ "${APP_ENV}" = "prod" ]; then
-                    eval $(docker-machine env manager)
+                    eval $(docker-machine env manager --shell=bash)
                     docker-machine ls
                     docker service update --force --image ${IMAGE_REPO}:${IMAGE_TAG} siglus_${SERVICE_NAME}
                 else
-                    eval $(docker-machine env ${APP_ENV})
+                    eval $(docker-machine env ${APP_ENV} --shell=bash)
                     docker-machine ls
                     docker-compose -f docker-compose.${APP_ENV}.yml -p siglus-ref-distro up --no-deps --force-recreate -d ${SERVICE_NAME}
                 fi
